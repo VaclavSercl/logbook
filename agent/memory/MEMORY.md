@@ -6,55 +6,58 @@
 - **Vytvořeno:** 15. 5. 2026
 - **Účel:** Modulární SaaS platforma pro vedení lodního deníku řízeného AI
 - **Jazyk:** Python (backend), TypeScript (frontend)
-- **Platforma:** Next.js PWA + FastAPI + PostgreSQL/PostGIS + Ollama
-- **Stav:** 🚧 fáze 1 — specifikace hotová
+- **Platforma:** Next.js PWA + FastAPI + PostgreSQL/PostGIS + Redis + MinIO
+- **Stav:** 🚧 fáze 1 — základní struktura hotová (MVP)
+
+## Struktura projektu
+
+```
+logbook/
+├── backend/           # FastAPI
+│   ├── app/
+│   │   ├── api/v1/    # auth, vessels, logbooks, entries, gps, ai, export, modules
+│   │   ├── models/    # SQLAlchemy (User, Vessel, Logbook, LogEntry, GpsPoint, Media, AuditLog, Module)
+│   │   ├── schemas/   # Pydantic
+│   │   ├── config.py  # Settings
+│   │   └── database.py
+│   ├── Dockerfile
+│   └── requirements.txt
+├── frontend/          # Next.js PWA
+│   ├── src/app/       # page.tsx, login/, logbook/
+│   ├── src/lib/api.ts # API client
+│   ├── public/manifest.json
+│   ├── Dockerfile
+│   └── package.json
+├── docker-compose.yml # PostgreSQL+PostGIS, Redis, Backend, Frontend, MinIO
+├── .env.example
+└── logbook.md         # Kompletní specifikace (997 řádků)
+```
 
 ## Klíčová rozhodnutí
 
 | Datum | Rozhodnutí | Důvod |
 |-------|-----------|-------|
-| 15.5.2026 | Název "Logbook" | Jednoduchý, výstižný |
-| 15.5.2026 | Veřejný repozitář | Open source přístup |
-| 15.5.2026 | Python + TypeScript | Univerzální, rychlý vývoj |
-| 15.5.2026 | Lowercase konvence | Konzistence a čitelnost |
+| 15.5.2026 | FastAPI + async SQLAlchemy | Rychlá AI integrace |
 | 15.5.2026 | Next.js PWA | Offline-first, responzivita |
-| 15.5.2026 | FastAPI | Rychlá AI integrace |
-| 15.5.2026 | PostgreSQL + PostGIS + TimescaleDB | Geoprostorová + time-series data |
-| 15.5.2026 | Ollama (lokální LLM) | AI bez závislosti na cloudu |
-| 15.5.2026 | Plugin architektura | Modularita, rozšiřitelnost |
+| 15.5.2026 | PostgreSQL + PostGIS | Geoprostorová data |
+| 15.5.2026 | JWT autentizace | Bezpečný přístup |
+| 15.5.2026 | Docker Compose | Snadné nasazení |
 
-## Specifikace
+## Známé problémy / TODO
 
-Kompletní specifikace v souboru `logbook.md`:
-- Legislativní rámec (ČR + mezinárodní)
-- Architektura systému
-- Datový model (ER diagram + SQL)
-- 18 modulů (P0-P3 priorita)
-- AI Engine (LLM + RAG + tool calling)
-- Frontend (Next.js PWA)
-- Backend API (REST + WebSocket)
-- Bezpečnost (zero-trust, E2E, audit)
-- Offline-first strategie
-- GPS hardware doporučení
-- Roadmapa (4 fáze, 12 měsíců)
+- Frontend: chybí mapová stránka (MapLibre)
+- Frontend: chybí weather, crew, gallery, settings pages
+- Backend: AI endpoint je základní (potřebuje Ollama integraci)
+- Backend: chybí WebSocket pro real-time GPS
+- Backend: chybí notifikační systém
+- Chybí testy
+- Chybí CI/CD pipeline
 
-## Učení a poznatky
+## Plány
 
-- PAT token (`github_pat...`) nemá oprávnět vytvářet repozitáře (403)
-- Starý `ghp_` token funguje pro vše
-- `gh auth login --with-token` může timeoutnout — použít Python API jako fallback
-
-## Známé problémy
-
-- GPS hardware ještě není integrován (plánováno fáze 1)
-- Ollama vyžaduje dost RAM pro Llama 3 70B (plán: quantization)
-
-## Plány do budoucna
-
-- Fáze 1: MVP (měsíce 1-3)
-- Fáze 2: AI & Moduly (měsíce 4-6)
-- Fáze 3: Pokročilé funkce (měsíce 7-9)
-- Fáze 4: Enterprise (měsíce 10-12)
+- Fáze 2: AI & Moduly (Ollama, plugin systém)
+- Fáze 3: Pokročilé funkce (AIS, COLREG, voice-to-log)
+- Fáze 4: Enterprise (Kubernetes, multi-tenancy)
 
 ---
 
