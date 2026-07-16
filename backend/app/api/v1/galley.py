@@ -1,0 +1,68 @@
+"""Galley management routes."""
+from uuid import UUID
+from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy.orm import Session
+from sqlalchemy import select
+
+from app.database import get_db
+from app.models import GalleyDuty, Logbook
+from app.schemas import GalleyDutyCreate, GalleyDutyResponse
+from app.api.v1.auth import get_current_user
+
+router = APIRouter()
+
+
+@router.get("/schedule/{logbook_id}", response_model=list[GalleyDutyResponse])
+async def list_galley_duties(
+    logbook_id: UUID,
+    current_user=Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    logbook = db.query(Logbook).filter(Logbook.id == str(logbook_id)).first()
+    if not logbook:
+        raise HTTPException(status_code=404, detail="Logbook not found")
+
+    result = db.execute(
+        select(GalleyDuty)
+        .where(GalleyDuty.logbook_id == str(logbook_id))
+        .order_by(GalleyDuty.date.asc())
+    )
+    return result.scalars().all()
+
+
+@router.post("/duty", response_model=GalleyDutyResponse, status_code=201)
+async def create_galley_duty(
+    data: GalleyDutyCreate,
+    current_user=Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    logbook = db.query(Logbook).filter(Logbook.id == str(data.logbook_id)).first()
+    if not logbook:
+        raise HTTPException(status_code=404, detail="Logbook not found")
+
+    duty = GalleyDuty(
+        logbook_id=str(data.logbook_id),
+        date=data.date,
+        cook_id=str(data.cook_id),
+        cleaner_id=str(data.cleaner_id),
+        notes=data.notes
+    )
+    db.add(duty)
+    db.commit()
+    db.refresh(duty)
+    return duty
+
+
+@router.delete("/duty/{duty_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_galley_duty(
+    duty_id: UUID,
+    current_user=Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    duty = db.query(GalleyDuty).filter(GalleyDuty.id == str(duty_id)).first()
+    if not duty:
+        raise HTTPException(status_code=404, detail="Galley duty not found")
+
+    db.delete(duty)
+    db.commit()
+    return

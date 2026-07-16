@@ -208,3 +208,54 @@ class Module(Base):
     config = Column(JSON, default={})
     installed_at = Column(DateTime)
     created_at = Column(DateTime, default=datetime.utcnow)
+
+
+from sqlalchemy import Table
+
+watch_group_members = Table(
+    "watch_group_members",
+    Base.metadata,
+    Column("watch_group_id", String(36), ForeignKey("watch_groups.id", ondelete="CASCADE"), primary_key=True),
+    Column("crew_member_id", String(36), ForeignKey("crew_members.id", ondelete="CASCADE"), primary_key=True)
+)
+
+
+class WatchGroup(Base):
+    __tablename__ = "watch_groups"
+
+    id = Column(String(36), primary_key=True, default=gen_uuid)
+    vessel_id = Column(String(36), ForeignKey("vessels.id"))
+    name = Column(String(100), nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    members = relationship("CrewMember", secondary=watch_group_members)
+
+
+class WatchSchedule(Base):
+    __tablename__ = "watch_schedules"
+
+    id = Column(String(36), primary_key=True, default=gen_uuid)
+    logbook_id = Column(String(36), ForeignKey("logbooks.id"))
+    watch_group_id = Column(String(36), ForeignKey("watch_groups.id"))
+    start_time = Column(DateTime, nullable=False)
+    end_time = Column(DateTime, nullable=False)
+    notes = Column(Text)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    watch_group = relationship("WatchGroup")
+
+
+class GalleyDuty(Base):
+    __tablename__ = "galley_duties"
+
+    id = Column(String(36), primary_key=True, default=gen_uuid)
+    logbook_id = Column(String(36), ForeignKey("logbooks.id"))
+    date = Column(DateTime, nullable=False)
+    cook_id = Column(String(36), ForeignKey("crew_members.id"))
+    cleaner_id = Column(String(36), ForeignKey("crew_members.id"))
+    notes = Column(Text)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    cook = relationship("CrewMember", foreign_keys=[cook_id])
+    cleaner = relationship("CrewMember", foreign_keys=[cleaner_id])
+

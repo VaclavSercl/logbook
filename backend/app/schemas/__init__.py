@@ -238,4 +238,67 @@ class WeatherResponse(BaseModel):
     sea_state: str
     clouds: float
 
+# ── Watch Groups & Schedules ──────────────────────────
 
+class WatchGroupCreate(BaseModel):
+    vessel_id: UUID
+    name: str = Field(..., max_length=100)
+    member_ids: List[UUID] = []
+
+
+class WatchGroupResponse(BaseModel):
+    id: UUID
+    vessel_id: UUID
+    name: str
+    members: List[CrewMemberResponse] = []
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class WatchScheduleCreate(BaseModel):
+    logbook_id: UUID
+    watch_group_id: UUID
+    start_time: datetime
+    end_time: datetime
+    notes: Optional[str] = None
+
+
+class WatchScheduleResponse(BaseModel):
+    id: UUID
+    logbook_id: UUID
+    watch_group_id: UUID
+    watch_group: WatchGroupResponse
+    start_time: datetime
+    end_time: datetime
+    notes: Optional[str]
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+# ── Galley Duties ─────────────────────────────────────
+
+class GalleyDutyCreate(BaseModel):
+    logbook_id: UUID
+    date: datetime
+    cook_id: UUID
+    cleaner_id: UUID
+    notes: Optional[str] = None
+
+
+class GalleyDutyResponse(BaseModel):
+    id: UUID
+    logbook_id: UUID
+    date: datetime
+    cook_id: UUID
+    cook: CrewMemberResponse
+    cleaner_id: UUID
+    cleaner: CrewMemberResponse
+    notes: Optional[str]
+    created_at: datetime
+
+    class Config:
+        from_attributes = True

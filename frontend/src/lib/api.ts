@@ -139,4 +139,30 @@ export const weatherApi = {
     apiFetch(`/weather/vessel/${vesselId}`, { token }),
 };
 
+// Watches API
+export const watchesApi = {
+  listGroups: (vesselId: string, token: string) =>
+    apiFetch(`/watches/vessel/${vesselId}`, { token }),
+  createGroup: (data: { vessel_id: string; name: string; member_ids: string[] }, token: string) =>
+    apiFetch('/watches/group', { method: 'POST', body: data, token }),
+  deleteGroup: (groupId: string, token: string) =>
+    apiFetch(`/watches/group/${groupId}`, { method: 'DELETE', token }),
+  listSchedules: (logbookId: string, token: string) =>
+    apiFetch(`/watches/schedule/${logbookId}`, { token }),
+  createSchedule: (data: { logbook_id: string; watch_group_id: string; start_time: string; end_time: string; notes?: string }, token: string) =>
+    apiFetch('/watches/schedule', { method: 'POST', body: data, token }),
+  deleteSchedule: (scheduleId: string, token: string) =>
+    apiFetch(`/watches/schedule/${scheduleId}`, { method: 'DELETE', token }),
+};
+
+// Galley API
+export const galleyApi = {
+  listDuties: (logbookId: string, token: string) =>
+    apiFetch(`/galley/schedule/${logbookId}`, { token }),
+  createDuty: (data: { logbook_id: string; date: string; cook_id: string; cleaner_id: string; notes?: string }, token: string) =>
+    apiFetch('/galley/duty', { method: 'POST', body: data, token }),
+  deleteDuty: (dutyId: string, token: string) =>
+    apiFetch(`/galley/duty/${dutyId}`, { method: 'DELETE', token }),
+};
+
 
