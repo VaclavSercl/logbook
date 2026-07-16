@@ -1,27 +1,51 @@
-"""SQLAlchemy database models."""
+"""SQLAlchemy database models (SQLite-compatible)."""
 import uuid
 from datetime import datetime
 from sqlalchemy import (
     Column, String, Integer, Float, Boolean, DateTime, Text,
-    ForeignKey, JSON, BigInteger, Enum as SQLEnum
+    ForeignKey, BigInteger, JSON
 )
-from sqlalchemy.dialects.postgresql import UUID, JSONB
+from sqlalchemy.types import TypeDecorator, UserDefinedType
 from sqlalchemy.orm import relationship
 from geoalchemy2 import Geography
 
 from app.database import Base
 
 
+class SQLiteGeography(UserDefinedType):
+    def get_col_spec(self, **kw):
+        return 'TEXT'
+
+
+class SQLiteCompatibleGeography(TypeDecorator):
+    impl = SQLiteGeography
+    cache_ok = True
+
+    def __init__(self, *args, **kwargs):
+        super().__init__()
+        self.geo_type = Geography(*args, **kwargs)
+
+    def load_dialect_impl(self, dialect):
+        if dialect.name == 'postgresql':
+            return dialect.type_descriptor(self.geo_type)
+        return dialect.type_descriptor(SQLiteGeography())
+
+
+def gen_uuid():
+
+    return str(uuid.uuid4())
+
+
 class User(Base):
     __tablename__ = "users"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id = Column(String(36), primary_key=True, default=gen_uuid)
     username = Column(String(50), unique=True, nullable=False, index=True)
     email = Column(String(255), unique=True, nullable=False, index=True)
     password_hash = Column(String(255), nullable=False)
     full_name = Column(String(255))
     phone = Column(String(50))
-    role = Column(String(20), default="user")  # admin, captain, crew, viewer
+    role = Column(String(20), default="user")
     preferred_language = Column(String(5), default="cs")
     avatar_url = Column(Text)
     is_active = Column(Boolean, default=True)
@@ -37,8 +61,8 @@ class User(Base):
 class Vessel(Base):
     __tablename__ = "vessels"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    owner_id = Column(UUID(as_uuid=True), ForeignKey("users.id"))
+    id = Column(String(36), primary_key=True, default=gen_uuid)
+    owner_id = Column(String(36), ForeignKey("users.id"))
     name = Column(String(255), nullable=False)
     imo = Column(String(20))
     mmsi = Column(String(20))
@@ -53,18 +77,18 @@ class Vessel(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
 
     owner = relationship("User", back_populates="vessels")
-    logbooks = relationship("Logbook", back_populates="vessel")
-    crew = relationship("CrewMember", back_populates="vessel")
+    logbooks = relationship("Logbook", back_populates="vessel", cascade="all, delete-orphan")
+    crew = relationship("CrewMember", back_populates="vessel", cascade="all, delete-orphan")
 
 
 class CrewMember(Base):
     __tablename__ = "crew_members"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    vessel_id = Column(UUID(as_uuid=True), ForeignKey("vessels.id"))
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"))
+    id = Column(String(36), primary_key=True, default=gen_uuid)
+    vessel_id = Column(String(36), ForeignKey("vessels.id"))
+    user_id = Column(String(36), ForeignKey("users.id"))
     name = Column(String(255), nullable=False)
-    role = Column(String(50))  # captain, mate, engineer, deckhand
+    role = Column(String(50))
     nationality = Column(String(5))
     passport_number = Column(String(50))
     date_of_birth = Column(DateTime)
@@ -77,12 +101,12 @@ class CrewMember(Base):
 class Logbook(Base):
     __tablename__ = "logbooks"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    vessel_id = Column(UUID(as_uuid=True), ForeignKey("vessels.id"))
+    id = Column(String(36), primary_key=True, default=gen_uuid)
+    vessel_id = Column(String(36), ForeignKey("vessels.id"))
     title = Column(String(255), nullable=False)
     voyage_from = Column(String(255))
     voyage_to = Column(String(255))
-    status = Column(String(20), default="active")  # active, closed, archived
+    status = Column(String(20), default="active")
     started_at = Column(DateTime)
     closed_at = Column(DateTime)
     signed_hash = Column(String(255))
@@ -95,16 +119,18 @@ class Logbook(Base):
 class LogEntry(Base):
     __tablename__ = "log_entries"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    logbook_id = Column(UUID(as_uuid=True), ForeignKey("logbooks.id"))
+    id = Column(String(36), primary_key=True, default=gen_uuid)
+    logbook_id = Column(String(36), ForeignKey("logbooks.id"))
     timestamp = Column(DateTime, nullable=False, index=True)
-    position = Column(Geography(geometry_type="POINT", srid=4326))
-    course = Column(Float)  # COG
-    speed = Column(Float)  # SOG in knots
+    latitude = Column(Float)
+    longitude = Column(Float)
+    position = Column(SQLiteCompatibleGeography('POINT', srid=4326), nullable=True)
+    course = Column(Float)
+    speed = Column(Float)
     wind_direction = Column(Float)
     wind_speed = Column(Float)
-    pressure = Column(Float)  # hPa
-    visibility = Column(Float)  # km
+    pressure = Column(Float)
+    visibility = Column(Float)
     sea_state = Column(String(50))
     temperature = Column(Float)
     engine_hours = Column(Float)
@@ -112,11 +138,11 @@ class LogEntry(Base):
     battery_level = Column(Float)
     notes = Column(Text)
     ai_comment = Column(Text)
-    category = Column(String(50))  # navigation, anchoring, incident, maintenance
+    category = Column(String(50))
     is_locked = Column(Boolean, default=False)
     created_at = Column(DateTime, default=datetime.utcnow)
     modified_at = Column(DateTime)
-    modified_by = Column(UUID(as_uuid=True), ForeignKey("users.id"))
+    modified_by = Column(String(36), ForeignKey("users.id"))
 
     logbook = relationship("Logbook", back_populates="entries")
     media = relationship("Media", back_populates="entry", cascade="all, delete-orphan")
@@ -126,7 +152,7 @@ class GpsPoint(Base):
     __tablename__ = "gps_points"
 
     id = Column(BigInteger, primary_key=True, autoincrement=True)
-    vessel_id = Column(UUID(as_uuid=True), ForeignKey("vessels.id"), index=True)
+    vessel_id = Column(String(36), ForeignKey("vessels.id"), index=True)
     timestamp = Column(DateTime, nullable=False, index=True)
     latitude = Column(Float, nullable=False)
     longitude = Column(Float, nullable=False)
@@ -140,15 +166,15 @@ class GpsPoint(Base):
 class Media(Base):
     __tablename__ = "media"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    entry_id = Column(UUID(as_uuid=True), ForeignKey("log_entries.id"))
-    type = Column(String(20))  # photo, video, audio
+    id = Column(String(36), primary_key=True, default=gen_uuid)
+    entry_id = Column(String(36), ForeignKey("log_entries.id"))
+    type = Column(String(20))
     url = Column(Text, nullable=False)
     thumbnail_url = Column(Text)
     file_size = Column(Integer)
     gps_latitude = Column(Float)
     gps_longitude = Column(Float)
-    metadata = Column(JSONB)
+    meta = Column(JSON)
     created_at = Column(DateTime, default=datetime.utcnow)
 
     entry = relationship("LogEntry", back_populates="media")
@@ -159,11 +185,11 @@ class AuditLog(Base):
 
     id = Column(BigInteger, primary_key=True, autoincrement=True)
     table_name = Column(String(100), nullable=False)
-    record_id = Column(UUID(as_uuid=True), nullable=False)
-    action = Column(String(20), nullable=False)  # INSERT, UPDATE, DELETE
-    old_value = Column(JSONB)
-    new_value = Column(JSONB)
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"))
+    record_id = Column(String(36), nullable=False)
+    action = Column(String(20), nullable=False)
+    old_value = Column(JSON)
+    new_value = Column(JSON)
+    user_id = Column(String(36), ForeignKey("users.id"))
     ip_address = Column(String(45))
     timestamp = Column(DateTime, default=datetime.utcnow, index=True)
 
@@ -171,7 +197,7 @@ class AuditLog(Base):
 class Module(Base):
     __tablename__ = "modules"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id = Column(String(36), primary_key=True, default=gen_uuid)
     name = Column(String(100), unique=True, nullable=False)
     slug = Column(String(100), unique=True, nullable=False)
     version = Column(String(20), default="1.0.0")
@@ -179,6 +205,6 @@ class Module(Base):
     icon = Column(String(50))
     is_active = Column(Boolean, default=False)
     is_installed = Column(Boolean, default=False)
-    config = Column(JSONB, default={})
+    config = Column(JSON, default={})
     installed_at = Column(DateTime)
     created_at = Column(DateTime, default=datetime.utcnow)

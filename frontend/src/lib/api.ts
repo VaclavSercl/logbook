@@ -7,7 +7,7 @@ interface FetchOptions {
   token?: string;
 }
 
-async function apiFetch<T>(path: string, options: FetchOptions = {}): Promise<T> {
+async function apiFetch<T = any>(path: string, options: FetchOptions = {}): Promise<T> {
   const { method = 'GET', body, token } = options;
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
@@ -33,7 +33,7 @@ async function apiFetch<T>(path: string, options: FetchOptions = {}): Promise<T>
 // Auth API
 export const authApi = {
   login: (username: string, password: string) =>
-    apiFetch<{ access_token: string; refresh_token: string }>('/auth/login', {
+    apiFetch<{ access_token: string; refresh_token: string }>('/auth/login/json', {
       method: 'POST',
       body: { username, password },
     }),
@@ -51,6 +51,10 @@ export const vesselsApi = {
   create: (data: Record<string, unknown>, token: string) =>
     apiFetch('/vessels/', { method: 'POST', body: data, token }),
   get: (id: string, token: string) => apiFetch(`/vessels/${id}`, { token }),
+  update: (id: string, data: Record<string, unknown>, token: string) =>
+    apiFetch(`/vessels/${id}`, { method: 'PUT', body: data, token }),
+  delete: (id: string, token: string) =>
+    apiFetch(`/vessels/${id}`, { method: 'DELETE', token }),
 };
 
 // Logbooks API
@@ -101,3 +105,38 @@ export const exportApi = {
   csv: (logbookId: string, token: string) =>
     `${API_BASE}/export/csv/${logbookId}?token=${token}`,
 };
+
+// Dashboard API
+export const dashboardApi = {
+  getStats: (token: string) =>
+    apiFetch<{ vessels: number; logbooks: number; entries: number; activeModules: number }>('/dashboard/stats', { token }),
+};
+
+// Modules API
+export const modulesApi = {
+  list: (token: string) => apiFetch('/modules/', { token }),
+  install: (id: string, token: string) =>
+    apiFetch(`/modules/${id}/install`, { method: 'POST', token }),
+  activate: (id: string, token: string) =>
+    apiFetch(`/modules/${id}/activate`, { method: 'POST', token }),
+  deactivate: (id: string, token: string) =>
+    apiFetch(`/modules/${id}/deactivate`, { method: 'POST', token }),
+};
+
+// Crew API
+export const crewApi = {
+  list: (vesselId: string, token: string) =>
+    apiFetch(`/crew/vessel/${vesselId}`, { token }),
+  create: (data: { vessel_id: string; name: string; role?: string; nationality?: string; passport_number?: string; date_of_birth?: string }, token: string) =>
+    apiFetch('/crew/', { method: 'POST', body: data, token }),
+  delete: (id: string, token: string) =>
+    apiFetch(`/crew/${id}`, { method: 'DELETE', token }),
+};
+
+// Weather API
+export const weatherApi = {
+  get: (vesselId: string, token: string) =>
+    apiFetch(`/weather/vessel/${vesselId}`, { token }),
+};
+
+

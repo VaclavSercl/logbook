@@ -1,7 +1,7 @@
 """Module management routes."""
 from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import Session
 from sqlalchemy import select
 
 from app.database import get_db
@@ -14,9 +14,9 @@ router = APIRouter()
 @router.get("/", response_model=list[dict])
 async def list_modules(
     current_user=Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
+    db: Session = Depends(get_db),
 ):
-    result = await db.execute(select(Module))
+    result = db.execute(select(Module))
     modules = result.scalars().all()
     return [
         {
@@ -38,9 +38,9 @@ async def list_modules(
 async def install_module(
     module_id: UUID,
     current_user=Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
+    db: Session = Depends(get_db),
 ):
-    result = await db.execute(select(Module).where(Module.id == module_id))
+    result = db.execute(select(Module).where(Module.id == module_id))
     module = result.scalar_one_or_none()
     if not module:
         raise HTTPException(status_code=404, detail="Module not found")
@@ -52,9 +52,9 @@ async def install_module(
 async def activate_module(
     module_id: UUID,
     current_user=Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
+    db: Session = Depends(get_db),
 ):
-    result = await db.execute(select(Module).where(Module.id == module_id))
+    result = db.execute(select(Module).where(Module.id == module_id))
     module = result.scalar_one_or_none()
     if not module:
         raise HTTPException(status_code=404, detail="Module not found")
@@ -66,9 +66,9 @@ async def activate_module(
 async def deactivate_module(
     module_id: UUID,
     current_user=Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
+    db: Session = Depends(get_db),
 ):
-    result = await db.execute(select(Module).where(Module.id == module_id))
+    result = db.execute(select(Module).where(Module.id == module_id))
     module = result.scalar_one_or_none()
     if not module:
         raise HTTPException(status_code=404, detail="Module not found")

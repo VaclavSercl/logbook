@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Logbook — Smart Maritime Logbook</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0f172a; color: #e2e8f0; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        header { background: #1e293b; border-bottom: 1px solid #334155; padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; }
+        header h1 { font-size: 24px; }
+        header nav a { color: #94a3b8; text-decoration: none; margin-left: 20px; }
+        header nav a:hover { color: #e2e8f0; }
+        .card { background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 20px; margin-bottom: 16px; }
+        .card h2 { font-size: 18px; margin-bottom: 12px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px; }
+        .stat { text-align: center; }
+        .stat .value { font-size: 32px; font-weight: bold; color: #3b82f6; }
+        .stat .label { color: #94a3b8; font-size: 14px; }
+        .btn { background: #3b82f6; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-size: 14px; }
+        .btn:hover { background: #2563eb; }
+        .btn-secondary { background: #334155; }
+        .btn-secondary:hover { background: #475569; }
+        input, select, textarea { width: 100%; padding: 10px; background: #334155; border: 1px solid #475569; border-radius: 6px; color: #e2e8f0; font-size: 14px; }
+        input:focus, select:focus { outline: none; border-color: #3b82f6; }
+        label { display: block; margin-bottom: 6px; color: #94a3b8; font-size: 14px; }
+        .form-group { margin-bottom: 16px; }
+        .alert { padding: 12px; border-radius: 6px; margin-bottom: 16px; }
+        .alert-error { background: #7f1d1d; border: 1px solid #991b1b; }
+        .alert-success { background: #14532d; border: 1px solid #166534; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #334155; }
+        th { color: #94a3b8; font-weight: 500; }
+        .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 12px; }
+        .badge-active { background: #14532d; color: #86efac; }
+        .badge-closed { background: #7f1d1d; color: #fca5a5; }
+        .hidden { display: none; }
+        #map { height: 400px; background: #1e293b; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #94a3b8; }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>⚓ Logbook</h1>
+        <nav>
+            <a href="#" onclick="showPage('dashboard')">Dashboard</a>
+            <a href="#" onclick="showPage('logbook')">Deník</a>
+            <a href="#" onclick="showPage('map')">Mapa</a>
+            <a href="#" onclick="showPage('weather')">Počasí</a>
+            <a href="#" onclick="showPage('crew')">Posádka</a>
+            <a href="#" onclick="showPage('settings')">Nastavení</a>
+            <a href="#" onclick="logout()">Odhlásit</a>
+        </nav>
+    </header>
+
+    <div class="container">
+        <!-- Login Page -->
+        <div id="login-page" class="card" style="max-width: 400px; margin: 40px auto;">
+            <h2>Přihlášení</h2>
+            <div id="login-error" class="alert alert-error hidden"></div>
+            <form onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label>Uživatelské jméno</label>
+                    <input type="text" id="login-username" required>
+                </div>
+                <div class="form-group">
+                    <label>Heslo</label>
+                    <input type="password" id="login-password" required>
+                </div>
+                <button type="submit" class="btn" style="width:100%">Přihlásit se</button>
+            </form>
+            <p style="text-align:center; margin-top:16px; color:#94a3b8;">
+                Nemáte účet? <a href="#" onclick="showPage('register')" style="color:#3b82f6">Registrovat</a>
+            </p>
+        </div>
+
+        <!-- Register Page -->
+        <div id="register-page" class="card hidden" style="max-width: 400px; margin: 40px auto;">
+            <h2>Registrace</h2>
+            <div id="register-error" class="alert alert-error hidden"></div>
+            <form onsubmit="handleRegister(event)">
+                <div class="form-group">
+                    <label>Uživatelské jméno</label>
+                    <input type="text" id="reg-username" required minlength="3">
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="reg-email" required>
+                </div>
+                <div class="form-group">
+                    <label>Celé jméno</label>
+                    <input type="text" id="reg-fullname">
+                </div>
+                <div class="form-group">
+                    <label>Heslo</label>
+                    <input type="password" id="reg-password" required minlength="8">
+                </div>
+                <button type="submit" class="btn" style="width:100%">Registrovat se</button>
+            </form>
+            <p style="text-align:center; margin-top:16px; color:#94a3b8;">
+                Máte účet? <a href="#" onclick="showPage('login')" style="color:#3b82f6">Přihlásit</a>
+            </p>
+        </div>
+
+        <!-- Dashboard -->
+        <div id="dashboard-page" class="hidden">
+            <div class="grid" style="margin-bottom: 24px;">
+                <div class="card stat">
+                    <div class="value" id="stat-vessels">0</div>
+                    <div class="label">Plavidla</div>
+                </div>
+                <div class="card stat">
+                    <div class="value" id="stat-logbooks">0</div>
+                    <div class="label">Deníky</div>
+                </div>
+                <div class="card stat">
+                    <div class="value" id="stat-entries">0</div>
+                    <div class="label">Záznamy</div>
+                </div>
+                <div class="card stat">
+                    <div class="value" id="stat-modules">0</div>
+                    <div class="label">Moduly</div>
+                </div>
+            </div>
+            <div class="grid">
+                <div class="card">
+                    <h2>📖 Poslední deníky</h2>
+                    <div id="recent-logbooks">Načítám...</div>
+                </div>
+                <div class="card">
+                    <h2>🚢 Plavidla</h2>
+                    <div id="vessel-list">Načítám...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Logbook -->
+        <div id="logbook-page" class="hidden">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                <h2>Lodní deník</h2>
+                <button class="btn" onclick="showAddEntry()">+ Nový zápis</button>
+            </div>
+            <div id="entries-list">Načítám...</div>
+        </div>
+
+        <!-- Map -->
+        <div id="map-page" class="hidden">
+            <div class="card">
+                <h2>🗺️ Interaktivní mapa</h2>
+                <div id="map">
+                    <div style="text-align:center;">
+                        <p style="font-size:48px; margin-bottom:16px;">🗺️</p>
+                        <p>Mapa bude zobrazena po připojení k MapLibre</p>
+                        <p style="font-size:12px; margin-top:8px;">OpenSeaMap • OpenStreetMap • Satelitní</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Weather -->
+        <div id="weather-page" class="hidden">
+            <div class="card">
+                <h2>🌤️ Aktuální počasí</h2>
+                <div id="weather-data">
+                    <p style="text-align:center; color:#94a3b8; padding:40px;">
+                        Počasí bude dostupné po připojení k OpenWeather API
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Crew -->
+        <div id="crew-page" class="hidden">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                <h2>👥 Posádka</h2>
+                <button class="btn">+ Přidat člena</button>
+            </div>
+            <div class="card">
+                <table>
+                    <thead>
+                        <tr><th>Jméno</th><th>Funkce</th><th>Státní příslušnost</th><th>Akce</th></tr>
+                    </thead>
+                    <tbody id="crew-table">
+                        <tr><td colspan="4" style="text-align:center; color:#94a3b8;">Žádní členové posádky</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Settings -->
+        <div id="settings-page" class="hidden">
+            <div class="card" style="max-width: 600px;">
+                <h2>⚙️ Nastavení</h2>
+                <div class="form-group">
+                    <label>Jazyk</label>
+                    <select id="setting-language">
+                        <option value="cs">Čeština</option>
+                        <option value="en">English</option>
+                        <option value="de">Deutsch</option>
+                        <option value="hr">Hrvatski</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>API URL</label>
+                    <input type="text" id="api-url" value="http://100.115.0.40:8000" readonly>
+                </div>
+                <button class="btn" onclick="saveSettings()">Uložit nastavení</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://100.115.0.40:8000/api/v1';
+        let token = localStorage.getItem('logbook_token');
+
+        function showPage(page) {
+            document.querySelectorAll('[id$="-page"]').forEach(el => el.classList.add('hidden'));
+            document.getElementById(page + '-page').classList.remove('hidden');
+            if (page === 'dashboard') loadDashboard();
+            if (page === 'logbook') loadLogbooks();
+        }
+
+        function showError(id, msg) {
+            const el = document.getElementById(id);
+            el.textContent = msg;
+            el.classList.remove('hidden');
+        }
+
+        async function handleLogin(e) {
+            e.preventDefault();
+            const username = document.getElementById('login-username').value;
+            const password = document.getElementById('login-password').value;
+            try {
+                const res = await fetch(API_BASE + '/auth/login/json', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+                if (!res.ok) throw new Error('Chyba přihlášení');
+                const data = await res.json();
+                token = data.access_token;
+                localStorage.setItem('logbook_token', token);
+                showPage('dashboard');
+            } catch (err) {
+                showError('login-error', err.message);
+            }
+        }
+
+        async function handleRegister(e) {
+            e.preventDefault();
+            const body = {
+                username: document.getElementById('reg-username').value,
+                email: document.getElementById('reg-email').value,
+                password: document.getElementById('reg-password').value,
+                full_name: document.getElementById('reg-fullname').value || null
+            };
+            try {
+                const res = await fetch(API_BASE + '/auth/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                });
+                if (!res.ok) {
+                    const err = await res.json();
+                    throw new Error(err.detail || 'Chyba registrace');
+                }
+                showPage('login');
+                showError('login-error', 'Registrace úspěšná! Přihlaste se.');
+            } catch (err) {
+                showError('register-error', err.message);
+            }
+        }
+
+        function logout() {
+            token = null;
+            localStorage.removeItem('logbook_token');
+            showPage('login');
+        }
+
+        async function apiFetch(path, opts = {}) {
+            const res = await fetch(API_BASE + path, {
+                ...opts,
+                headers: { ...opts.headers, 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
+            });
+            if (!res.ok) throw new Error(`API error: ${res.status}`);
+            return res.json();
+        }
+
+        async function loadDashboard() {
+            try {
+                const logbooks = await apiFetch('/logbooks/');
+                document.getElementById('stat-logbooks').textContent = logbooks.length;
+                document.getElementById('recent-logbooks').innerHTML = logbooks.length === 0
+                    ? '<p style="color:#94a3b8">Žádné deníky</p>'
+                    : logbooks.map(l => `<p>📖 ${l.title} <span class="badge badge-${l.status}">${l.status}</span></p>`).join('');
+            } catch (e) {
+                document.getElementById('recent-logbooks').innerHTML = '<p style="color:#ef4444">Chyba načítání</p>';
+            }
+        }
+
+        async function loadLogbooks() {
+            try {
+                const logbooks = await apiFetch('/logbooks/');
+                document.getElementById('entries-list').innerHTML = logbooks.length === 0
+                    ? '<p style="color:#94a3b8; text-align:center; padding:40px">Žádné deníky. Vytvořte první deník.</p>'
+                    : `<table><thead><tr><th>Název</th><th>Trasa</th><th>Status</th><th>Vytvořeno</th></tr></thead><tbody>`
+                      + logbooks.map(l => `<tr>
+                          <td>${l.title}</td>
+                          <td>${l.voyage_from || '?'} → ${l.voyage_to || '?'}</td>
+                          <td><span class="badge badge-${l.status}">${l.status}</span></td>
+                          <td>${new Date(l.created_at).toLocaleDateString('cs-CZ')}</td>
+                      </tr>`).join('')
+                      + '</tbody></table>';
+            } catch (e) {
+                document.getElementById('entries-list').innerHTML = '<p style="color:#ef4444">Chyba načítání</p>';
+            }
+        }
+
+        function showAddEntry() {
+            alert('Funkce přidání deníku bude dostupná v další verzi');
+        }
+
+        function saveSettings() {
+            alert('Nastavení uloženo');
+        }
+
+        // Init
+        if (token) {
+            showPage('dashboard');
+        } else {
+            showPage('login');
+        }
+    </script>
+</body>
+</html>

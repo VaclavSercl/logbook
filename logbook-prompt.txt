@@ -1,0 +1,2304 @@
+
+
+Ve složce logbook vytvoř a přiděl k tomu projektu nového Ai agenta. Ten Ai agent bude ovládat celý projekt logbook. Bude to vládce toho projektu. Ai agent se bude jmenovat Njoror. 
+
+
+
+Zde jsou promty. Prostuduj je. Důkladně analyzuj. Vyber to nejlepší. 
+Dej mi dokonalý návrh na celý systém logbook v souboru logbook.md
+Chci dobrý kód! Chci bezpečný kód! Chci opensource kód! 
+   
+Celý systém bude vytvářet a řídit Ai Njoror
+   
+
+https://chatgpt.com/share/6a073ce9-3aac-8328-9043-ed1c2b2793b9
+
+https://gemini.google.com/share/c9f1c0846af0
+
+Gemini
+Logbook
+Nový chat
+Můj obsah
+Roboti Gem
+
+Parťák v programování
+Chaty
+Logbook
+Analýza platformy Composio.dev
+Hermes Agent je aktuální
+Oprava Trezoru: RSOD a postup
+Hermes Agent: Kvantitativní obchodování, ne HFT
+Instalace LM Studia na Ubuntu
+Ostrovní systém: Definice a vysvětlení
+Jak používat samozavlažovací hadici
+Hermes 4 a čeština: Přehled
+Příkon tepelného čerpadla Toshiba Seiya
+Fox: LLM engine pro servery
+Instalace Linuxu na Hetzner Server
+Agent Hermes: Vývoj a Funkce
+Spuštění příkazového řádku v GeroCLAW
+Cold Calls: Skript, Sebehodnota a Autenticita
+Největší hráči vyvažování energetické sítě
+Význam "Linky" v kontextu Bitcoinu
+Obchodník vs. Markeťák: Klíčové rozdíly
+Jak smazat všechny zprávy v Gmailu
+Jak smazat fotky z Google
+Lehečka chodí s Neumannovou
+Cena analýzy ERP systému
+Vyhledání majitele telefonního čísla
+Transnet: Výpadek webu a hledání kontaktů
+Telefon na firmu TUFO
+Vylepšení pozvánky na online schůzku
+Nenalezené kontakty na internetu
+Zlepšení textu pro budoucí klienty
+Analýza a kontakty Apertia a AutoERP
+Informace o firmě 1 Steps s.r.o.
+Co je Homebrew: Správce balíčků
+Přepnutí do domovské složky v Ubuntu
+Nové modely Google Gemma
+Done servis s.r.o. - Korejské speciality
+
+Aktivita
+
+Nastavení a nápověda
+Česko
+Z vašeho zařízení
+•
+Aktualizovat polohu
+Konverzace s Gemini
+Potřebuji nutně vytvořit lodní deník. bude mít www rozhraní, responzivní pro počítače, tablety, telefony.
+
+Bude mít frontend a backend. Bude multijazyčný.bude mít přihlášení pomocí jména a hesla.
+
+Projdi legislativu všech států, a najdi jak má takový lodní deník vypadat a co musí obsahovat. Dej důraz i na předpisy a zákony české republiky.
+
+Deník bude modulární! Bude mít nějaké jádro, které Bude řízené umělou inteligencí a další moduly - například: Počasí, mapu, zakreslování trasy do mapy, Ukládání fotek a videí se souřadnicema a ukládání fotek do mapy, organizace hlídek, lodní pokladna a podobně. Jednotlivé moduly se musejí dát postupně přidávat, nebo ubírat a zapínat a vypínat ve frontendu...
+
+Samotný deník bude zaznamenávat a psát umělá inteligence, Podle toho kde se zrovna loď nachází, kolik ujela mil, za jaký čas, jakou průměrnou rychlostí, jaké bylo počasí a podobně.
+
+Bude mít možnost editace a uložení do PDF.
+
+Důkladně analyzuj, projdi celý internet.
+
+Vytvoř mi dokonalý prompt!
+
+To je ambiciózní a technicky velmi zajímavý projekt, Václave. Vzhledem k tvým zkušenostem s vývojem ERP systémů a implementací AI agentů (Apertia.ai) je mi jasné, že ti nejde jen o "digitální zápisník", ale o robustní SaaS řešení pro jachtaře a charterové firmy.
+
+Tady je podrobná analýza a následně onen "dokonalý prompt".
+
+1. Legislativní rámec (ČR a Středomoří)
+Podle zákona č. 61/2000 Sb. o námořní plavbě a související vyhlášky č. 278/2000 Sb. musí lodní deník splňovat tyto náležitosti:
+
+Identifikace: Jméno lodi, rejstříkové číslo (IMO/MMSI), rejstříkový přístav.
+
+Posádka: Seznam osob (Crew List) – jméno, příjmení, datum narození, státní příslušnost, číslo pasu a funkce na lodi. Musí být zapsáno před vyplutím.
+
+Technické údaje: Stav paliva, vody, nabití akumulátorů.
+
+Záznam plavby:
+
+Čas a místo vyplutí/připlutí.
+
+Průběžná pozice (v intervalech, obvykle 1-4 hodiny dle typu plavby).
+
+Kurs a rychlost lodi (COG, SOG).
+
+Stav počasí (vítr, moře, viditelnost, tlak).
+
+Mimořádné události (nehody, poruchy, manévry MOB).
+
+Integrita dat: Elektronický deník musí být zabezpečen proti zpětné editaci bez záznamu o změně (tamper-proof). Každý den musí být "uzavřen" a podepsán velitelem (v digitální podobě např. časovým razítkem nebo elektronickým podpisem).
+
+2. Architektonické doporučení pro vývoj
+Tech Stack: Frontend v Next.js (PWA pro offline režim na moři), Backend v Rustu (vzhledem k tvé oblibě v HFT-Sniperu bude ideální pro rychlé zpracování telemetrie) nebo Pythonu (pro snadnou integraci AI).
+
+AI Jádro: Využití LLM (např. GPT-4o nebo lokální Llama přes tvůj Docker/OpenClaw setup) pro generování narativního deníku z raw GPS dat a meteo API.
+
+3. Dokonalý Prompt
+Tento prompt je navržen pro AI architekta/vývojáře, aby ti vygeneroval kompletní technickou specifikaci, databázové schéma a roadmapu.
+
+Prompt (Zkopíruj a vlož):
+
+"Působíš jako Senior Full-stack Architekt a specialista na námořní systémy. Navrhni kompletní technickou specifikaci a MVP plán pro aplikaci 'Smart Mariner Logbook'.
+
+Cíl: Modulární SaaS platforma (PWA) pro vedení lodního deníku řízeného AI, splňující legislativu IMO a český Zákon o námořní plavbě (61/2000 Sb.).
+
+Klíčové parametry:
+
+Architektura: Navrhni mikro-modulární systém. Jádro (Auth, GPS Logger, AI Processor) + plug-and-play moduly (Meteo, Interactive Map, Media Vault s EXIF/GPS, Watch Organizer, Cashflow).
+
+AI Engine: Popiš logiku, jak AI transformuje raw data (lat/lon, čas, SOG, meteo API) do čtivého, profesionálního námořního slohu v souladu s kapitánskou etikou.
+
+Legislativní soulad: Implementuj 'Immutability Log' (ochrana proti neoprávněné editaci po uzavření dne) a generování oficiálního PDF v CZ/EN verzi s digitálním podpisem.
+
+Datový model: Navrhni schéma pro PostgreSQL/Prisma, které efektivně ukládá telemetrická data a vazby na multimédia.
+
+Multijazyčnost: Systém pro i18n (primárně CZ, EN, HR, IT, GR).
+
+Offline-First: Specifikuj synchronizační logiku pro situace bez signálu na otevřeném moři.
+
+Výstup očekávám v těchto krocích:
+A) Podrobný funkční popis modulů a jejich interakce.
+B) Návrh API endpointů pro AI zápis.
+C) Wireframe logiku frontendu (responzivita pro tablety v kokpitu).
+D) Roadmapa vývoje (MVP do 3 měsíců).
+
+Piš technicky, stručně, s důrazem na bezpečnost dat a škálovatelnost."
+
+Můj tip pro tebe:
+Protože provozuješ e-shop polarita.eu, mohl bys tento systém později propojit s hardwarem pro monitoring baterií nebo nabíjení elektromobilů/lodí, což by tvůj produkt odlišilo od veškeré konkurence (typu Navionics nebo Nebo).
+
+Pokud budeš chtít pomoci s konkrétním kódem v Rustu pro ten backendový logger, dej vědět!
+
+Potřebuji nutně vytvořit lodní deník. bude mít www rozhraní, responzivní pro počítače, tablety, telefony. 
+
+Bude mít frontend a backend. Bude multijazyčný.bude mít přihlášení pomocí jména a hesla. 
+
+Projdi legislativu všech států, a najdi jak má takový lodní deník vypadat a co musí obsahovat. Dej důraz i na předpisy a zákony české republiky. 
+
+Deník bude modulární! Bude mít nějaké jádro, které Bude řízené umělou inteligencí a další moduly - například: Počasí, mapu, zakreslování trasy do mapy, Ukládání fotek a videí se souřadnicema a ukládání fotek do mapy, organizace hlídek, lodní pokladna a podobně. Jednotlivé moduly se musejí dát postupně přidávat, nebo ubírat a zapínat a vypínat ve frontendu... 
+
+Samotný deník bude zaznamenávat a psát umělá inteligence, Podle toho kde se zrovna loď nachází, kolik ujela mil, za jaký čas, jakou průměrnou rychlostí, jaké bylo počasí a podobně. 
+
+Bude mít možnost editace a uložení do PDF. 
+
+Důkladně analyzuj, projdi celý internet. 
+
+Vytvoř mi dokonalý prompt!
+
+Odpověď jste zastavili
+Potřebuji nutně vytvořit lodní deník. bude mít www rozhraní, responzivní pro počítače, tablety, telefony. 
+
+Bude mít frontend a backend. Bude multijazyčný.bude mít přihlášení pomocí jména a hesla. 
+
+Projdi legislativu všech států, a najdi jak má takový lodní deník vypadat a co musí obsahovat. Dej důraz i na předpisy a zákony české republiky. 
+
+Deník bude modulární! Bude mít nějaké jádro, které Bude řízené umělou inteligencí a další moduly - například: Počasí, mapu, zakreslování trasy do mapy, Ukládání fotek a videí se souřadnicema a ukládání fotek do mapy, organizace hlídek, lodní pokladna a podobně. Jednotlivé moduly se musejí dát postupně přidávat, nebo ubírat a zapínat a vypínat ve frontendu... 
+
+Samotný deník bude zaznamenávat a psát umělá inteligence, Podle toho kde se zrovna loď nachází, kolik ujela mil, za jaký čas, jakou průměrnou rychlostí, jaké bylo počasí a podobně. 
+
+Bude mít možnost editace a uložení do PDF. 
+
+Důkladně analyzuj, projdi celý internet. 
+
+Vytvoř mi dokonalý prompt!
+
+Vše musí být postaveno na opensource technologiích! 
+
+To je skvělý nápad, který přesně propojuje moderní technologie s praktickou námořní praxí. Vzhledem k tomu, že se pohybujeme v roce 2026, technologie pro lokální AI a zpracování telemetrie jsou v ideálním bodě pro realizaci takového projektu.
+
+Nejdříve se podívejme na to, co musí systém splňovat z hlediska práva, a poté sestavíme onen „dokonalý prompt“.
+
+1. Legislativní požadavky (Analýza)
+Většina států, včetně České republiky (podle Zákona o námořní plavbě č. 61/2000 Sb. a vyhlášky č. 278/2000 Sb.), vyžaduje, aby lodní deník (Logbook) splňoval tyto standardy:
+
+Identifikace: Jméno lodi, volací znak, MMSI, jméno velitele a seznam posádky (Crew List).
+
+Časová integrita: Zápisy musí být chronologické. U elektronických deníků (dle IMO rezoluce A.916(22)) musí být zajištěno, že záznamy nelze zpětně mazat bez ponechání stopy (tzv. Audit Trail).
+
+Povinný obsah: Pozice lodi (minimálně při změně kurzu nebo v pravidelných intervalech), kurz (COG), rychlost (SOG), stav moře a počasí (vítr, tlak, viditelnost), stav zásob (palivo, voda), motorové hodiny a veškeré mimořádné události.
+
+Podpis: Denní uzávěrka musí být stvrzena kapitánem (v digitální formě např. kryptografickým hashem nebo časovým razítkem).
+
+2. Navržený Open-Source Tech Stack
+Pro tvůj projekt jsou ideální tyto technologie:
+
+Frontend: Next.js nebo Vue.js (responzivní, skvělá podpora pro PWA – důležité pro offline režim na moři).
+
+Backend: FastAPI (Python) – ideální pro AI integrace, nebo Rust (Axum) – pro extrémní stabilitu a výkon při zpracování GPS dat.
+
+Databáze: PostgreSQL s rozšířením PostGIS (nezbytné pro práci s mapovými souřadnicemi a trasami).
+
+AI: Ollama nebo LocalAI (pro běh lokálních modelů jako Llama 3 nebo Mistral přímo na lodním serveru bez nutnosti internetu).
+
+Mapy: Leaflet nebo MapLibre GL (využívající OpenStreetMap data).
+
+PDF: Puppeteer nebo WeasyPrint.
+
+3. Dokonalý Prompt
+Tento prompt je navržen tak, aby AI (v roli systémového architekta) vygenerovala kompletní plán implementace.
+
+Prompt:
+"Působíš jako Senior Full-stack Architekt a specialista na námořní systémy. Navrhni technickou specifikaci a architekturu pro aplikaci 'AI-Driven Modular Logbook'.
+
+Hlavní požadavky:
+
+Legislativní shoda: Systém musí splňovat požadavky IMO a české vyhlášky č. 278/2000 Sb. (zejména integrita dat, audit trail a export do PDF formátu 'Official Logbook').
+
+Modulární jádro: Navrhni mikro-architekturu, kde 'Core' zajišťuje auth, GPS tracking a AI narativ. Ostatní funkce (Počasí přes OpenWeather API, Mapy s PostGIS, Media Vault s EXIF daty, Watch Organizer, Cashflow) musí být samostatné moduly, které lze dynamicky zapínat/vypínat v UI.
+
+AI Automatizace: Navrhni logiku pro AI agenta, který na základě raw telemetrie (timestamp, lat/lon, SOG, COG, meteo) generuje lidsky čitelný zápis v námořnickém stylu (např. 'Plavba na kurz 180°, vítr mírný, loď se chová stabilně...').
+
+Open-Source Stack: Použij výhradně open-source nástroje (navrhni konkrétní volbu pro frontend, backend a databázi s ohledem na výkon a offline-first přístup).
+
+Multijazyčnost: Systém musí být připraven na i18n (CZ/EN/HR).
+
+UX/UI: Popiš rozhraní, které bude snadno ovladatelné na tabletu v náklonu lodi a při přímém slunci (vysoký kontrast).
+
+Očekávaný výstup:
+
+ER diagram databáze (zjednodušeně).
+
+Seznam API endpointů pro AI zápis.
+
+Logika 'uzavření dne' a generování PDF.
+
+Strategie pro synchronizaci dat mezi lokálním lodním serverem (např. Docker na Raspberry/NUC) a cloudem."
+
+Pár tipů pro realizaci:
+Offline-First: Na moři není internet samozřejmostí. Celá aplikace by měla běžet v Dockeru lokálně na lodi a synchronizovat se s "velkým" internetem, až když chytneš 4G/5G v přístavu nebo Starlink.
+
+NMEA 0183/2000: Pokud bys chtěl jít do extrému, můžeš aplikaci napojit na sběrnici lodi (přes Signal K), aby AI věděla i o hloubce pod kýlem nebo teplotě motoru.
+
+Geofencing: AI může automaticky poznat, kdy jsi opustil marinu a začít psát deník bez tvého zásahu.
+
+Tento přístup ti umožní vytvořit profesionální nástroj, který můžeš využít jak pro své jachtařské výpravy v Řecku, tak jej potenciálně nabízet jako produkt. Mám se zaměřit na detailnější návrh nějakého konkrétního modulu, třeba té lodní pokladny nebo AI narace?
+
+Navrhni jak jednoduše a levně logovat GPS souřadnice. Analyzuj. Najdi na internetu nějaký nástroj, nějaký hardware.
+
+Pro jachtařský projekt, kde je kladen důraz na open-source a nízkou cenu, se nabízí několik cest. Analýza ukazuje, že nejvýhodnější je rozdělit řešení na sběr dat (Hardware) a zpracování dat (Software/Protokol).
+
+Zde je přehled nejefektivnějších způsobů, jak levně logovat GPS:
+
+1. Hardware: Nejlevnější a nejjednodušší varianty
+A. DIY varianta: ESP32 + GPS Modul (Cena: cca 300–500 Kč)
+Toto je pro technicky zdatné uživatele nejlevnější cesta.
+
+Komponenty: Mikrokontrolér ESP32 (s Wi-Fi a Bluetooth) a GPS modul u-blox NEO-6M nebo NEO-8M.
+
+Výhody: Extrémně nízká spotřeba, možnost napájení přímo z 12V sítě lodi (přes měnič na 5V).
+
+Software: Lze použít open-source firmware ESPHome nebo Tasmota, které umí posílat data přes HTTP nebo MQTT přímo do vašeho backendu.
+
+B. Plug & Play varianta: USB GPS Dongle (Cena: cca 400–700 Kč)
+Pokud bude na lodi běžet centrální počítač (např. Raspberry Pi nebo starší notebook), stačí USB dongle.
+
+Produkt: G-Mouse USB GPS (čip u-blox7).
+
+Použití: Stačí zapojit do USB. V systému se objeví jako sériový port, ze kterého lze číst standardní NMEA věty.
+
+C. Průmyslová varianta: SinoTrack ST-901 (Cena: cca 500 Kč)
+I když jde o "automobilový" tracker, je ideální pro lodě.
+
+Vlastnosti: Je vodotěsný, má záložní baterii a pracuje v rozsahu 9–80V.
+
+Hack: Nemusíte používat jejich čínský cloud. Tracker lze nakonfigurovat tak, aby posílal data na vaši vlastní IP adresu (váš backend).
+
+2. Software pro logování (Open-source nástroje)
+Aby se data jen nesypala do databáze, ale měla řád, je dobré využít existující standardy:
+
+A. Traccar (Zlatý standard open-source trackingu)
+Traccar je nejpopulárnější open-source platforma pro sledování polohy.
+
+Funkce: Podporuje stovky protokolů (včetně výše zmíněného SinoTracku nebo mobilních aplikací).
+
+Integrace: Má skvělé API. Váš lodní deník se může jednoduše dotazovat Traccaru: "Kde byla loď mezi 10:00 a 12:00?" a dostane hotovou trasu.
+
+Běh: Snadno jej spustíte v Dockeru.
+
+B. Signal K (Námořní standard)
+Pro seriózní jachting je Signal K nezbytností.
+
+Analýza: Je to open-source datový server pro lodě. Umí číst data z GPS, ale i z motoru, hloubkoměru nebo baterií (přes NMEA 2000).
+
+Pro váš projekt: Pokud chcete logovat i náklon lodi, hloubku nebo sílu větru pro AI deník, Signal K je nejlepší volba pro sjednocení všech dat do jednoho JSON formátu.
+
+3. Návrh jednoduchého integračního řetězce
+Pokud chcete začít hned a nejlevněji, doporučuji toto sestavení:
+
+Hardware: USB GPS Dongle zapojený do serveru (Raspberry Pi/Mini PC), na kterém běží váš systém.
+
+Sběr dat: Program v Pythonu (pomocí knihovny pyserial) čte každých 5 minut NMEA větu $GPRMC (obsahuje čas, lat, lon, rychlost a kurz).
+
+Ukládání: Data se ukládají do PostgreSQL (PostGIS).
+
+AI Trigger: Každých 24 hodin (nebo při doplutí) vezme váš AI modul tato data z databáze a vygeneruje textový zápis.
+
+Příklad raw dat, která AI dostane pro tvorbu deníku:
+
+JSON
+{
+  "trip_id": "ae-2026-05",
+  "data": [
+    {"ts": "2026-05-15T10:00Z", "pos": [37.93, 23.68], "sog": 0.2, "cog": 0},
+    {"ts": "2026-05-15T12:00Z", "pos": [37.85, 23.72], "sog": 6.5, "cog": 175},
+    {"ts": "2026-05-15T14:00Z", "pos": [37.70, 23.85], "sog": 5.8, "cog": 160}
+  ]
+}
+Z těchto tří bodů AI pozná: vyplutí z mariny (Atény), plavbu na jihovýchod průměrnou rychlostí kolem 6 uzlů a urazení cca 15 námořních mil.
+
+Která z těchto cest (DIY vs. hotový tracker) vám pro integraci do vašeho systému dává největší smysl?
+
+Verze Pro je momentálně velmi žádaná
+K vygenerování téhle odpovědi byl použit jiný model. Nezapočítala se vám do limitu.
+
+
+
+
+
+
+
+Potřebuji nutně vytvořit lodní deník. bude mít www rozhraní, responzivní pro počítače, tablety, telefony. 
+Bude mít frontend a backend. Bude multijazyčný.bude mít přihlášení pomocí jména a hesla. 
+Projdi legislativu všech států, a najdi jak má takový lodní deník vypadat a co musí obsahovat. Dej důraz i na předpisy a zákony české republiky. 
+Deník bude modulární! Bude mít nějaké jádro, které Bude řízené umělou inteligencí a další moduly - například: Počasí, mapu, zakreslování trasy do mapy, Ukládání fotek a videí se souřadnicema a ukládání fotek do mapy, organizace hlídek, lodní pokladna a podobně. Jednotlivé moduly se musejí dát postupně přidávat, nebo ubírat a zapínat a vypínat ve frontendu... 
+Samotný deník bude zaznamenávat a psát umělá inteligence, Podle toho kde se zrovna loď nachází, kolik ujela mil, za jaký čas, jakou průměrnou rychlostí, jaké bylo počasí a podobně. 
+Bude mít možnost editace a uložení do PDF. 
+Důkladně analyzuj, projdi celý internet. 
+Vytvoř mi dokonalý prompt!
+
+Tady je profesionální „master prompt“ pro návrh a implementaci inteligentního modulárního lodního deníku nové generace. Prompt je napsaný tak, aby ho bylo možné použít pro:
+
+OpenAI API
+
+Claude API
+
+Nous Research Hermes Agent
+
+vlastní AI orchestraci
+
+generování architektury, backendu, frontendu, databáze i workflow
+
+Prompt obsahuje:
+
+legislativní analýzu
+
+architekturu systému
+
+AI logiku
+
+modulární systém
+
+UX/UI požadavky
+
+bezpečnost
+
+PDF export
+
+offline režim
+
+GPS/AIS integrace
+
+auditní stopu
+
+multijazyčnost
+
+enterprise-grade návrh
+
+Klíčové právní podklady:
+
+Český zákon o námořní plavbě 61/2000 Sb. explicitně požaduje lodní deník a další lodní knihy. 
+
+Česká legislativa uznává lodní deníky jako veřejné listiny s právním významem. 
+
+Mezinárodní námořní praxe (SOLAS/STCW/COLREG/IMO) vyžaduje průběžné záznamy o navigaci, počasí, změnách kurzu, posádce, incidentech, bezpečnosti a provozu. 
+
+MASTER PROMPT
+Vytvoř kompletní profesionální návrh a implementační specifikaci moderního inteligentního lodního deníku (Smart AI Maritime Logbook Platform) pro rekreační i profesionální námořní a vnitrozemskou plavbu.
+
+Systém musí být:
+
+webový
+
+cloud-native
+
+responzivní
+
+modulární
+
+multijazyčný
+
+offline-first
+
+AI-driven
+
+enterprise-grade
+
+připravený pro budoucí legislativní certifikace
+
+==================================================
+
+HLAVNÍ CÍL SYSTÉMU
+==================================================
+
+Systém bude fungovat jako:
+
+oficiální lodní deník
+
+navigační asistent
+
+AI kapitánský asistent
+
+centrální datová platforma plavidla
+
+provozní a bezpečnostní systém
+
+archiv plavby
+
+právně relevantní evidence
+
+AI musí automaticky generovat záznamy do lodního deníku na základě:
+
+GPS polohy
+
+AIS dat
+
+rychlosti
+
+kurzu
+
+uplutých mil
+
+počasí
+
+času
+
+změn směru
+
+událostí
+
+senzorů
+
+fotografií
+
+videí
+
+hlasových poznámek
+
+údajů posádky
+
+Proveď důkladnou právní analýzu:
+
+IMO
+
+SOLAS
+
+STCW
+
+COLREG
+
+MARPOL
+
+UNCLOS
+
+MCA UK
+
+US Coast Guard
+
+EU maritime regulations
+
+český zákon 61/2000 Sb.
+
+vyhlášku 278/2000 Sb.
+
+českou Státní plavební správu
+
+požadavky charter společností
+
+požadavky pojišťoven
+
+elektronické podpisy
+
+archivaci dokumentů
+
+GDPR
+
+eIDAS
+
+auditní požadavky
+
+Systém musí podporovat:
+
+právní věrohodnost záznamů
+
+auditní stopu
+
+neměnitelnost záznamů
+
+digitální podpisy
+
+časová razítka
+
+export pro úřady
+
+export pro pojišťovny
+
+export pro vyšetřování nehod
+
+Navrhni strukturu deníku podle mezinárodních standardů.
+
+Každý záznam musí umět obsahovat:
+
+datum
+
+UTC čas
+
+lokální čas
+
+GPS pozici
+
+přístav
+
+kurz
+
+rychlost
+
+upluté míle
+
+počasí
+
+směr větru
+
+sílu větru
+
+tlak
+
+stav moře
+
+viditelnost
+
+stav motoru
+
+spotřebu paliva
+
+stav baterií
+
+posádku
+
+změny hlídek
+
+návštěvy přístavů
+
+tankování
+
+opravy
+
+nehody
+
+manévry
+
+kotvení
+
+vyplutí
+
+připlutí
+
+fotografie
+
+video
+
+hlasové poznámky
+
+AI komentáře
+
+bezpečnostní události
+
+AIS okolních lodí
+
+automatické shrnutí dne
+
+AI musí umět:
+
+automaticky generovat záznamy
+
+sumarizovat plavbu
+
+detekovat anomálie
+
+navrhovat zápisy
+
+upozorňovat na chyby
+
+generovat kapitánské reporty
+
+Navrhni plugin-based architekturu.
+
+Jádro systému:
+
+autentizace
+
+uživatelé
+
+role
+
+AI orchestrátor
+
+event bus
+
+audit log
+
+lokalizace
+
+konfigurace
+
+licensing
+
+storage layer
+
+sync engine
+
+notification engine
+
+Moduly:
+
+Lodní deník
+
+Počasí
+
+AIS
+
+GPS tracking
+
+Mapy
+
+Navigace
+
+Zakreslování tras
+
+Anchoring
+
+Geofencing
+
+Posádka
+
+Organizace hlídek
+
+Úkoly
+
+Checklisty
+
+Lodní pokladna
+
+Palivové hospodářství
+
+Údržba plavidla
+
+Servisní historie
+
+Fotogalerie
+
+Videoarchiv
+
+Dokumenty
+
+SOS režim
+
+Incident management
+
+Satelitní komunikace
+
+Offline synchronizace
+
+AI analytika
+
+Statistiky
+
+Exporty
+
+PDF generátor
+
+Meteorologické overlaye
+
+Tide module
+
+Marina management
+
+Charter režim
+
+Každý modul musí jít:
+
+instalovat
+
+odinstalovat
+
+aktivovat
+
+deaktivovat
+
+aktualizovat nezávisle
+
+AI orchestrátor musí:
+
+řídit automatické zápisy
+
+analyzovat trasu
+
+analyzovat počasí
+
+analyzovat rizika
+
+doporučovat akce
+
+generovat reporty
+
+sumarizovat plavbu
+
+detekovat kolize dle COLREG
+
+detekovat nebezpečné situace
+
+generovat hlasové odpovědi
+
+podporovat voice-to-log
+
+Použij:
+
+LLM orchestration
+
+RAG
+
+vector database
+
+agent system
+
+tool calling
+
+realtime streams
+
+multimodal AI
+
+Frontend musí být:
+
+responzivní
+
+PWA
+
+mobile-first
+
+tablet optimized
+
+dark/light mode
+
+offline capable
+
+Technologie:
+
+Next.js
+
+React
+
+TypeScript
+
+Tailwind
+
+Zustand nebo Redux
+
+Mapbox nebo Leaflet
+
+WebSockets
+
+IndexedDB
+
+Obrazovky:
+
+Dashboard
+
+Lodní deník
+
+Mapa
+
+Počasí
+
+Posádka
+
+Galerie
+
+Nastavení
+
+Správa modulů
+
+AI asistent
+
+Timeline plavby
+
+Statistiky
+
+Exporty
+
+Backend:
+
+microservices
+
+API-first
+
+event-driven
+
+scalable
+
+dockerized
+
+Kubernetes-ready
+
+Technologie:
+
+FastAPI nebo NestJS
+
+PostgreSQL
+
+TimescaleDB
+
+Redis
+
+Kafka nebo NATS
+
+MinIO/S3
+
+Vector DB
+
+ElasticSearch
+
+GraphQL + REST
+
+Požadavky:
+
+realtime sync
+
+websocket streams
+
+RBAC
+
+JWT/OAuth2
+
+MFA
+
+audit logs
+
+encryption
+
+backups
+
+disaster recovery
+
+Implementuj:
+
+realtime tracking
+
+GPX export/import
+
+route replay
+
+heatmaps
+
+anchoring zones
+
+marina layers
+
+AIS overlay
+
+weather overlay
+
+satellite maps
+
+offline nautical charts
+
+Podporuj:
+
+OpenSeaMap
+
+Navionics
+
+OpenStreetMap
+
+NOAA
+
+AIS feeds
+
+Systém musí být plně lokalizovatelný.
+
+Jazyky:
+
+čeština
+
+angličtina
+
+němčina
+
+chorvatština
+
+italština
+
+francouzština
+
+španělština
+
+AI musí:
+
+generovat logy v různých jazycích
+
+automaticky překládat
+
+zachovávat terminologii námořnictví
+
+Systém musí generovat:
+
+oficiální lodní deník PDF
+
+právně archivovatelná PDF/A
+
+export pro úřady
+
+export pro pojišťovny
+
+export GPX
+
+export CSV
+
+export JSON
+
+export XML
+
+PDF musí obsahovat:
+
+digitální podpis
+
+hash integrity
+
+QR validaci
+
+metadata
+
+audit trail
+
+Systém musí fungovat bez internetu.
+
+Požadavky:
+
+lokální databáze
+
+synchronizační fronta
+
+konflikt resolution
+
+delayed upload
+
+offline mapy
+
+offline AIS cache
+
+Implementuj:
+
+zero-trust security
+
+E2E encryption
+
+role-based access
+
+immutable audit logs
+
+anomaly detection
+
+secure backups
+
+anti-tamper protection
+
+Navrhni:
+
+ER diagram
+
+tabulky
+
+vztahy
+
+indexy
+
+timeseries model
+
+audit model
+
+geo model
+
+media storage model
+
+Navrhni:
+
+REST API
+
+GraphQL API
+
+WebSocket API
+
+plugin API
+
+AI API
+
+mobile API
+
+Rozděl projekt na:
+
+MVP
+
+Beta
+
+Production
+
+Enterprise
+
+Maritime certified edition
+
+Vytvoř:
+
+Kompletní systémovou architekturu
+
+Technologický stack
+
+Databázový návrh
+
+API specifikaci
+
+UI/UX návrh
+
+Modulární architekturu
+
+AI orchestration návrh
+
+Bezpečnostní model
+
+DevOps návrh
+
+Roadmapu vývoje
+
+Monetizační model
+
+Návrh deploye
+
+Návrh CI/CD
+
+Návrh cloud infrastruktury
+
+Návrh offline synchronizace
+
+Návrh plugin systému
+
+Návrh AI agentů
+
+Návrh PDF systému
+
+Návrh auditního systému
+
+Návrh legislativní compliance vrstvy
+
+Výstup musí být:
+
+detailní
+
+profesionální
+
+produkčně použitelný
+
+enterprise-grade
+
+technologicky realistický
+
+bezpečný
+
+moderní
+
+škálovatelný
+
+připravený pro reálné nasazení
+
+Doporučuji celý systém postavit kolem těchto technologií:
+
+Frontend: Next.js + React
+
+Backend: FastAPI nebo NestJS
+
+Mapy: Mapbox + OpenSeaMap
+
+AI orchestrace: LangChain nebo LangGraph
+
+Vector DB: Qdrant
+
+Realtime messaging: NATS
+
+Storage: MinIO
+
+Charts: Apache ECharts
+
+PDF: PDFKit
+
+Offline sync: PouchDB + CouchDB
+
+Aby byl projekt opravdu profesionální, doporučuji inspirovat se:
+
+International Maritime Organization
+
+International Hydrographic Organization
+
+European Maritime Safety Agency
+
+Státní plavební správa
+
+Ministerstvo dopravy České republiky
+
+Právní základ české části:
+
+Zákon 61/2000 Sb. o námořní plavbě
+
+Vyhláška 278/2000 Sb.
+
+Státní plavební správa
+
+
+
+Potřebuji nutně vytvořit lodní deník. bude mít www rozhraní, responzivní pro počítače, tablety, telefony. 
+Bude mít frontend a backend. Bude multijazyčný.bude mít přihlášení pomocí jména a hesla. 
+Projdi legislativu všech států, a najdi jak má takový lodní deník vypadat a co musí obsahovat. Dej důraz i na předpisy a zákony české republiky. 
+Deník bude modulární! Bude mít nějaké jádro, které Bude řízené umělou inteligencí a další moduly - například: Počasí, mapu, zakreslování trasy do mapy, Ukládání fotek a videí se souřadnicema a ukládání fotek do mapy, organizace hlídek, lodní pokladna a podobně. Jednotlivé moduly se musejí dát postupně přidávat, nebo ubírat a zapínat a vypínat ve frontendu... 
+Samotný deník bude zaznamenávat a psát umělá inteligence, Podle toho kde se zrovna loď nachází, kolik ujela mil, za jaký čas, jakou průměrnou rychlostí, jaké bylo počasí a podobně. 
+Bude mít možnost editace a uložení do PDF. 
+Důkladně analyzuj, projdi celý internet. 
+Vytvoř mi dokonalý prompt!
+Vše musí být postaveno na opensource technologiích! 
+
+Tohle už není obyčejný „lodní deník“.
+Tohle je enterprise-grade AI Maritime Operating System.
+
+Aby to bylo opravdu použitelné v reálném světě, musíš systém navrhnout podle:
+
+IMO standardů
+
+SOLAS
+
+COLREG
+
+STCW
+
+MARPOL
+
+EU maritime compliance
+
+české legislativy
+
+auditních pravidel
+
+GDPR
+
+eIDAS
+
+principů digitálních důkazů
+
+A hlavně:
+NESMÍ to být „jen webová aplikace“.
+
+Musí to být:
+
+modulární platforma
+
+event-driven systém
+
+offline-first aplikace
+
+AI orchestrátor
+
+geospatial systém
+
+realtime stream processing
+
+multimodální AI platforma
+
+A protože chceš 100% open-source stack, musí se vyhnout vendor lock-inu.
+
+Níže máš profesionální MASTER PROMPT pro generování kompletní architektury, implementace i AI orchestrace.
+
+OPEN SOURCE AI MARITIME LOGBOOK — MASTER PROMPT
+Vytvoř kompletní produkční návrh moderního AI řízeného lodního deníku nové generace (AI Maritime Logbook Platform).
+
+Systém NESMÍ být obyčejný lodní deník.
+
+Musí to být:
+
+AI řízený maritime operating system
+
+modulární platforma
+
+cloud-native systém
+
+offline-first aplikace
+
+event-driven architektura
+
+auditovatelný právní systém
+
+realtime navigační platforma
+
+enterprise-grade infrastruktura
+
+Celý systém musí být postaven POUZE na OPEN SOURCE technologiích.
+
+Nesmí existovat vendor lock-in.
+
+Proveď důkladnou analýzu:
+
+IMO
+
+SOLAS
+
+STCW
+
+COLREG
+
+MARPOL
+
+UNCLOS
+
+EMSA
+
+MCA UK
+
+US Coast Guard
+
+EU maritime law
+
+český zákon 61/2000 Sb.
+
+vyhlášku 278/2000 Sb.
+
+Státní plavební správu
+
+GDPR
+
+eIDAS
+
+archivaci dokumentů
+
+elektronické podpisy
+
+auditní požadavky
+
+charter požadavky
+
+pojišťovací požadavky
+
+Zjisti:
+
+jak má oficiální lodní deník vypadat
+
+jaké položky musí obsahovat
+
+které údaje jsou povinné
+
+jak dlouho se archivují
+
+jak mají být podepisovány
+
+jaké jsou požadavky na auditní stopu
+
+jak řešit právní důvěryhodnost elektronického deníku
+
+Zaměř se zejména na Českou republiku.
+
+Systém musí podporovat:
+
+datum
+
+UTC čas
+
+lokální čas
+
+GPS souřadnice
+
+kurz
+
+rychlost
+
+upluté míle
+
+průměrnou rychlost
+
+stav moře
+
+počasí
+
+vítr
+
+tlak
+
+viditelnost
+
+AIS okolních lodí
+
+změny kurzu
+
+změny směru
+
+manévry
+
+vyplutí
+
+připlutí
+
+kotvení
+
+tankování
+
+spotřebu paliva
+
+stav baterií
+
+servis
+
+opravy
+
+nehody
+
+incidenty
+
+bezpečnostní události
+
+členy posádky
+
+směny hlídek
+
+návštěvy marin
+
+přístavní poplatky
+
+lodní pokladnu
+
+fotografie
+
+videa
+
+hlasové poznámky
+
+AI generované shrnutí plavby
+
+AI musí automaticky generovat záznamy na základě:
+
+GPS
+
+AIS
+
+geolokace
+
+rychlosti
+
+kurzu
+
+času
+
+počasí
+
+API dat
+
+senzorů
+
+fotografií
+
+videí
+
+hlasu
+
+událostí systému
+
+AI musí umět:
+
+automaticky psát lodní deník
+
+sumarizovat plavbu
+
+analyzovat trasu
+
+analyzovat počasí
+
+analyzovat rizika
+
+upozorňovat na kolize
+
+detekovat nebezpečné situace
+
+detekovat anomálie
+
+doporučovat kapitánovi akce
+
+generovat denní reporty
+
+generovat PDF reporty
+
+generovat právně použitelný export
+
+Použij:
+
+LLM orchestration
+
+AI agents
+
+RAG
+
+vector database
+
+multimodal AI
+
+event processing
+
+realtime streams
+
+Navrhni:
+
+microservices
+
+event-driven architekturu
+
+plugin systém
+
+modulární jádro
+
+realtime synchronizaci
+
+offline-first architekturu
+
+distributed processing
+
+Frontend:
+
+Next.js
+
+React
+
+TypeScript
+
+Tailwind
+
+Zustand
+
+PWA
+
+IndexedDB
+
+Backend:
+
+FastAPI
+
+Python
+
+PostgreSQL
+
+TimescaleDB
+
+PostGIS
+
+Redis
+
+NATS
+
+Kafka
+
+MinIO
+
+Qdrant
+
+ElasticSearch
+
+AI:
+
+Ollama
+
+vLLM
+
+llama.cpp
+
+Hermes
+
+DeepSeek
+
+Qwen
+
+LangChain
+
+LangGraph
+
+Haystack
+
+Mapy:
+
+OpenStreetMap
+
+OpenSeaMap
+
+Leaflet
+
+MapLibre
+
+CesiumJS
+
+Autentizace:
+
+Keycloak
+
+Monitoring:
+
+Prometheus
+
+Grafana
+
+Loki
+
+OpenTelemetry
+
+DevOps:
+
+Docker
+
+Kubernetes
+
+Helm
+
+ArgoCD
+
+Terraform
+
+CI/CD:
+
+GitLab CI
+
+Gitea Actions
+
+Každý modul musí jít:
+
+nainstalovat
+
+odinstalovat
+
+aktivovat
+
+deaktivovat
+
+aktualizovat nezávisle
+
+Navrhni plugin API.
+
+Lodní deník
+
+AI asistent
+
+GPS tracking
+
+AIS
+
+Mapy
+
+Počasí
+
+Trasy
+
+GPX import/export
+
+Marina management
+
+Geofencing
+
+Anchoring
+
+Posádka
+
+Organizace hlídek
+
+Úkoly
+
+Checklisty
+
+Lodní pokladna
+
+Servis
+
+Údržba
+
+Fotogalerie
+
+Videoarchiv
+
+Dokumenty
+
+Offline synchronizace
+
+Statistiky
+
+Incident management
+
+SOS režim
+
+Satelitní komunikace
+
+Exporty
+
+PDF generátor
+
+Frontend musí být:
+
+responzivní
+
+mobile-first
+
+tablet optimized
+
+desktop optimized
+
+PWA
+
+offline capable
+
+dark mode
+
+realtime
+
+Obrazovky:
+
+Dashboard
+
+Lodní deník
+
+Mapa
+
+Timeline
+
+AI panel
+
+Posádka
+
+Galerie
+
+Statistiky
+
+Správa modulů
+
+Nastavení
+
+Audit log
+
+Exporty
+
+Implementuj:
+
+realtime tracking
+
+route replay
+
+heatmaps
+
+marina layers
+
+AIS overlay
+
+weather overlay
+
+offline mapy
+
+GPX trasy
+
+anchor zones
+
+no-go zones
+
+Systém musí být plně lokalizovatelný.
+
+Podporované jazyky:
+
+čeština
+
+angličtina
+
+němčina
+
+chorvatština
+
+italština
+
+francouzština
+
+španělština
+
+AI musí umět:
+
+generovat lodní deník v různých jazycích
+
+překládat
+
+zachovávat námořní terminologii
+
+Implementuj:
+
+PDF/A
+
+digitální podpisy
+
+hash integrity
+
+QR validaci
+
+auditní metadata
+
+elektronická časová razítka
+
+Exporty:
+
+PDF
+
+CSV
+
+JSON
+
+XML
+
+GPX
+
+Systém musí fungovat bez internetu.
+
+Implementuj:
+
+lokální databázi
+
+synchronizační engine
+
+conflict resolution
+
+delayed upload
+
+cache
+
+offline mapy
+
+Implementuj:
+
+RBAC
+
+MFA
+
+JWT
+
+OAuth2
+
+audit logs
+
+immutable logs
+
+encryption at rest
+
+encryption in transit
+
+anomaly detection
+
+zero trust
+
+anti tamper protection
+
+Navrhni:
+
+ER diagram
+
+Timeseries model
+
+Geo model
+
+Audit model
+
+Media model
+
+Plugin model
+
+Event sourcing model
+
+Navrhni:
+
+REST API
+
+GraphQL API
+
+WebSocket API
+
+plugin API
+
+AI API
+
+Rozděl projekt na:
+
+MVP
+
+Beta
+
+Production
+
+Enterprise
+
+Certified Maritime Edition
+
+Vytvoř:
+
+Kompletní systémovou architekturu
+
+Detailní technologický stack
+
+Databázový návrh
+
+ER diagram
+
+API specifikaci
+
+Plugin systém
+
+AI orchestration vrstvu
+
+Frontend architekturu
+
+Backend architekturu
+
+DevOps návrh
+
+Kubernetes deployment
+
+CI/CD návrh
+
+Bezpečnostní model
+
+Offline-first návrh
+
+Auditní systém
+
+PDF systém
+
+Mapový systém
+
+Synchronizační engine
+
+Návrh AI agentů
+
+Roadmapu vývoje
+
+Návrh monetizace
+
+Návrh licencování
+
+Návrh enterprise infrastruktury
+
+Výstup musí být:
+
+extrémně detailní
+
+produkčně použitelný
+
+realistický
+
+technologicky moderní
+
+enterprise-grade
+
+škálovatelný
+
+bezpečný
+
+právně analyzovaný
+
+připravený pro reálné nasazení
+
+Doporučené open-source projekty pro inspiraci:
+
+OpenSeaMap
+
+OpenCPN
+
+Signal K
+
+AvNav
+
+MarineTraffic API alternatives
+
+Qdrant
+
+LangGraph
+
+Keycloak
+
+MapLibre
+
+PostGIS
+
+TimescaleDB
+
+České právní zdroje:
+
+Zákon č. 61/2000 Sb. o námořní plavbě
+
+Vyhláška 278/2000 Sb.
+
+Státní plavební správa
+
+
+Navrhni jak jednoduše a levně logovat GPS souřadnice. Analyzuj. Najdi na internetu nějaký nástroj, nějaký hardware. 
+
+Pokud chceš levné, jednoduché a přitom profesionální GPS logování pro AI lodní deník, existují v zásadě 4 realistické cesty.
+
+A po analýze open-source maritime ekosystému vychází jedno řešení naprosto dominantně:
+
+Nejlepší řešení: Signal K + Raspberry Pi + GPS modul
+Tohle je dnes de-facto open-source standard pro moderní lodní elektroniku. 
+
+Výhody:
+
+plně open-source
+
+extrémně levné
+
+obrovský ekosystém
+
+realtime stream dat
+
+NMEA0183
+
+NMEA2000
+
+AIS
+
+GPS
+
+senzory
+
+weather
+
+pluginy
+
+websocket API
+
+REST API
+
+MQTT
+
+ideální pro AI orchestrace
+
+A hlavně:
+Signal K už prakticky řeší polovinu toho, co chceš postavit. 
+
+MOJE DOPORUČENÍ — ARCHITEKTURA
+Varianta A — Nejlepší poměr cena/výkon
+Hardware
+Raspberry Pi Zero 2 W
+Levné, malé, nízká spotřeba.
+
+WiFi
+
+Linux
+
+Docker
+
+Node.js
+
+Python
+
+Signal K server
+
+Cena:
+~500–800 Kč
+
+GPS modul
+Doporučuji:
+Adafruit INDUSTRIES Ultimate GPS HAT pro 2324
+
+Výhody:
+
+stabilní
+
+open-source podpora
+
+přesné GPS
+
+PPS timing
+
+jednoduché připojení
+
+Cena:
+~1000 Kč
+
+LTE/GSM modul (volitelné)
+Pokud chceš online tracking:
+
+WaveShare LTE GPS HAT LTE/GPRS/GPS SIM7600E-H overlay pro Raspberry Pi
+
+nebo:
+
+WaveShare LTE GPS HAT NB-IoT / LTE / GPRS / GPS SIM7000E
+
+Software stack
+Core
+Raspberry Pi OS Lite
+
+Docker
+
+Signal K Server
+
+Mosquitto MQTT
+
+PostgreSQL
+
+Node-RED
+
+GPS stack
+gpsd
+
+Signal K GPS plugin
+
+NMEA0183 parser
+
+AI stack
+Ollama
+
+Hermes
+
+DeepSeek
+
+LangGraph
+
+Web
+Next.js
+
+FastAPI
+
+WebSocket streaming
+
+Jak to bude fungovat
+GPS modul:
+
+posílá NMEA data
+
+Signal K:
+
+převádí na JSON stream
+
+Tvoje AI:
+
+poslouchá eventy
+
+Například:
+
+{
+  "position": {
+    "latitude": 43.512,
+    "longitude": 16.442
+  },
+  "speedOverGround": 6.2,
+  "courseOverGroundTrue": 182.3,
+  "timestamp": "2026-05-15T12:22:11Z"
+}
+AI z toho automaticky vytvoří:
+
+15.5.2026 12:22 UTC
+Loď pokračuje kurzem 182°
+Rychlost 6.2 kn
+Pozice 43.512N 16.442E
+Vítr JV 14 kn
+Moře klidné
+Proč Signal K
+Signal K je prakticky „Linux lodní elektroniky“. 
+
+Umí:
+
+GPS
+
+AIS
+
+autopilot
+
+senzory
+
+motory
+
+baterie
+
+tanky
+
+počasí
+
+mapy
+
+websocket streaming
+
+pluginy
+
+realtime API
+
+A hlavně:
+má hotové pluginy pro:
+
+OpenCPN
+
+Home Assistant
+
+Grafana
+
+MQTT
+
+Node-RED
+
+InfluxDB
+
+Nejlevnější ultra-simple varianta
+Pokud chceš úplné minimum:
+
+Android telefon + GPS Logger app
+Například:
+
+GPSLogger
+
+OwnTracks
+
+OpenTracks
+
+Ty posílají:
+
+MQTT
+
+HTTP
+
+GPX
+
+Webhook
+
+Přímo do tvého backendu.
+
+Cena:
+0 Kč
+
+Nevýhoda:
+
+horší spolehlivost
+
+baterie
+
+telefon není marine-grade
+
+Profesionální open-source marine stack
+TOTO je podle mě nejlepší kombinace:
+
+Vrstva	Technologie
+GPS	u-blox GPS
+AIS	Quark-Elec
+Server	Raspberry Pi
+Maritime bus	Signal K
+Event bus	MQTT/NATS
+Backend	FastAPI
+AI	Hermes / Ollama
+Frontend	Next.js
+Mapy	MapLibre + OpenSeaMap
+DB	PostgreSQL + PostGIS
+Offline	PouchDB
+PDF	WeasyPrint
+AIS + GPS profesionální řešení
+Pokud chceš už „seriózní“ marine hardware:
+
+Quark-Elec A026 AIS receiver met NMEA Multiplexer + GPS + WiFi
+
+To už umí:
+
+AIS
+
+GPS
+
+NMEA
+
+WiFi
+
+multiplexing
+
+A Signal K ho umí rovnou číst.
+
+Co bych postavil já
+MVP za pár tisíc
+Hardware
+Raspberry Pi Zero 2 W
+
+GPS HAT
+
+LTE HAT
+
+Powerbank
+
+Software
+Signal K
+
+Docker
+
+FastAPI
+
+Next.js
+
+Ollama
+
+Funkce
+realtime GPS
+
+automatické logování
+
+mapa
+
+AI zápisy
+
+PDF export
+
+offline režim
+
+fotky s GPS
+
+GPX export
+
+Celé:
+~3000–5000 Kč
+
+Nejlepší open-source projekty pro inspiraci
+Maritime core
+Signal K
+
+OpenCPN
+
+OpenPlotter
+
+OpenSeaMap
+
+GPS/AIS
+SensESP
+
+gpsd
+
+AI
+LangGraph
+
+Ollama
+
+Komunita
+Reddit komunita potvrzuje, že:
+
+Signal K je dnes praktičtější než OpenCPN
+
+Raspberry Pi + GPS + AIS je nejběžnější DIY marine stack
+
+OpenPlotter + Signal K je nejlevnější profesionální cesta 
+
+Nejlepší strategie
+NEPIŠ vlastní GPS/AIS stack.
+
+Použij:
+
+Signal K
+
+gpsd
+
+NMEA parsery
+
+A vlastní:
+
+AI vrstvu
+
+frontend
+
+PDF engine
+
+modulární systém
+
+auditní logiku
+
+orchestrace
+
+To je správná architektura.
+
+
+
+
+
+

@@ -66,6 +66,10 @@ class VesselResponse(BaseModel):
     port: Optional[str]
     vessel_type: Optional[str]
     length: Optional[float]
+    beam: Optional[float]
+    draft: Optional[float]
+    year_built: Optional[int]
+    flag_state: Optional[str]
     created_at: datetime
 
     class Config:
@@ -186,3 +190,52 @@ class ExportRequest(BaseModel):
     logbook_id: UUID
     format: str = "pdf"  # pdf, gpx, csv, json
     language: str = "cs"
+
+
+# ── Dashboard ─────────────────────────────────────────
+
+class DashboardStatsResponse(BaseModel):
+    vessels: int
+    logbooks: int
+    entries: int
+    activeModules: int
+
+
+# ── Crew Member ───────────────────────────────────────
+
+class CrewMemberCreate(BaseModel):
+    vessel_id: UUID
+    name: str = Field(..., max_length=255)
+    role: Optional[str] = None
+    nationality: Optional[str] = None
+    passport_number: Optional[str] = None
+    date_of_birth: Optional[datetime] = None
+
+
+class CrewMemberResponse(BaseModel):
+    id: UUID
+    vessel_id: UUID
+    name: str
+    role: Optional[str]
+    nationality: Optional[str]
+    passport_number: Optional[str]
+    date_of_birth: Optional[datetime]
+    joined_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+# ── Weather ───────────────────────────────────────────
+
+class WeatherResponse(BaseModel):
+    temperature: float
+    humidity: float
+    pressure: float
+    wind_speed: float
+    wind_direction: str
+    visibility: float
+    sea_state: str
+    clouds: float
+
+

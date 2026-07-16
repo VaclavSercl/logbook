@@ -2,7 +2,7 @@
 from uuid import UUID
 from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import Session
 from sqlalchemy import select, and_
 
 from app.database import get_db
@@ -17,11 +17,11 @@ router = APIRouter()
 async def add_gps_point(
     data: GpsPointCreate,
     current_user=Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
+    db: Session = Depends(get_db),
 ):
     point = GpsPoint(**data.model_dump())
     db.add(point)
-    await db.flush()
+    db.flush()
     return point
 
 
@@ -31,7 +31,7 @@ async def get_gps_track(
     start: datetime = None,
     end: datetime = None,
     current_user=Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
+    db: Session = Depends(get_db),
 ):
     query = select(GpsPoint).where(GpsPoint.vessel_id == vessel_id)
     if start:
@@ -39,7 +39,7 @@ async def get_gps_track(
     if end:
         query = query.where(GpsPoint.timestamp <= end)
     query = query.order_by(GpsPoint.timestamp)
-    result = await db.execute(query)
+    result = db.execute(query)
     return result.scalars().all()
 
 
@@ -47,9 +47,9 @@ async def get_gps_track(
 async def get_latest_position(
     vessel_id: UUID,
     current_user=Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
+    db: Session = Depends(get_db),
 ):
-    result = await db.execute(
+    result = db.execute(
         select(GpsPoint)
         .where(GpsPoint.vessel_id == vessel_id)
         .order_by(GpsPoint.timestamp.desc())

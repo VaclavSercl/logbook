@@ -1,11 +1,11 @@
 """Logbook routes."""
 from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import Session
 from sqlalchemy import select
 
 from app.database import get_db
-from app.models import Logbook
+from app.models import Logbook, Vessel
 from app.schemas import LogbookCreate, LogbookResponse
 from app.api.v1.auth import get_current_user
 
@@ -16,12 +16,12 @@ router = APIRouter()
 async def list_logbooks(
     vessel_id: UUID = None,
     current_user=Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
+    db: Session = Depends(get_db),
 ):
-    query = select(Logbook).join(Logbook.vessel).where(Logbook.vessel.owner_id == current_user.id)
+    query = select(Logbook).join(Vessel).where(Vessel.owner_id == current_user.id)
     if vessel_id:
         query = query.where(Logbook.vessel_id == vessel_id)
-    result = await db.execute(query)
+    result = db.execute(query)
     return result.scalars().all()
 
 
@@ -29,11 +29,11 @@ async def list_logbooks(
 async def create_logbook(
     data: LogbookCreate,
     current_user=Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
+    db: Session = Depends(get_db),
 ):
     logbook = Logbook(**data.model_dump())
     db.add(logbook)
-    await db.flush()
+    db.flush()
     return logbook
 
 
@@ -41,9 +41,9 @@ async def create_logbook(
 async def get_logbook(
     logbook_id: UUID,
     current_user=Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
+    db: Session = Depends(get_db),
 ):
-    result = await db.execute(select(Logbook).where(Logbook.id == logbook_id))
+    result = db.execute(select(Logbook).where(Logbook.id == logbook_id))
     logbook = result.scalar_one_or_none()
     if not logbook:
         raise HTTPException(status_code=404, detail="Logbook not found")
@@ -54,10 +54,10 @@ async def get_logbook(
 async def close_logbook(
     logbook_id: UUID,
     current_user=Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
+    db: Session = Depends(get_db),
 ):
     from datetime import datetime
-    result = await db.execute(select(Logbook).where(Logbook.id == logbook_id))
+    result = db.execute(select(Logbook).where(Logbook.id == logbook_id))
     logbook = result.scalar_one_or_none()
     if not logbook:
         raise HTTPException(status_code=404, detail="Logbook not found")

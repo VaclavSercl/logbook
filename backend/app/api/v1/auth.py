@@ -1,12 +1,13 @@
 """Authentication routes."""
 from datetime import datetime, timedelta
 from uuid import UUID
+import hashlib
+import secrets
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from jose import JWTError, jwt
-from passlib.context import CryptContext
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy.orm import Session
 
 from app.config import settings
 from app.database import get_db
@@ -14,16 +15,21 @@ from app.models import User
 from app.schemas import UserCreate, UserResponse, TokenResponse
 
 router = APIRouter()
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    return pwd_context.verify(plain_password, hashed_password)
+    if hashed_password.startswith("sha256:"):
+        parts = hashed_password.split(":", 2)
+        if len(parts) == 3:
+            salt, stored_hash = parts[1], parts[2]
+            return hashlib.sha256((salt + plain_password).encode()).hexdigest() == stored_hash
+    return False
 
 
 def get_password_hash(password: str) -> str:
-    return pwd_context.hash(password)
+    salt = secrets.token_hex(16)
+    return f"sha256:{salt}:{hashlib.sha256((salt + password).encode()).hexdigest()}"
 
 
 def create_access_token(data: dict, expires_delta: timedelta = None) -> str:
@@ -42,7 +48,7 @@ def create_refresh_token(data: dict) -> str:
 
 async def get_current_user(
     token: str = Depends(oauth2_scheme),
-    db: AsyncSession = Depends(get_db),
+    db: Session = Depends(get_db),
 ) -> User:
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -57,22 +63,17 @@ async def get_current_user(
     except JWTError:
         raise credentials_exception
 
-    result = await db.execute(select(User).where(User.id == UUID(user_id)))
-    user = result.scalar_one_or_none()
+    user = db.query(User).filter(User.id == user_id).first()
     if user is None or not user.is_active:
         raise credentials_exception
     return user
 
 
 @router.post("/register", response_model=UserResponse, status_code=201)
-async def register(user_data: UserCreate, db: AsyncSession = Depends(get_db)):
-    # Check existing
-    result = await db.execute(select(User).where(User.username == user_data.username))
-    if result.scalar_one_or_none():
+async def register(user_data: UserCreate, db: Session = Depends(get_db)):
+    if db.query(User).filter(User.username == user_data.username).first():
         raise HTTPException(status_code=400, detail="Username already registered")
-
-    result = await db.execute(select(User).where(User.email == user_data.email))
-    if result.scalar_one_or_none():
+    if db.query(User).filter(User.email == user_data.email).first():
         raise HTTPException(status_code=400, detail="Email already registered")
 
     user = User(
@@ -83,26 +84,51 @@ async def register(user_data: UserCreate, db: AsyncSession = Depends(get_db)):
         phone=user_data.phone,
     )
     db.add(user)
-    await db.flush()
+    db.flush()
     return user
 
 
 @router.post("/login", response_model=TokenResponse)
-async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(User).where(User.username == form_data.username))
-    user = result.scalar_one_or_none()
-
+async def login(
+    form_data: OAuth2PasswordRequestForm = Depends(),
+    db: Session = Depends(get_db),
+):
+    user = db.query(User).filter(User.username == form_data.username).first()
     if not user or not verify_password(form_data.password, user.password_hash):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect username or password",
-        )
+        raise HTTPException(status_code=401, detail="Incorrect username or password")
 
-    token_data = {"sub": str(user.id), "username": user.username, "role": user.role}
+    token_data = {"sub": user.id, "username": user.username, "role": user.role}
     return TokenResponse(
         access_token=create_access_token(token_data),
         refresh_token=create_refresh_token(token_data),
     )
+
+
+@router.post("/login/json", response_model=TokenResponse)
+async def login_json(
+    credentials: dict,
+    db: Session = Depends(get_db),
+):
+    try:
+        username = credentials.get("username", "")
+        password = credentials.get("password", "")
+        if not username or not password:
+            raise HTTPException(status_code=400, detail="Username and password required")
+        user = db.query(User).filter(User.username == username).first()
+        if user is None:
+            raise HTTPException(status_code=401, detail="Incorrect username or password")
+        stored_hash = str(user.password_hash) if user.password_hash else ""
+        if not verify_password(password, stored_hash):
+            raise HTTPException(status_code=401, detail="Incorrect username or password")
+        token_data = {"sub": user.id, "username": user.username, "role": user.role}
+        return TokenResponse(
+            access_token=create_access_token(token_data),
+            refresh_token=create_refresh_token(token_data),
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.get("/me", response_model=UserResponse)

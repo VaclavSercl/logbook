@@ -42,11 +42,11 @@ logbook/
 | 15.5.2026 | PostgreSQL + PostGIS | Geoprostorová data |
 | 15.5.2026 | JWT autentizace | Bezpečný přístup |
 | 15.5.2026 | Docker Compose | Snadné nasazení |
+| 16.7.2026 | Implementace Crew & Weather | Dokončení chybějících modulů a stránek v Next.js a FastAPI. Zprovoznění Open-Meteo API. |
 
 ## Známé problémy / TODO
 
-- Frontend: chybí mapová stránka (MapLibre)
-- Frontend: chybí weather, crew, gallery, settings pages
+- Frontend: chybí pouze stránka galerie (gallery)
 - Backend: AI endpoint je základní (potřebuje Ollama integraci)
 - Backend: chybí WebSocket pro real-time GPS
 - Backend: chybí notifikační systém

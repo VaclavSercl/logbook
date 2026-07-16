@@ -3,29 +3,16 @@ Main application entry point.
 """
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from contextlib import asynccontextmanager
 
 from app.config import settings
 from app.database import engine, Base
-from app.api.v1 import auth, vessels, logbooks, entries, gps, ai, export, modules
-
-
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    """Startup and shutdown events."""
-    # Startup
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
-    yield
-    # Shutdown
-    await engine.dispose()
+from app.api.v1 import auth, vessels, logbooks, entries, gps, ai, export, modules, dashboard, sparrow, crew, weather
 
 
 app = FastAPI(
     title="Logbook API",
     description="Smart AI Maritime Logbook Platform",
     version="1.0.0",
-    lifespan=lifespan,
     docs_url="/docs",
     redoc_url="/redoc",
 )
@@ -39,6 +26,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Create tables
+Base.metadata.create_all(bind=engine)
+
 # API routes
 api_prefix = "/api/v1"
 app.include_router(auth.router, prefix=f"{api_prefix}/auth", tags=["auth"])
@@ -49,8 +39,20 @@ app.include_router(gps.router, prefix=f"{api_prefix}/gps", tags=["gps"])
 app.include_router(ai.router, prefix=f"{api_prefix}/ai", tags=["ai"])
 app.include_router(export.router, prefix=f"{api_prefix}/export", tags=["export"])
 app.include_router(modules.router, prefix=f"{api_prefix}/modules", tags=["modules"])
+app.include_router(dashboard.router, prefix=f"{api_prefix}/dashboard", tags=["dashboard"])
+app.include_router(sparrow.router, prefix=f"{api_prefix}/sparrow", tags=["sparrow"])
+app.include_router(crew.router, prefix=f"{api_prefix}/crew", tags=["crew"])
+app.include_router(weather.router, prefix=f"{api_prefix}/weather", tags=["weather"])
 
 
 @app.get("/health")
 async def health_check():
     return {"status": "healthy", "version": "1.0.0"}
+
+
+import asyncio
+from app.services.telegram_bot import run_telegram_bot
+
+@app.on_event("startup")
+async def startup_event():
+    asyncio.create_task(run_telegram_bot())

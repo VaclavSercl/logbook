@@ -1,14 +1,29 @@
-# Logbook
+# Next.js / Node
+node_modules/
+.next/
+out/
+build/
+package-lock.json
+next.log
+tsconfig.tsbuildinfo
 
-## Project Structure
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+ENV/
+env/
+.env
 
-```
-Logbook/
-├── README.md
-├── .gitignore
-└── ...
-```
+# Databases & local storage
+*.db
+*.sqlite
+sparrowdb/
+storage/
 
-## Development
-
-_Setup instructions coming soon._
+# OS / IDE
+.DS_Store
+.vscode/
+.idea/
