@@ -383,6 +383,35 @@ export default function MapPage() {
     setIsModalOpen(true);
   };
 
+  const handleGetPhoneGps = () => {
+    if (!navigator.geolocation) {
+      alert("Tento prohlížeč nebo mobilní zařízení nepodporuje určení polohy pomocí GPS.");
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setNewPointLat(parseFloat(position.coords.latitude.toFixed(6)));
+        setNewPointLng(parseFloat(position.coords.longitude.toFixed(6)));
+        if (position.coords.speed !== null && position.coords.speed !== undefined) {
+          // Convert m/s to knots
+          const speedKnots = position.coords.speed * 1.94384;
+          setNewPointSpeed(speedKnots.toFixed(1));
+        }
+        if (position.coords.heading !== null && position.coords.heading !== undefined && !isNaN(position.coords.heading)) {
+          setNewPointCourse(Math.round(position.coords.heading).toString());
+        }
+      },
+      (error) => {
+        let msg = "Nepodařilo se načíst polohu GPS.";
+        if (error.code === 1) msg = "Přístup k poloze byl zamítnut. Povolte GPS v nastavení prohlížeče.";
+        else if (error.code === 2) msg = "GPS signál není k dispozici.";
+        else if (error.code === 3) msg = "Vypršel časový limit pro získání polohy GPS.";
+        alert(msg);
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+    );
+  };
+
   // Handle addition of new GPS Point to database
   const handleAddPointSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -612,6 +641,13 @@ export default function MapPage() {
             </div>
 
             <form onSubmit={handleAddPointSubmit} className="p-6 space-y-4">
+              <button
+                type="button"
+                onClick={handleGetPhoneGps}
+                className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold uppercase tracking-wider transition flex items-center justify-center gap-1.5 shadow"
+              >
+                📱 Načíst aktuální GPS z telefonu
+              </button>
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-slate-300 text-xs font-bold uppercase tracking-wide mb-1.5">
