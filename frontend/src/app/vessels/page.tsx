@@ -340,7 +340,7 @@ export default function VesselsPage() {
 
                   {/* Type */}
                   <div>
-                    <label className="block text-xs uppercase font-semibold text-slate-400 mb-1">Typ plavidla</label>
+                    <label className="block text-xs uppercase font-semibold text-slate-400 mb-1">Typ plavidla (dobrovolné)</label>
                     <select
                       value={vesselType}
                       onChange={(e) => setVesselType(e.target.value)}
@@ -357,7 +357,7 @@ export default function VesselsPage() {
 
                   {/* Port */}
                   <div>
-                    <label className="block text-xs uppercase font-semibold text-slate-400 mb-1">Domovský přístav</label>
+                    <label className="block text-xs uppercase font-semibold text-slate-400 mb-1">Domovský přístav (dobrovolné)</label>
                     <input
                       type="text"
                       value={port}
@@ -369,7 +369,7 @@ export default function VesselsPage() {
 
                   {/* IMO */}
                   <div>
-                    <label className="block text-xs uppercase font-semibold text-slate-400 mb-1">IMO číslo</label>
+                    <label className="block text-xs uppercase font-semibold text-slate-400 mb-1">IMO číslo (dobrovolné)</label>
                     <input
                       type="text"
                       value={imo}
@@ -381,7 +381,7 @@ export default function VesselsPage() {
 
                   {/* MMSI */}
                   <div>
-                    <label className="block text-xs uppercase font-semibold text-slate-400 mb-1">MMSI číslo</label>
+                    <label className="block text-xs uppercase font-semibold text-slate-400 mb-1">MMSI číslo (dobrovolné)</label>
                     <input
                       type="text"
                       value={mmsi}
@@ -393,7 +393,7 @@ export default function VesselsPage() {
 
                   {/* Call Sign */}
                   <div>
-                    <label className="block text-xs uppercase font-semibold text-slate-400 mb-1">Volací znak (Call Sign)</label>
+                    <label className="block text-xs uppercase font-semibold text-slate-400 mb-1">Volací znak (Call Sign) (dobrovolné)</label>
                     <input
                       type="text"
                       value={callSign}
@@ -405,7 +405,7 @@ export default function VesselsPage() {
 
                   {/* Flag state */}
                   <div>
-                    <label className="block text-xs uppercase font-semibold text-slate-400 mb-1">Vlajkový stát (Kód)</label>
+                    <label className="block text-xs uppercase font-semibold text-slate-400 mb-1">Vlajkový stát (Kód) (dobrovolné)</label>
                     <input
                       type="text"
                       value={flagState}
@@ -418,7 +418,7 @@ export default function VesselsPage() {
 
                   {/* Dimensions */}
                   <div>
-                    <label className="block text-xs uppercase font-semibold text-slate-400 mb-1">Celková délka (LOA) [m]</label>
+                    <label className="block text-xs uppercase font-semibold text-slate-400 mb-1">Celková délka (LOA) [m] (dobrovolné)</label>
                     <input
                       type="number"
                       step="0.01"
@@ -430,7 +430,7 @@ export default function VesselsPage() {
                   </div>
 
                   <div>
-                    <label className="block text-xs uppercase font-semibold text-slate-400 mb-1">Šířka (Beam) [m]</label>
+                    <label className="block text-xs uppercase font-semibold text-slate-400 mb-1">Šířka (Beam) [m] (dobrovolné)</label>
                     <input
                       type="number"
                       step="0.01"
@@ -442,7 +442,7 @@ export default function VesselsPage() {
                   </div>
 
                   <div>
-                    <label className="block text-xs uppercase font-semibold text-slate-400 mb-1">Ponor (Draft) [m]</label>
+                    <label className="block text-xs uppercase font-semibold text-slate-400 mb-1">Ponor (Draft) [m] (dobrovolné)</label>
                     <input
                       type="number"
                       step="0.01"
@@ -455,7 +455,7 @@ export default function VesselsPage() {
 
                   {/* Year Built */}
                   <div>
-                    <label className="block text-xs uppercase font-semibold text-slate-400 mb-1">Rok stavby</label>
+                    <label className="block text-xs uppercase font-semibold text-slate-400 mb-1">Rok stavby (dobrovolné)</label>
                     <input
                       type="number"
                       value={yearBuilt}
