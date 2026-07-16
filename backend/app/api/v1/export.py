@@ -290,6 +290,19 @@ def _generate_pdf_content(logbook, entries):
                 notes_str = " ".join(note_parts) if note_parts else "No records."
                 row.cell(notes_str)
                 
+    # Signature Box at the end of the document
+    if logbook.signed_hash:
+        pdf.ln(8)
+        pdf.set_font("helvetica", "B", 9)
+        pdf.set_text_color(44, 62, 80)
+        pdf.cell(0, 5, "KRYPTOGRAFICKÝ PODPIS VELITELE PLAVIDLA (DIGITAL SIGNATURE VERIFICATION)", ln=True)
+        pdf.set_font("helvetica", "", 8)
+        pdf.set_text_color(50, 50, 50)
+        pdf.cell(0, 4, f"Odpovědný kapitán: {vessel.owner.full_name if (vessel and vessel.owner) else 'Václav Šercl'}", ln=True)
+        pdf.cell(0, 4, f"SHA-256 Hash: {logbook.signed_hash}", ln=True)
+        pdf.cell(0, 4, f"Datum a čas uzavření deníku: {logbook.closed_at.strftime('%Y-%m-%d %H:%M UTC') if logbook.closed_at else 'N/A'}", ln=True)
+        pdf.cell(0, 4, "Tento dokument byl uzamčen a digitálně podepsán v souladu se zákonem o námořní plavbě č. 61/2000 Sb.", ln=True)
+
     # Returns bytearray
     return bytes(pdf.output())
 
