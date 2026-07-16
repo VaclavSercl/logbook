@@ -23,6 +23,13 @@ async function apiFetch<T = any>(path: string, options: FetchOptions = {}): Prom
   });
 
   if (!res.ok) {
+    if (res.status === 401) {
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('token');
+        localStorage.removeItem('refresh_token');
+        window.location.href = '/login';
+      }
+    }
     const error = await res.json().catch(() => ({ detail: 'Unknown error' }));
     throw new Error(error.detail || `API error: ${res.status}`);
   }
