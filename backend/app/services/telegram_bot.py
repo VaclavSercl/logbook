@@ -89,6 +89,7 @@ async def process_telegram_message(message: dict, token: str, chat_id: int):
     """Process incoming authorized Telegram message."""
     text = message.get("text", "").strip()
     photo = message.get("photo")
+    voice = message.get("voice")
     caption = message.get("caption", "").strip()
     
     # Establish DB session
@@ -274,6 +275,136 @@ async def process_telegram_message(message: dict, token: str, chat_id: int):
                         return
 
             await send_telegram_reply(token, chat_id, "⚠️ Nepodařilo se stáhnout fotografii.")
+            return
+
+        # Handle Voice Note
+        if voice:
+            file_id = voice.get("file_id")
+            await send_telegram_reply(token, chat_id, "🎙️ *Zpracovávám hlasový zápis...* (Stahuji nahrávku...)")
+            
+            async with httpx.AsyncClient() as client:
+                file_res = await client.get(f"https://api.telegram.org/bot{token}/getFile?file_id={file_id}")
+                if file_res.status_code == 200:
+                    file_path = file_res.json().get("result", {}).get("file_path")
+                    
+                    # Download voice file
+                    download_url = f"https://api.telegram.org/file/bot{token}/{file_path}"
+                    voice_data_res = await client.get(download_url)
+                    
+                    if voice_data_res.status_code == 200:
+                        import base64
+                        import json
+                        
+                        base64_audio = base64.b64encode(voice_data_res.content).decode("utf-8")
+                        
+                        await send_telegram_reply(token, chat_id, "🧠 *Njoror analyzuje řeč...* (Volám Gemini API...)")
+                        
+                        google_key = settings.GOOGLE_API_KEY
+                        if not google_key:
+                            await send_telegram_reply(token, chat_id, "⚠️ V konfiguraci chybí GOOGLE_API_KEY pro přepis řeči.")
+                            return
+                            
+                        # Call Gemini API
+                        gemini_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={google_key}"
+                        payload = {
+                            "contents": [
+                                {
+                                    "parts": [
+                                        {
+                                            "inlineData": {
+                                                "mimeType": "audio/ogg",
+                                                "data": base64_audio
+                                            }
+                                        },
+                                        {
+                                            "text": (
+                                                "Jsi Njoror, inteligentní lodní deník na lodi. Analyzuj tuto hlasovou zprávu kapitána a vrať z ní strukturovaná data jako JSON. "
+                                                "Pokud kapitán v nahrávce zmiňuje navigační či meteorologické hodnoty, extrahuj je. "
+                                                "Vrať POUZE platný JSON ve formátu:\n"
+                                                "{\n"
+                                                "  \"notes\": \"doslovný nebo mírně upravený přepis nahrávky v češtině\",\n"
+                                                "  \"course\": null, // číslo (stupně)\n"
+                                                "  \"speed\": null, // číslo (uzly)\n"
+                                                "  \"wind_direction\": null, // text (např. SV, S, J, 180)\n"
+                                                "  \"wind_speed\": null, // číslo (uzly)\n"
+                                                "  \"pressure\": null, // číslo (hPa)\n"
+                                                "  \"temperature\": null, // číslo (°C)\n"
+                                                "  \"category\": \"navigation\" // nebo \"weather\", \"engine\", \"anchor\"\n"
+                                                "}"
+                                            )
+                                        }
+                                    ]
+                                }
+                            ],
+                            "generationConfig": {
+                                "responseMimeType": "application/json"
+                            }
+                        }
+                        
+                        gemini_res = await client.post(gemini_url, json=payload, timeout=30.0)
+                        if gemini_res.status_code == 200:
+                            try:
+                                response_data = gemini_res.json()
+                                candidates = response_data.get("candidates", [])
+                                if candidates:
+                                    text_response = candidates[0].get("content", {}).get("parts", [{}])[0].get("text", "")
+                                    structured_data = json.loads(text_response.strip())
+                                    
+                                    # Create Log Entry
+                                    notes = structured_data.get("notes", "Hlasový zápis")
+                                    course = structured_data.get("course")
+                                    speed = structured_data.get("speed")
+                                    wind_dir = structured_data.get("wind_direction")
+                                    wind_speed = structured_data.get("wind_speed")
+                                    pressure = structured_data.get("pressure")
+                                    temp = structured_data.get("temperature")
+                                    category = structured_data.get("category", "navigation")
+                                    
+                                    log_entry = LogEntry(
+                                        logbook_id=logbook.id,
+                                        timestamp=datetime.utcnow(),
+                                        latitude=lat,
+                                        longitude=lng,
+                                        course=float(course) if course is not None else None,
+                                        speed=float(speed) if speed is not None else None,
+                                        wind_direction=float(wind_dir) if wind_dir is not None and str(wind_dir).replace('.','',1).isdigit() else None,
+                                        wind_speed=float(wind_speed) if wind_speed is not None else None,
+                                        pressure=float(pressure) if pressure is not None else None,
+                                        temperature=float(temp) if temp is not None else None,
+                                        notes=notes,
+                                        category=category,
+                                    )
+                                    db.add(log_entry)
+                                    db.commit()
+                                    
+                                    # Format confirmation
+                                    details = []
+                                    if course: details.append(f"🧭 Kurz: `{course}°`")
+                                    if speed: details.append(f"🚀 Rychlost: `{speed} kn`")
+                                    if wind_speed: details.append(f"💨 Vítr: `{wind_speed} kn` ({wind_dir or ''})")
+                                    if pressure: details.append(f"📊 Tlak: `{pressure} hPa`")
+                                    if temp: details.append(f"🌡️ Teplota: `{temp} °C`")
+                                    
+                                    details_str = "\n".join(details) if details else "Bez specifických parametrů."
+                                    
+                                    await send_telegram_reply(
+                                        token,
+                                        chat_id,
+                                        f"🎙️ *Hlasový zápis byl úspěšně zpracován a uložen!*\n\n"
+                                        f"✍️ *Přepis:* \"{notes}\"\n"
+                                        f"📍 *Pozice:* `{lat:.4f}°N`, `{lng:.4f}°E`\n"
+                                        f"{details_str}"
+                                    )
+                                    return
+                            except Exception as parse_ex:
+                                print(f"Failed to parse Gemini voice reply: {parse_ex}")
+                                await send_telegram_reply(token, chat_id, f"⚠️ Nepodařilo se dekódovat strukturu dat z AI: {str(parse_ex)}")
+                                return
+                        else:
+                            await send_telegram_reply(token, chat_id, f"⚠️ Chyba Gemini API: status {gemini_res.status_code}")
+                            return
+                            
+            await send_telegram_reply(token, chat_id, "⚠️ Nepodařilo se stáhnout hlasovou nahrávku.")
             return
 
         # Handle Text message with agy AI agent
