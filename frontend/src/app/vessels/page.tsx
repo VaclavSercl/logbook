@@ -324,6 +324,11 @@ export default function VesselsPage() {
               </div>
 
               <form onSubmit={handleSubmit} className="p-6 space-y-4">
+                {error && (
+                  <div className="p-4 bg-red-900/40 border border-red-700 text-red-200 rounded-lg text-sm">
+                    ⚠️ {error}
+                  </div>
+                )}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {/* Name */}
                   <div className="col-span-1 md:col-span-2">

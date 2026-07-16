@@ -47,9 +47,9 @@ export const authApi = {
 
 // Vessels API
 export const vesselsApi = {
-  list: (token: string) => apiFetch('/vessels/', { token }),
+  list: (token: string) => apiFetch('/vessels', { token }),
   create: (data: Record<string, unknown>, token: string) =>
-    apiFetch('/vessels/', { method: 'POST', body: data, token }),
+    apiFetch('/vessels', { method: 'POST', body: data, token }),
   get: (id: string, token: string) => apiFetch(`/vessels/${id}`, { token }),
   update: (id: string, data: Record<string, unknown>, token: string) =>
     apiFetch(`/vessels/${id}`, { method: 'PUT', body: data, token }),

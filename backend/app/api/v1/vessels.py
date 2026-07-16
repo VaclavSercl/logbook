@@ -12,7 +12,7 @@ from app.api.v1.auth import get_current_user
 router = APIRouter()
 
 
-@router.get("/", response_model=list[VesselResponse])
+@router.get("", response_model=list[VesselResponse])
 async def list_vessels(
     current_user=Depends(get_current_user),
     db: Session = Depends(get_db),
@@ -23,7 +23,7 @@ async def list_vessels(
     return result.scalars().all()
 
 
-@router.post("/", response_model=VesselResponse, status_code=201)
+@router.post("", response_model=VesselResponse, status_code=201)
 async def create_vessel(
     data: VesselCreate,
     current_user=Depends(get_current_user),
