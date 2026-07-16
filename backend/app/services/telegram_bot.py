@@ -305,7 +305,7 @@ async def process_telegram_message(message: dict, token: str, chat_id: int):
                             return
                             
                         # Call Gemini API
-                        gemini_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={google_key}"
+                        gemini_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key={google_key}"
                         payload = {
                             "contents": [
                                 {
