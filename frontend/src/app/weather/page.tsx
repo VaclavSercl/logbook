@@ -75,7 +75,12 @@ export default function WeatherPage() {
   return (
     <div className="min-h-screen bg-slate-900 text-slate-100">
       <header className="bg-slate-800 border-b border-slate-700 px-6 py-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <h1 className="text-2xl font-bold text-slate-100 flex items-center gap-2">🌤️ Počasí</h1>
+        <div className="flex items-center gap-4">
+          <Link href="/" className="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-slate-100 rounded-lg text-sm font-medium transition flex items-center gap-1.5">
+            🏠 Domů
+          </Link>
+          <h1 className="text-2xl font-bold text-slate-100 flex items-center gap-2">🌤️ Počasí</h1>
+        </div>
         
         {/* Vessel Selector */}
         {vessels.length > 0 && (

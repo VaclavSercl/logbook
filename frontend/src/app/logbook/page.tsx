@@ -244,10 +244,9 @@ export default function LogbookPage() {
       {/* Header */}
       <header className="bg-slate-800 border-b border-slate-700 px-6 py-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
-          <Link href="/" className="text-2xl font-bold hover:text-blue-400 transition">
-            ⚓ Logbook
+          <Link href="/" className="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-slate-100 rounded-lg text-sm font-medium transition flex items-center gap-1.5">
+            🏠 Domů
           </Link>
-          <span className="text-slate-500">/</span>
           <h1 className="text-xl font-semibold text-slate-100">📖 Lodní deník</h1>
         </div>
 

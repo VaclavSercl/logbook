@@ -173,6 +173,9 @@ function NewLogbookEntryForm() {
         {/* Navigation / Header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
+            <Link href="/" className="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-slate-100 rounded-lg text-sm font-medium transition flex items-center gap-1.5">
+              🏠 Domů
+            </Link>
             <Link href="/logbook" className="text-slate-400 hover:text-slate-100 transition">
               ← Zpět do deníku
             </Link>

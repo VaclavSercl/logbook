@@ -170,13 +170,11 @@ export default function VesselsPage() {
 
   return (
     <div className="min-h-screen bg-slate-900 text-slate-100 flex flex-col">
-      {/* Header */}
       <header className="bg-slate-800 border-b border-slate-700 px-6 py-4 flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Link href="/" className="text-2xl font-bold hover:text-blue-400 transition">
-            ⚓ Logbook
+          <Link href="/" className="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-slate-100 rounded-lg text-sm font-medium transition flex items-center gap-1.5">
+            🏠 Domů
           </Link>
-          <span className="text-slate-500">/</span>
           <h1 className="text-xl font-semibold text-slate-100">🚢 Správa plavidel</h1>
         </div>
         <Link href="/" className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-slate-200 rounded-lg text-sm font-medium transition">
