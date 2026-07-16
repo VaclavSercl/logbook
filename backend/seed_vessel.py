@@ -46,6 +46,25 @@ def seed():
             )
             print(f"  Created active logbook 'Zkušební plavba Jadran' with ID: {logbook_id}")
             
+    # 4. Check and seed default modules
+    cursor.execute("SELECT COUNT(*) FROM modules")
+    modules_count = cursor.fetchone()[0]
+    if modules_count == 0:
+        default_modules = [
+            ("logbook", "Lodní deník (Core)", "1.0.0", "Hlavní jádro lodního deníku splňující legislativní standardy IMO.", "📖", 1, 1),
+            ("gps", "GPS Tracker", "1.0.0", "Automatické logování a zpracování GPS souřadnic plavidla.", "🗺️", 1, 1),
+            ("ai-copilot", "AI Copilot (Gemini)", "1.0.0", "Hlasové logování a automatická analýza zápisů přes Gemini 3.5.", "🤖", 1, 1),
+            ("weather", "Meteostanice (Weather)", "1.0.0", "Proxy modul pro stahování počasí z modelů Open-Meteo.", "🌤️", 1, 1),
+            ("export", "Exporty & Podpis", "1.0.0", "Export lodního deníku do podepsaného PDF a GPX trasy.", "📤", 1, 1),
+        ]
+        for slug, name, version, desc, icon, is_active, is_installed in default_modules:
+            m_id = str(uuid.uuid4())
+            cursor.execute(
+                "INSERT INTO modules (id, name, slug, version, description, icon, is_active, is_installed, config, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                (m_id, name, slug, version, desc, icon, is_active, is_installed, "{}", datetime.utcnow().isoformat())
+            )
+            print(f"  Created default module '{name}'")
+        
     conn.commit()
     conn.close()
     print("Database seeding completed successfully.")
