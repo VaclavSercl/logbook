@@ -415,7 +415,11 @@ export default function MapPage() {
   // Handle addition of new GPS Point to database
   const handleAddPointSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!token || !selectedVesselId) return;
+    if (!token) return;
+    if (!selectedVesselId) {
+      alert("Chyba: Před přidáním GPS bodu musíte vybrat nebo vytvořit plavidlo.");
+      return;
+    }
 
     try {
       await gpsApi.add({
@@ -445,8 +449,8 @@ export default function MapPage() {
   return (
     <div className="min-h-screen bg-slate-900 flex flex-col h-screen">
       {/* Header with Navigation */}
-      <header className="bg-slate-800 border-b border-slate-700 px-6 py-4 flex-shrink-0">
-        <div className="flex items-center justify-between">
+      <header className="bg-slate-800 border-b border-slate-700 px-6 py-4 flex-shrink-0 flex flex-col gap-4">
+        <div className="flex items-center justify-between flex-wrap gap-4">
           <div className="flex items-center gap-6">
             <Link href="/" className="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-slate-100 rounded-lg text-sm font-medium transition flex items-center gap-1.5">
               🏠 Domů
@@ -454,18 +458,25 @@ export default function MapPage() {
             <h1 className="text-2xl font-bold text-slate-100 flex items-center gap-2">
               ⚓ <span className="hidden sm:inline">Logbook</span>
             </h1>
-            <nav className="flex items-center gap-4">
-              <Link href="/logbook" className="text-slate-300 hover:text-white transition">Deník</Link>
-              <Link href="/map" className="text-white font-medium">Mapa</Link>
-              <Link href="/weather" className="text-slate-300 hover:text-white transition">Počasí</Link>
-              <Link href="/crew" className="text-slate-300 hover:text-white transition">Posádka</Link>
-              <Link href="/settings" className="text-slate-300 hover:text-white transition">Nastavení</Link>
-            </nav>
           </div>
+          <nav className="flex items-center gap-4 flex-wrap">
+            <Link href="/logbook" className="text-slate-300 hover:text-white transition">Deník</Link>
+            <Link href="/map" className="text-white font-medium">Mapa</Link>
+            <Link href="/weather" className="text-slate-300 hover:text-white transition">Počasí</Link>
+            <Link href="/crew" className="text-slate-300 hover:text-white transition">Posádka</Link>
+            <Link href="/settings" className="text-slate-300 hover:text-white transition">Nastavení</Link>
+          </nav>
+        </div>
 
-          <div className="flex items-center gap-4">
-            {/* Vessel Selector */}
-            {vessels.length > 0 && (
+        <div className="flex items-center justify-between md:justify-end gap-4 border-t border-slate-700/40 pt-3 md:border-t-0 md:pt-0 flex-wrap">
+          {/* Vessel Selector / Warnings */}
+          {vessels.length === 0 ? (
+            <span className="text-xs text-red-400 font-semibold animate-pulse">
+              ⚠️ Nemáte žádné plavidlo. Vytvořte ho v sekci 'Plavidla' nebo obnovte stránku.
+            </span>
+          ) : (
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-slate-400 font-medium">Plavidlo:</span>
               <select
                 value={selectedVesselId}
                 onChange={(e) => setSelectedVesselId(e.target.value)}
@@ -477,16 +488,16 @@ export default function MapPage() {
                   </option>
                 ))}
               </select>
-            )}
-            
-            <button
-              onClick={handleOpenAddModal}
-              disabled={!selectedVesselId}
-              className="px-4 py-1.5 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-700 text-white rounded-lg text-sm font-medium transition"
-            >
-              + Přidat bod
-            </button>
-          </div>
+            </div>
+          )}
+          
+          <button
+            onClick={handleOpenAddModal}
+            disabled={!selectedVesselId}
+            className="px-4 py-1.5 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-700 text-white rounded-lg text-sm font-medium transition shadow-md"
+          >
+            + Přidat bod
+          </button>
         </div>
       </header>
 
