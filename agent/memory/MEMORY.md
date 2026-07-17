@@ -53,6 +53,7 @@ logbook/
 | 17.7.2026 | Upřesnění Telegram bota v průvodci | Upraven text nápovědy (/help) tak, aby odpovídal architektuře vlastních privátních botů. Každý uživatel má možnost si vytvořit vlastního privátního bota přes @BotFather a vložit token, což zajišťuje absolutní soukromí. |
 | 17.7.2026 | Odhlášení a smazání účtu | Implementováno tlačítko pro bezpečné odhlášení z aplikace a tlačítko na trvalé smazání účtu. Na backendu byl vytvořen endpoint DELETE /auth/me, který provede bezpečné kaskádové smazání uživatelských dat (lodě, deníky, GPS souřadnice, služby, hlídky atd.) bez porušení cizích klíčů v SQLite. |
 | 17.7.2026 | Veřejný náhled plaveb (Live) | Implementována možnost anonymního sledování aktivních plaveb. Na backendu byly vytvořeny veřejné endpointy pro logbook, zápisy a GPS body. Na landing page se nezalogovaným uživatelům zobrazí sekce "Sledovat aktivní plavby živě", která odkazuje na novou detailní stranu /public/logbook/[id] s interaktivní mapou a timeline zápisů. |
+| 17.7.2026 | Nastavení viditelnosti deníku (is_public) | Přidán sloupec is_public do tabulky logbooks v SQLite. V modálním okně pro vytvoření deníku na frontendu byla přidána možnost zaškrtnout, zda má být deník veřejný. Veřejné endpointy nově vrací pouze ty aktivní deníky, které mají tento příznak zapnutý. |
 
 ## Známé problémy / TODO
 
