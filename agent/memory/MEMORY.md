@@ -57,6 +57,7 @@ logbook/
 | 17.7.2026 | Lokalizace platformy (i18n) | Vytvořen modul i18n.ts pro překlady uživatelského rozhraní. Aplikace nyní podporuje kompletní přepínání mezi češtinou a angličtinou s okamžitou reaktivní aktualizací napříč komponentami. Systém je připraven pro snadné přidání dalších jazyků v budoucnu. |
 | 17.7.2026 | Přepínač jazyků v hlavičce | Přidány čudlíky CS/EN pro přepínání jazyka do anonymní hlavičky úvodní stránky i do navigační lišty přihlášených uživatelů. Přidány překladové klíče pro přihlášení a registraci a lokalizována celá navigace na hlavní nástěnce. |
 | 17.7.2026 | Kompletní reset databáze | Na žádost uživatele byla smazána celá SQLite databáze logbook.db. Služba byla restartována a databázový soubor se automaticky vytvořil zcela čistý se všemi tabulkami (uživatelé, lodě, deníky, GPS body atd.) a s čistým startovním stavem. |
+| 17.7.2026 | Dynamická maketa deníku (Landing Page) | Maketa prohlížeče na úvodní stránce byla předělána na dynamickou. Při načtení se buď vytáhnou reálná data právě probíhající veřejné plavby z databáze, nebo (pokud je databáze prázdná) se vybere jedna ze čtyř detailně zpracovaných ukázkových plaveb (Jadran, Egejské moře, Karibik, Baltské moře) s odpovídajícími údaji o rychlosti, počasí a lodních zápisech. |
 
 ## Známé problémy / TODO
 
