@@ -110,6 +110,7 @@ class Logbook(Base):
     started_at = Column(DateTime)
     closed_at = Column(DateTime)
     signed_hash = Column(String(255))
+    is_public = Column(Boolean, default=True, server_default="1")
     created_at = Column(DateTime, default=datetime.utcnow)
 
     vessel = relationship("Vessel", back_populates="logbooks")

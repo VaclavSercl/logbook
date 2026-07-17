@@ -53,6 +53,7 @@ export default function LogbookPage({ searchParams }: { searchParams?: { showFor
   const [logbookTitle, setLogbookTitle] = useState('');
   const [voyageFrom, setVoyageFrom] = useState('');
   const [voyageTo, setVoyageTo] = useState('');
+  const [isPublic, setIsPublic] = useState(true);
   const [logbookLoading, setLogbookLoading] = useState(false);
 
   const [mounted, setMounted] = useState(false);
@@ -207,6 +208,7 @@ export default function LogbookPage({ searchParams }: { searchParams?: { showFor
         title: logbookTitle,
         voyage_from: voyageFrom || undefined,
         voyage_to: voyageTo || undefined,
+        is_public: isPublic,
       }, token);
 
       setLogbooks((prev) => [...prev, newLogbook]);
@@ -216,6 +218,7 @@ export default function LogbookPage({ searchParams }: { searchParams?: { showFor
       setLogbookTitle('');
       setVoyageFrom('');
       setVoyageTo('');
+      setIsPublic(true);
       setShowLogbookForm(false);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Chyba při vytváření deníku';
@@ -494,6 +497,17 @@ export default function LogbookPage({ searchParams }: { searchParams?: { showFor
                         className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-slate-100 focus:outline-none focus:border-blue-500"
                       />
                     </div>
+                  </div>
+                  <div>
+                    <label className="flex items-center gap-2.5 cursor-pointer select-none">
+                      <input
+                        type="checkbox"
+                        checked={isPublic}
+                        onChange={(e) => setIsPublic(e.target.checked)}
+                        className="w-4 h-4 rounded bg-slate-700 border-slate-600 text-blue-600 focus:ring-blue-500/40"
+                      />
+                      <span className="text-xs text-slate-300">Zveřejnit deník (povolit sledování bez přihlášení)</span>
+                    </label>
                   </div>
                 </div>
                 </>

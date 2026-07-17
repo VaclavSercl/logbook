@@ -83,6 +83,7 @@ class LogbookCreate(BaseModel):
     title: str = Field(..., max_length=255)
     voyage_from: Optional[str] = None
     voyage_to: Optional[str] = None
+    is_public: Optional[bool] = True
 
 
 class LogbookResponse(BaseModel):
@@ -92,6 +93,7 @@ class LogbookResponse(BaseModel):
     voyage_from: Optional[str]
     voyage_to: Optional[str]
     status: str
+    is_public: bool
     started_at: Optional[datetime]
     closed_at: Optional[datetime]
     created_at: datetime

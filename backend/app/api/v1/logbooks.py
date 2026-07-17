@@ -92,7 +92,7 @@ async def list_public_logbooks(db: Session = Depends(get_db)):
     query = (
         select(Logbook, Vessel.name.label("vessel_name"))
         .join(Vessel)
-        .where(Logbook.status == "active")
+        .where(Logbook.status == "active", Logbook.is_public == True)
         .order_by(Logbook.created_at.desc())
     )
     result = db.execute(query)
@@ -108,6 +108,7 @@ async def list_public_logbooks(db: Session = Depends(get_db)):
             "voyage_from": logbook.voyage_from,
             "voyage_to": logbook.voyage_to,
             "status": logbook.status,
+            "is_public": logbook.is_public,
             "created_at": logbook.created_at.isoformat() if logbook.created_at else None
         })
     return logbooks_list
@@ -120,6 +121,8 @@ async def get_public_logbook(logbook_id: UUID, db: Session = Depends(get_db)):
     logbook = result.scalar_one_or_none()
     if not logbook:
         raise HTTPException(status_code=404, detail="Logbook not found")
+    if not logbook.is_public:
+        raise HTTPException(status_code=403, detail="This logbook is private")
     return {
         "id": logbook.id,
         "vessel_id": logbook.vessel_id,
@@ -127,5 +130,6 @@ async def get_public_logbook(logbook_id: UUID, db: Session = Depends(get_db)):
         "title": logbook.title,
         "voyage_from": logbook.voyage_from,
         "voyage_to": logbook.voyage_to,
-        "status": logbook.status
+        "status": logbook.status,
+        "is_public": logbook.is_public
     }
