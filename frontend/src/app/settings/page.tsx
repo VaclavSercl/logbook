@@ -69,7 +69,14 @@ export default function SettingsPage() {
     }
   };
 
-  if (!mounted || !token) {
+  // Hydration state
+  if (!mounted) {
+    return (
+      <div className="min-h-screen bg-slate-900" />
+    );
+  }
+
+  if (!token) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-900">
         <p className="text-slate-400">Pro zobrazení nastavení se musíte přihlásit.</p>

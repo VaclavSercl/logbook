@@ -234,8 +234,15 @@ export default function LogbookPage({ searchParams }: { searchParams?: { showFor
     }
   }
 
+  // Hydration state
+  if (!mounted) {
+    return (
+      <div className="min-h-screen bg-slate-900" />
+    );
+  }
+
   // Header and layout if not logged in
-  if (!mounted || !token) {
+  if (!token) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-900 text-slate-100">
         <div className="text-center p-6 bg-slate-800 rounded-lg border border-slate-700 max-w-sm">

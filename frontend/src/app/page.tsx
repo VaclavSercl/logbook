@@ -34,8 +34,15 @@ export default function DashboardPage() {
       .catch(console.error);
   }, [token]);
 
+  // ─── HYDRATION/LOADING STATE ───
+  if (!mounted) {
+    return (
+      <div className="min-h-screen bg-[#08090a]" />
+    );
+  }
+
   // ─── LANDING PAGE (NOT LOGGED IN) ───
-  if (!mounted || !token) {
+  if (!token) {
     return (
       <div className="min-h-screen bg-[#08090a] text-[#f7f8f8] relative overflow-hidden font-sans selection:bg-[#5e6ad2]/30 selection:text-white">
         {/* Google Fonts Link styled with Inter & JetBrains Mono */}
