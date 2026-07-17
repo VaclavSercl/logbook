@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { dashboardApi, publicApi } from '@/lib/api';
+import { useTranslation } from '@/lib/i18n';
 
 interface DashboardStats {
   vessels: number;
@@ -12,6 +13,8 @@ interface DashboardStats {
 }
 
 export default function DashboardPage() {
+  const { t } = useTranslation();
+  
   const [stats, setStats] = useState<DashboardStats>({
     vessels: 0,
     logbooks: 0,
@@ -92,20 +95,20 @@ export default function DashboardPage() {
         <section className="pt-32 pb-16 px-6 text-center max-w-4xl mx-auto relative z-10">
           <div className="inline-flex items-center gap-1.5 text-[11px] font-medium text-[#7170ff] bg-[#5e6ad2]/10 border border-[#7170ff]/20 rounded-full px-3 py-1 mb-6 tracking-tight">
             <div className="w-1.5 h-1.5 rounded-full bg-[#7170ff] animate-pulse" />
-            Server Čáslav — Připraven k plavbě
+            {t('landing.tag')}
           </div>
           <h1 className="text-5xl md:text-6xl font-medium leading-[1.05] tracking-[-1.5px] mb-6 bg-gradient-to-b from-[#f7f8f8] to-[#d0d6e0] bg-clip-text text-transparent">
-            Inteligentní lodní deník<br />pro moderní mořeplavce.
+            {t('landing.title_1')}<br />{t('landing.title_2')}
           </h1>
           <p className="text-base md:text-lg text-[#8a8f98] leading-relaxed max-w-xl mx-auto mb-10 tracking-tight">
-            Profesionální námořní SaaS platforma s integrovaným AI generátorem, kaskádovou správou flotily a interaktivními mapami OpenSeaMap. Splňuje IMO standardy.
+            {t('landing.desc')}
           </p>
           <div className="flex items-center justify-center gap-4 mb-20">
             <Link href="/login" className="px-6 py-3 bg-[#5e6ad2] hover:bg-[#828fff] text-white text-sm font-medium rounded-md transition shadow-xl shadow-[#5e6ad2]/15">
-              Vstoupit do deníku
+              {t('landing.enter_btn')}
             </Link>
             <Link href="/register" className="px-6 py-3 bg-white/[0.02] hover:bg-white/[0.05] text-[#f7f8f8] text-sm font-medium rounded-md border border-white/[0.08] transition">
-              Založit účet flotily
+              {t('landing.register_btn')}
             </Link>
           </div>
 
@@ -198,7 +201,7 @@ export default function DashboardPage() {
           <section className="max-w-3xl mx-auto px-6 pb-16 relative z-10 text-left">
             <h2 className="text-xs font-semibold text-[#7170ff] uppercase tracking-wider mb-6 flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-red-500 animate-ping" />
-              Sledovat aktivní plavby živě (bez přihlášení)
+              {t('landing.live_title')}
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {publicLogbooks.map((log) => (
@@ -213,8 +216,8 @@ export default function DashboardPage() {
                   </div>
                   <h3 className="text-sm font-semibold text-white group-hover:text-[#7170ff] transition">{log.title}</h3>
                   <div className="mt-3 pt-3 border-t border-white/[0.05] flex justify-between items-center text-[11px] text-[#8a8f98]">
-                    <span>Trasa: <strong>{log.voyage_from || 'Neuvedeno'}</strong> → <strong>{log.voyage_to || 'Neuvedeno'}</strong></span>
-                    <span className="text-[#7170ff] font-medium group-hover:translate-x-1 transition-transform inline-flex items-center gap-0.5">Zobrazit trasu →</span>
+                    <span>{t('landing.live_route')}: <strong>{log.voyage_from || '—'}</strong> → <strong>{log.voyage_to || '—'}</strong></span>
+                    <span className="text-[#7170ff] font-medium group-hover:translate-x-1 transition-transform inline-flex items-center gap-0.5">{t('landing.live_show')}</span>
                   </div>
                 </Link>
               ))}
@@ -224,33 +227,33 @@ export default function DashboardPage() {
 
         {/* ── Features Section ── */}
         <section className="max-w-5xl mx-auto px-6 pb-24 relative z-10">
-          <div className="text-xs font-semibold text-[#62666d] uppercase tracking-wider mb-8 text-center">Špičkové technologie pro bezpečnost na moři</div>
+          <div className="text-xs font-semibold text-[#62666d] uppercase tracking-wider mb-8 text-center">{t('landing.tech_title')}</div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             
             {/* Card 1 */}
             <div className="bg-white/[0.01] border border-white/[0.05] rounded-xl p-6 hover:bg-white/[0.03] hover:border-white/[0.1] transition group">
               <div className="w-10 h-10 rounded-lg bg-[#5e6ad2]/10 border border-[#5e6ad2]/20 text-[#7170ff] flex items-center justify-center text-lg mb-5 group-hover:scale-105 transition">📖</div>
-              <h3 className="text-sm font-semibold tracking-tight text-[#f7f8f8] mb-2">IMO Compliant Lodní Deník</h3>
+              <h3 className="text-sm font-semibold tracking-tight text-[#f7f8f8] mb-2">{t('landing.card_imo_title')}</h3>
               <p className="text-xs text-[#8a8f98] leading-relaxed">
-                Plně odpovídá českému námořnímu zákonu 61/2000 Sb. a vyhlášce 278/2000 Sb. Automatický audit trail a neměnné, kryptograficky jištěné záznamy, které nelze pozměnit bez stopy.
+                {t('landing.card_imo_desc')}
               </p>
             </div>
 
             {/* Card 2 */}
             <div className="bg-white/[0.01] border border-white/[0.05] rounded-xl p-6 hover:bg-white/[0.03] hover:border-white/[0.1] transition group">
               <div className="w-10 h-10 rounded-lg bg-[#10b981]/10 border border-[#10b981]/20 text-[#10b981] flex items-center justify-center text-lg mb-5 group-hover:scale-105 transition">🗺️</div>
-              <h3 className="text-sm font-semibold tracking-tight text-[#f7f8f8] mb-2">Interaktivní námořní mapy</h3>
+              <h3 className="text-sm font-semibold tracking-tight text-[#f7f8f8] mb-2">{t('landing.card_map_title')}</h3>
               <p className="text-xs text-[#8a8f98] leading-relaxed">
-                Renderování trasy plavby pomocí MapLibre GL s kompletními mapovými vrstvami: OpenStreetMap, satelitní snímky a námořní podklady OpenSeaMap (majáky, bójky a hloubky).
+                {t('landing.card_map_desc')}
               </p>
             </div>
 
             {/* Card 3 */}
             <div className="bg-white/[0.01] border border-white/[0.05] rounded-xl p-6 hover:bg-white/[0.03] hover:border-white/[0.1] transition group">
               <div className="w-10 h-10 rounded-lg bg-[#7170ff]/10 border border-[#7170ff]/20 text-[#7170ff] flex items-center justify-center text-lg mb-5 group-hover:scale-105 transition">🤖</div>
-              <h3 className="text-sm font-semibold tracking-tight text-[#f7f8f8] mb-2">Hybridní AI generátor</h3>
+              <h3 className="text-sm font-semibold tracking-tight text-[#f7f8f8] mb-2">{t('landing.card_ai_title')}</h3>
               <p className="text-xs text-[#8a8f98] leading-relaxed">
-                Inteligentní cloud-first psaní námořních hlášení s využitím Gemini 2.5 API a okamžitým, deterministickým offline fallbackem při plavbě bez internetového signálu.
+                {t('landing.card_ai_desc')}
               </p>
             </div>
 

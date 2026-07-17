@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { modulesApi, authApi } from '@/lib/api';
+import { useTranslation, Language } from '@/lib/i18n';
 
 interface Module {
   id: string;
@@ -16,9 +17,10 @@ interface Module {
 }
 
 export default function SettingsPage() {
+  const { t, lang: language, changeLanguage } = useTranslation();
+  
   const [modules, setModules] = useState<Module[]>([]);
   const [loading, setLoading] = useState(true);
-  const [language, setLanguage] = useState('cs');
   const [theme, setTheme] = useState('dark');
   const [notifications, setNotifications] = useState(true);
 
@@ -77,18 +79,18 @@ export default function SettingsPage() {
   };
 
   const handleDeleteAccount = async () => {
-    if (!token || !confirm('⚠️ VAROVÁNÍ: Opravdu chcete trvale smazat svůj účet a všechna data (lodě, deníky, trasy, posádku)? Tato akce je NEVRATNÁ.')) return;
+    if (!token || !confirm(t('settings.delete_confirm'))) return;
     
     try {
       await authApi.deleteAccount(token);
-      alert('Váš účet a veškerá související data byla trvale smazána.');
+      alert(t('settings.delete_success'));
       localStorage.removeItem('token');
       localStorage.removeItem('selectedVesselId');
       localStorage.removeItem('selectedLogbookId');
       window.location.href = '/';
     } catch (err: any) {
       console.error('Failed to delete account:', err);
-      alert(`Chyba při mazání účtu: ${err.message || 'Neznámá chyba'}`);
+      alert(`Chyba: ${err.message || 'Neznámá chyba'}`);
     }
   };
 
@@ -110,37 +112,32 @@ export default function SettingsPage() {
   return (
     <div className="min-h-screen bg-slate-900 text-slate-100 font-sans">
       <header className="bg-slate-800 border-b border-slate-700 px-6 py-4 flex items-center gap-4">
-        <Link href="/" className="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-slate-100 rounded-lg text-sm font-medium transition flex items-center gap-1.5">
-          🏠 Domů
+        <Link href="/" className="px-3 py-1.5 bg-slate-700 hover:bg-slate-650 text-slate-100 rounded-lg text-sm font-medium transition flex items-center gap-1.5">
+          {t('common.home')}
         </Link>
-        <Link href="/help" className="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-slate-100 rounded-lg text-sm font-medium transition flex items-center gap-1.5">
-          ⚓ Nápověda
+        <Link href="/help" className="px-3 py-1.5 bg-slate-700 hover:bg-slate-650 text-slate-100 rounded-lg text-sm font-medium transition flex items-center gap-1.5">
+          {t('common.help')}
         </Link>
-        <h1 className="text-2xl font-bold text-slate-100 flex items-center gap-2">⚙️ Nastavení</h1>
+        <h1 className="text-2xl font-bold text-slate-100 flex items-center gap-2">{t('settings.title')}</h1>
       </header>
 
       <main className="p-6 max-w-2xl mx-auto space-y-8">
         {/* Language */}
         <section className="bg-slate-800 rounded-xl p-6 border border-slate-700/60 shadow">
-          <h2 className="text-slate-100 font-semibold mb-4 flex items-center gap-2">🌐 Jazyk platformy</h2>
+          <h2 className="text-slate-100 font-semibold mb-4 flex items-center gap-2">{t('settings.lang_title')}</h2>
           <select
             value={language}
-            onChange={(e) => setLanguage(e.target.value)}
+            onChange={(e) => changeLanguage(e.target.value as Language)}
             className="w-full px-4 py-2.5 bg-slate-700 border border-slate-600 rounded-lg text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="cs">Čeština</option>
             <option value="en">English</option>
-            <option value="de">Deutsch</option>
-            <option value="hr">Hrvatski</option>
-            <option value="it">Italiano</option>
-            <option value="fr">Français</option>
-            <option value="es">Español</option>
           </select>
         </section>
 
         {/* Theme */}
         <section className="bg-slate-800 rounded-xl p-6 border border-slate-700/60 shadow">
-          <h2 className="text-slate-100 font-semibold mb-4 flex items-center gap-2">🎨 Barevné schéma</h2>
+          <h2 className="text-slate-100 font-semibold mb-4 flex items-center gap-2">{t('settings.theme_title')}</h2>
           <div className="flex gap-3">
             <button
               onClick={() => setTheme('dark')}
@@ -150,7 +147,7 @@ export default function SettingsPage() {
                   : 'bg-slate-750 border-slate-700 text-slate-300 hover:border-slate-650'
               }`}
             >
-              🌙 Tmavé (doporučeno)
+              {t('settings.theme_dark')}
             </button>
             <button
               onClick={() => setTheme('light')}
@@ -160,14 +157,14 @@ export default function SettingsPage() {
                   : 'bg-slate-750 border-slate-700 text-slate-300 hover:border-slate-650'
               }`}
             >
-              ☀️ Světlé
+              {t('settings.theme_light')}
             </button>
           </div>
         </section>
 
         {/* Notifications */}
         <section className="bg-slate-800 rounded-xl p-6 border border-slate-700/60 shadow">
-          <h2 className="text-slate-100 font-semibold mb-4 flex items-center gap-2">🔔 Upozornění</h2>
+          <h2 className="text-slate-100 font-semibold mb-4 flex items-center gap-2">{t('settings.notif_title')}</h2>
           <label className="flex items-center gap-3 cursor-pointer">
             <input
               type="checkbox"
@@ -175,15 +172,15 @@ export default function SettingsPage() {
               onChange={(e) => setNotifications(e.target.checked)}
               className="w-5 h-5 rounded bg-slate-700 border-slate-600 text-blue-600 focus:ring-blue-500/40"
             />
-            <span className="text-slate-300 text-sm">Povolit automatické push notifikace stavu plavby</span>
+            <span className="text-slate-300 text-sm">{t('settings.notif_desc')}</span>
           </label>
         </section>
 
         {/* Modules */}
         <section className="bg-slate-800 rounded-xl p-6 border border-slate-700/60 shadow">
-          <h2 className="text-slate-100 font-semibold mb-4 flex items-center gap-2">🧩 Systémové moduly</h2>
+          <h2 className="text-slate-100 font-semibold mb-4 flex items-center gap-2">{t('settings.modules_title')}</h2>
           {loading ? (
-            <p className="text-slate-400 text-sm">Načítám moduly...</p>
+            <p className="text-slate-400 text-sm">{t('common.loading')}</p>
           ) : (
             <div className="space-y-3">
               {modules.map((mod) => (
@@ -197,7 +194,7 @@ export default function SettingsPage() {
                       <p className="text-slate-100 font-semibold text-sm">{mod.name}</p>
                       <span className="text-[10px] text-slate-500 font-mono">v{mod.version}</span>
                     </div>
-                    <p className="text-slate-400 text-xs mt-1">{mod.description || 'Žádný popis.'}</p>
+                    <p className="text-slate-400 text-xs mt-1">{mod.description || 'No description.'}</p>
                   </div>
                   <label className="relative inline-flex items-center cursor-pointer">
                     <input
@@ -217,29 +214,29 @@ export default function SettingsPage() {
 
         {/* Account Management */}
         <section className="bg-slate-800 rounded-xl p-6 border border-slate-700/60 shadow space-y-4">
-          <h2 className="text-slate-100 font-semibold mb-2 flex items-center gap-2">🔑 Správa účtu</h2>
+          <h2 className="text-slate-100 font-semibold mb-2 flex items-center gap-2">{t('settings.account_title')}</h2>
           <div className="flex flex-col sm:flex-row gap-3">
             <button
               onClick={handleLogout}
               className="flex-1 px-4 py-3 bg-slate-700 hover:bg-slate-650 text-slate-100 rounded-lg font-semibold text-sm transition"
             >
-              🚪 Odhlásit se
+              {t('common.logout')}
             </button>
             <button
               onClick={handleDeleteAccount}
               className="flex-1 px-4 py-3 bg-red-900/40 hover:bg-red-800/60 text-red-200 border border-red-700/50 rounded-lg font-semibold text-sm transition"
             >
-              🗑️ Trvale smazat účet
+              {t('common.delete_account')}
             </button>
           </div>
         </section>
 
         {/* Save */}
         <button
-          onClick={() => alert('Nastavení uloženo.')}
+          onClick={() => alert(t('settings.saved_alert'))}
           className="w-full px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold text-sm transition shadow-lg shadow-blue-500/15"
         >
-          Uložit veškeré změny
+          {t('common.save')}
         </button>
       </main>
     </div>
