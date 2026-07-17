@@ -43,6 +43,7 @@ logbook/
 | 15.5.2026 | JWT autentizace | Bezpečný přístup |
 | 15.5.2026 | Docker Compose | Snadné nasazení |
 | 16.7.2026 | Implementace Crew & Weather | Dokončení chybějících modulů a stránek v Next.js a FastAPI. Zprovoznění Open-Meteo API. |
+| 17.7.2026 | Oprava inicializace mapy | Vyřešení chyby, kdy se neinicializovala mapa MapLibre (prázdná obrazovka) kvůli chybějící závislosti hooku na mount state. |
 
 ## Známé problémy / TODO
 
