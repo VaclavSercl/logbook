@@ -323,6 +323,9 @@ export default function CrewPage() {
           <Link href="/" className="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-slate-100 rounded-lg text-sm font-medium transition flex items-center gap-1.5">
             🏠 Domů
           </Link>
+          <Link href="/help" className="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-slate-100 rounded-lg text-sm font-medium transition flex items-center gap-1.5">
+            ⚓ Nápověda
+          </Link>
           <h1 className="text-2xl font-bold text-slate-100 flex items-center gap-2">👥 Služba & Posádka</h1>
         </div>
 

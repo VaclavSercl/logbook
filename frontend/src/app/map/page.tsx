@@ -491,6 +491,7 @@ export default function MapPage() {
             <Link href="/weather" className="text-slate-300 hover:text-white transition">Počasí</Link>
             <Link href="/crew" className="text-slate-300 hover:text-white transition">Posádka</Link>
             <Link href="/settings" className="text-slate-300 hover:text-white transition">Nastavení</Link>
+            <Link href="/help" className="text-slate-300 hover:text-white transition">Nápověda</Link>
           </nav>
         </div>
 

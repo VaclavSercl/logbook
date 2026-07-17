@@ -299,6 +299,9 @@ export default function LogbookPage({ searchParams }: { searchParams?: { showFor
           <Link href="/" className="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-slate-100 rounded-lg text-sm font-medium transition flex items-center gap-1.5">
             🏠 Domů
           </Link>
+          <Link href="/help" className="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-slate-100 rounded-lg text-sm font-medium transition flex items-center gap-1.5">
+            ⚓ Nápověda
+          </Link>
           <h1 className="text-xl font-semibold text-slate-100">📖 Lodní deník</h1>
         </div>
 

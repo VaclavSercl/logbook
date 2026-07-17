@@ -261,6 +261,7 @@ export default function DashboardPage() {
             <Link href="/vessels" className="text-xs font-medium text-[#8a8f98] hover:text-[#f7f8f8] px-3 py-2 rounded-md hover:bg-white/[0.04] transition">Plavidla</Link>
             <Link href="/crew" className="text-xs font-medium text-[#8a8f98] hover:text-[#f7f8f8] px-3 py-2 rounded-md hover:bg-white/[0.04] transition">Posádka</Link>
             <Link href="/settings" className="text-xs font-medium text-[#8a8f98] hover:text-[#f7f8f8] px-3 py-2 rounded-md hover:bg-white/[0.04] transition">Nastavení</Link>
+            <Link href="/help" className="text-xs font-medium text-[#8a8f98] hover:text-[#f7f8f8] px-3 py-2 rounded-md hover:bg-white/[0.04] transition">Nápověda</Link>
           </nav>
         </div>
       </header>

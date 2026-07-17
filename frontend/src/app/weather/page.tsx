@@ -119,6 +119,9 @@ export default function WeatherPage() {
           <Link href="/" className="px-3 py-1.5 bg-slate-800 hover:bg-slate-750 text-slate-200 border border-slate-700/60 rounded-lg text-xs font-semibold tracking-tight transition flex items-center gap-1.5 shadow-lg shadow-black/20">
             🏠 Domů
           </Link>
+          <Link href="/help" className="px-3 py-1.5 bg-slate-800 hover:bg-slate-750 text-slate-200 border border-slate-700/60 rounded-lg text-xs font-semibold tracking-tight transition flex items-center gap-1.5 shadow-lg shadow-black/20">
+            ⚓ Nápověda
+          </Link>
           <h1 className="text-xl font-bold bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent flex items-center gap-2">🌤️ Meteostanice Cockpit</h1>
         </div>
         
