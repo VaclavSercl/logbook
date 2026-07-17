@@ -12,6 +12,93 @@ interface DashboardStats {
   activeModules: number;
 }
 
+const RANDOM_VOYAGES = [
+  {
+    vessel: "Sailing Yacht 'Čáslav'",
+    speed: "6.8 kn",
+    weather: "🌤️ NW 12 uzlů",
+    date: "17. července 2026",
+    hash: "sha256:078b2d49a...",
+    entries: [
+      {
+        time: "10:00 UTC",
+        category: "Vyplutí",
+        notes: "Vyplutí z mariny Rafina (37°55'N, 23°40'E). Vítr NW 12 uzlů, stav moře mírný, tlak 1013 hPa. Všechny lodní systémy zelené.",
+        locked: true,
+      },
+      {
+        time: "12:00 UTC",
+        category: "Plavba",
+        notes: "Plavba na kurz 175°, rychlost 6,8 uzlu. Pozice 37°51'N, 23°43'E. Urazeno 8.2 NM za 2 hodiny.",
+        locked: false,
+      }
+    ]
+  },
+  {
+    vessel: "Ketch 'Njoror'",
+    speed: "5.4 kn",
+    weather: "🌧️ S 18 uzlů",
+    date: "17. července 2026",
+    hash: "sha256:8f4c029a1...",
+    entries: [
+      {
+        time: "08:15 UTC",
+        category: "Příprava",
+        notes: "Kontrola lanoví a motoru v marině ACI Split. Tlak vzduchu klesá na 1009 hPa, hlášen déšť. Posádka obléká nepromokavé obleky.",
+        locked: true,
+      },
+      {
+        time: "09:45 UTC",
+        category: "Plavba",
+        notes: "Plavba pod bouřkovou kosatkou a refovanou hlavní plachtou. Kurz 210° směr Hvar. Vlny 1.5m, silný boční vítr.",
+        locked: false,
+      }
+    ]
+  },
+  {
+    vessel: "Catamaran 'Solitaire'",
+    speed: "8.2 kn",
+    weather: "☀️ ESE 15 uzlů",
+    date: "17. července 2026",
+    hash: "sha256:e3b0c4429...",
+    entries: [
+      {
+        time: "11:00 UTC",
+        category: "Kotvení",
+        notes: "Kotevní manévr v zátoce Cane Garden Bay (Tortola). Hloubka 5 metrů, písek. Kotevní řetěz vypuštěn 25 metrů, drží bezpečně.",
+        locked: true,
+      },
+      {
+        time: "13:30 UTC",
+        category: "Přeplavba",
+        notes: "Vyplutí směr Jost Van Dyke. Rychlý zadobční vítr, plavba na plný genaker. Rychlost dosahuje 9 uzlů. Posádka v naprosté pohodě.",
+        locked: false,
+      }
+    ]
+  },
+  {
+    vessel: "Sloop 'Windrunner'",
+    speed: "7.1 kn",
+    weather: "☁️ W 22 uzlů",
+    date: "17. července 2026",
+    hash: "sha256:a4f109be3...",
+    entries: [
+      {
+        time: "07:30 UTC",
+        category: "Hlídka",
+        notes: "Ranní hlídka předává službu. Pozice 54°22'N, 11°05'E (Baltské moře). Teplota vody 14°C, vzduch 16°C. Viditelnost 5 NM.",
+        locked: true,
+      },
+      {
+        time: "09:00 UTC",
+        category: "Plavba",
+        notes: "Křižování proti větru u ostrova Fehmarn. Kurz 065°, korigováno o snos proudem. Ref 2 na hlavní plachtě. Motor připraven v pohotovosti.",
+        locked: false,
+      }
+    ]
+  }
+];
+
 export default function DashboardPage() {
   const { t, lang, changeLanguage } = useTranslation();
   
@@ -25,6 +112,14 @@ export default function DashboardPage() {
   const [mounted, setMounted] = useState(false);
   const [token, setToken] = useState<string | null>(null);
   const [publicLogbooks, setPublicLogbooks] = useState<any[]>([]);
+
+  // Interactive mock UI state
+  const [mockVesselName, setMockVesselName] = useState("Sailing Yacht 'Čáslav'");
+  const [mockSpeed, setMockSpeed] = useState("6.8 kn");
+  const [mockWeather, setMockWeather] = useState("🌤️ NW 12 uzlů");
+  const [mockDate, setMockDate] = useState("17. července 2026");
+  const [mockHash, setMockHash] = useState("sha256:078b2d49a...");
+  const [mockEntries, setMockEntries] = useState<any[]>([]);
 
   useEffect(() => {
     setMounted(true);
@@ -44,6 +139,52 @@ export default function DashboardPage() {
       .then(setPublicLogbooks)
       .catch(console.error);
   }, [token]);
+
+  // Hook to load actual or random mock voyage data
+  useEffect(() => {
+    if (publicLogbooks.length > 0) {
+      // Pick the first public logbook
+      const actualLog = publicLogbooks[0];
+      setMockVesselName(`Sailing Yacht '${actualLog.vessel_name}'`);
+      setMockDate(actualLog.created_at ? new Date(actualLog.created_at).toLocaleDateString('cs-CZ', { day: 'numeric', month: 'long', year: 'numeric' }) : "Dnes");
+      setMockHash(`sha256:${actualLog.id.substring(0, 8)}...`);
+      
+      publicApi.listEntries(actualLog.id)
+        .then((data) => {
+          if (data && data.length > 0) {
+            const mapped = data.slice(-2).map((e: any) => ({
+              time: new Date(e.timestamp).toLocaleTimeString('cs-CZ', { hour: '2-digit', minute: '2-digit' }) + " UTC",
+              category: e.category || "Zápis",
+              notes: e.notes || "Bez popisku.",
+              locked: e.is_locked
+            }));
+            setMockEntries(mapped);
+            if (data[data.length - 1].speed !== null) {
+              setMockSpeed(`${data[data.length - 1].speed} kn`);
+            }
+            if (data[data.length - 1].wind_speed !== null) {
+              setMockWeather(`🌤️ ${data[data.length - 1].wind_direction || 'N'} ${data[data.length - 1].wind_speed} uzlů`);
+            }
+          } else {
+            loadRandomVoyage();
+          }
+        })
+        .catch(() => loadRandomVoyage());
+    } else {
+      loadRandomVoyage();
+    }
+
+    function loadRandomVoyage() {
+      const randomIndex = Math.floor(Math.random() * RANDOM_VOYAGES.length);
+      const selected = RANDOM_VOYAGES[randomIndex];
+      setMockVesselName(selected.vessel);
+      setMockSpeed(selected.speed);
+      setMockWeather(selected.weather);
+      setMockDate(selected.date);
+      setMockHash(selected.hash);
+      setMockEntries(selected.entries);
+    }
+  }, [publicLogbooks]);
 
   // ─── HYDRATION/LOADING STATE ───
   if (!mounted) {
@@ -162,7 +303,7 @@ export default function DashboardPage() {
                   </div>
                   <div className="space-y-1">
                     <div className="px-3 py-2 bg-white/[0.03] border border-white/[0.05] rounded-md text-xs font-medium text-[#f7f8f8] flex items-center justify-between">
-                      <span>Sailing Yacht 'Čáslav'</span>
+                      <span>{mockVesselName}</span>
                       <span className="w-2 h-2 rounded-full bg-[#10b981]" />
                     </div>
                   </div>
@@ -171,12 +312,12 @@ export default function DashboardPage() {
                 <div className="space-y-3">
                   <div className="bg-white/[0.01] border border-white/[0.05] rounded-lg p-3">
                     <span className="text-[10px] text-[#62666d] block font-mono-custom uppercase">Aktuální rychlost</span>
-                    <span className="text-xl font-semibold text-[#f7f8f8]">6.8 kn</span>
+                    <span className="text-xl font-semibold text-[#f7f8f8]">{mockSpeed}</span>
                   </div>
                   <div className="bg-white/[0.01] border border-white/[0.05] rounded-lg p-3">
                     <span className="text-[10px] text-[#62666d] block font-mono-custom uppercase">Počasí na pozici</span>
                     <span className="text-xs text-[#d0d6e0] font-medium flex items-center gap-1.5 mt-0.5">
-                      <span>🌤️ NW 12 uzlů</span>
+                      <span>{mockWeather}</span>
                     </span>
                   </div>
                 </div>
@@ -187,32 +328,36 @@ export default function DashboardPage() {
                 <div>
                   <div className="flex items-center justify-between mb-4 border-b border-white/[0.05] pb-2">
                     <h3 className="text-xs font-semibold uppercase tracking-wider text-[#8a8f98]">Chronologický zápis deníku</h3>
-                    <span className="text-[10px] font-mono-custom text-[#62666d]">4. června 2026</span>
+                    <span className="text-[10px] font-mono-custom text-[#62666d]">{mockDate}</span>
                   </div>
                   <div className="space-y-2">
-                    <div className="bg-white/[0.02] border border-white/[0.05] rounded-lg p-3">
-                      <div className="flex items-center justify-between mb-1.5">
-                        <span className="text-[10px] text-[#7170ff] font-medium font-mono-custom">10:00 UTC · Vyplutí</span>
-                        <span className="text-[10px] px-2 py-0.5 bg-[#10b981]/10 text-[#10b981] rounded-full font-mono-custom">IMO Valid</span>
+                    {mockEntries.map((entry, index) => (
+                      <div
+                        key={index}
+                        className={`bg-white/[0.02] border border-white/[0.05] rounded-lg p-3 ${
+                          index > 0 ? 'opacity-70' : ''
+                        }`}
+                      >
+                        <div className="flex items-center justify-between mb-1.5">
+                          <span className={`text-[10px] font-medium font-mono-custom ${
+                            index === 0 ? 'text-[#7170ff]' : 'text-[#8a8f98]'
+                          }`}>
+                            {entry.time} · {entry.category}
+                          </span>
+                          {entry.locked && (
+                            <span className="text-[10px] px-2 py-0.5 bg-[#10b981]/10 text-[#10b981] rounded-full font-mono-custom">IMO Valid</span>
+                          )}
+                        </div>
+                        <p className="text-xs text-[#d0d6e0] leading-relaxed">
+                          {entry.notes}
+                        </p>
                       </div>
-                      <p className="text-xs text-[#d0d6e0] leading-relaxed">
-                        Vyplutí z mariny Rafina (37°55'N, 23°40'E). Vítr NW 12 uzlů, stav moře mírný, tlak 1013 hPa. Všechny lodní systémy zelené.
-                      </p>
-                    </div>
-
-                    <div className="bg-white/[0.02] border border-white/[0.05] rounded-lg p-3 opacity-60">
-                      <div className="flex items-center justify-between mb-1.5">
-                        <span className="text-[10px] text-[#8a8f98] font-medium font-mono-custom">12:00 UTC · Plavba</span>
-                      </div>
-                      <p className="text-xs text-[#d0d6e0]">
-                        Plavba na kurz 175°, rychlost 6,8 uzlu. Pozice 37°51'N, 23°43'E. Urazeno 8.2 NM za 2 hodiny.
-                      </p>
-                    </div>
+                    ))}
                   </div>
                 </div>
 
                 <div className="flex items-center justify-between border-t border-white/[0.05] pt-3 text-[10px] font-mono-custom text-[#62666d]">
-                  <span>Hash integrity: sha256:078b2...</span>
+                  <span className="truncate max-w-[200px]">Hash integrity: {mockHash}</span>
                   <span className="text-[#10b981]">● Zámek aktivní</span>
                 </div>
               </div>
