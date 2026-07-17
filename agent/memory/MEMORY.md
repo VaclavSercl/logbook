@@ -48,6 +48,7 @@ logbook/
 | 17.7.2026 | Odstranění problikávání (Hydration flicker) | Rozdělení stavu mountování (hydration) a přihlášení (token) na všech klientských stránkách frontendu. Pokud ještě kód neběží na klientu, vykreslí se neutrální tmavý div, čímž se zamezilo problikávání přihlašovací / úvodní stránky pro přihlášeného uživatele. |
 | 17.7.2026 | Funkce mazání deníků | Přidáno tlačítko "Smazat deník" na frontendu a implementován odpovídající DELETE endpoint na backendu. Při smazání deníku dojde k řetězovému (cascade) vymazání všech souvisejících záznamů, médií, rozpisů hlídek a služeb v kuchyni. |
 | 17.7.2026 | Validace plavidla u deníků | Ošetřeno chování při vytváření deníku, pokud uživatel nemá žádnou loď. V takovém případě se v modálním okně zobrazí varování, tlačítko na vytvoření se zakáže a zobrazí se přímý odkaz na vytvoření lodi. Vytvoření bez vybrané lodi je odmítnuto i na úrovni JavaScriptové funkce s jasným chybovým hlášením. |
+| 17.7.2026 | Varování na aktivní deník | Přidáno varování do modálního okna pro vytvoření deníku, pokud k vybranému plavidlu již existuje jiný otevřený (aktivní) lodní deník. Uživatel je upozorněn, aby jej nejprve uzavřel pro zajištění správné synchronizace z Telegramu. |
 
 ## Známé problémy / TODO
 
