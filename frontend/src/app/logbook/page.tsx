@@ -451,7 +451,14 @@ export default function LogbookPage({ searchParams }: { searchParams?: { showFor
                   </div>
                 </div>
               ) : (
-                <div className="space-y-4 mb-6">
+                <>
+                  {logbooks.find((l) => l.status === 'active') && (
+                    <div className="mb-4 p-3 bg-yellow-950/40 border border-yellow-700/60 rounded-lg text-yellow-200 text-xs leading-relaxed">
+                      ⚠️ **Upozornění:** K tomuto plavidlu již máte aktivní deník **"{logbooks.find((l) => l.status === 'active')?.title}"**. 
+                      Pro správnou synchronizaci zápisů z Telegramu doporučujeme nejprve stávající deník uzavřít.
+                    </div>
+                  )}
+                  <div className="space-y-4 mb-6">
                   <div>
                     <label className="block text-sm font-medium text-slate-400 mb-1">Název / Titul deníku</label>
                     <input
@@ -486,6 +493,7 @@ export default function LogbookPage({ searchParams }: { searchParams?: { showFor
                     </div>
                   </div>
                 </div>
+                </>
               )}
 
               <div className="flex justify-end gap-3">
