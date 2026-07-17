@@ -52,6 +52,7 @@ logbook/
 | 17.7.2026 | Uživatelský průvodce (/help) | Vytvořena nová, přehledná stránka s návody pro uživatele. Obsahuje podrobný návod na nastavení a propojení s Telegramem, sdílení Live Location na dobu neurčitou a zápisy řeči přes Gemini AI. Odkazy na nápovědu přidány do záhlaví všech podstránek. |
 | 17.7.2026 | Upřesnění Telegram bota v průvodci | Upraven text nápovědy (/help) tak, aby odpovídal architektuře vlastních privátních botů. Každý uživatel má možnost si vytvořit vlastního privátního bota přes @BotFather a vložit token, což zajišťuje absolutní soukromí. |
 | 17.7.2026 | Odhlášení a smazání účtu | Implementováno tlačítko pro bezpečné odhlášení z aplikace a tlačítko na trvalé smazání účtu. Na backendu byl vytvořen endpoint DELETE /auth/me, který provede bezpečné kaskádové smazání uživatelských dat (lodě, deníky, GPS souřadnice, služby, hlídky atd.) bez porušení cizích klíčů v SQLite. |
+| 17.7.2026 | Veřejný náhled plaveb (Live) | Implementována možnost anonymního sledování aktivních plaveb. Na backendu byly vytvořeny veřejné endpointy pro logbook, zápisy a GPS body. Na landing page se nezalogovaným uživatelům zobrazí sekce "Sledovat aktivní plavby živě", která odkazuje na novou detailní stranu /public/logbook/[id] s interaktivní mapou a timeline zápisů. |
 
 ## Známé problémy / TODO
 
