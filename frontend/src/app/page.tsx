@@ -13,7 +13,7 @@ interface DashboardStats {
 }
 
 export default function DashboardPage() {
-  const { t } = useTranslation();
+  const { t, lang, changeLanguage } = useTranslation();
   
   const [stats, setStats] = useState<DashboardStats>({
     vessels: 0,
@@ -82,11 +82,35 @@ export default function DashboardPage() {
             <span className="text-sm font-medium tracking-tight text-[#f7f8f8]">LOGBOOK</span>
           </div>
           <div className="flex items-center gap-4">
+            {/* Language Switcher */}
+            <div className="flex items-center gap-1 bg-white/[0.02] border border-white/[0.05] rounded-md p-0.5">
+              <button
+                onClick={() => changeLanguage('cs')}
+                className={`px-2 py-1 text-[10px] font-semibold rounded transition ${
+                  lang === 'cs'
+                    ? 'bg-[#5e6ad2] text-white'
+                    : 'text-[#8a8f98] hover:text-[#f7f8f8]'
+                }`}
+              >
+                CS
+              </button>
+              <button
+                onClick={() => changeLanguage('en')}
+                className={`px-2 py-1 text-[10px] font-semibold rounded transition ${
+                  lang === 'en'
+                    ? 'bg-[#5e6ad2] text-white'
+                    : 'text-[#8a8f98] hover:text-[#f7f8f8]'
+                }`}
+              >
+                EN
+              </button>
+            </div>
+
             <Link href="/login" className="text-xs font-medium text-[#8a8f98] hover:text-[#f7f8f8] transition px-3 py-1.5 rounded-md hover:bg-white/[0.04]">
-              Přihlásit se
+              {t('common.login')}
             </Link>
             <Link href="/register" className="text-xs font-medium bg-[#5e6ad2] hover:bg-[#828fff] text-white transition px-4 py-2 rounded-md shadow-lg shadow-[#5e6ad2]/20">
-              Registrovat
+              {t('common.register')}
             </Link>
           </div>
         </nav>
@@ -295,13 +319,32 @@ export default function DashboardPage() {
             <h1 className="text-sm font-semibold tracking-tight text-[#f7f8f8]">LOGBOOK</h1>
           </Link>
           <nav className="flex items-center gap-1">
-            <Link href="/logbook" className="text-xs font-medium text-[#8a8f98] hover:text-[#f7f8f8] px-3 py-2 rounded-md hover:bg-white/[0.04] transition">Deník</Link>
-            <Link href="/map" className="text-xs font-medium text-[#8a8f98] hover:text-[#f7f8f8] px-3 py-2 rounded-md hover:bg-white/[0.04] transition">Mapa</Link>
-            <Link href="/weather" className="text-xs font-medium text-[#8a8f98] hover:text-[#f7f8f8] px-3 py-2 rounded-md hover:bg-white/[0.04] transition">Počasí</Link>
-            <Link href="/vessels" className="text-xs font-medium text-[#8a8f98] hover:text-[#f7f8f8] px-3 py-2 rounded-md hover:bg-white/[0.04] transition">Plavidla</Link>
-            <Link href="/crew" className="text-xs font-medium text-[#8a8f98] hover:text-[#f7f8f8] px-3 py-2 rounded-md hover:bg-white/[0.04] transition">Posádka</Link>
-            <Link href="/settings" className="text-xs font-medium text-[#8a8f98] hover:text-[#f7f8f8] px-3 py-2 rounded-md hover:bg-white/[0.04] transition">Nastavení</Link>
-            <Link href="/help" className="text-xs font-medium text-[#8a8f98] hover:text-[#f7f8f8] px-3 py-2 rounded-md hover:bg-white/[0.04] transition">Nápověda</Link>
+            <Link href="/logbook" className="text-xs font-medium text-[#8a8f98] hover:text-[#f7f8f8] px-3 py-2 rounded-md hover:bg-white/[0.04] transition">{t('common.logbook')}</Link>
+            <Link href="/map" className="text-xs font-medium text-[#8a8f98] hover:text-[#f7f8f8] px-3 py-2 rounded-md hover:bg-white/[0.04] transition">{t('common.map')}</Link>
+            <Link href="/weather" className="text-xs font-medium text-[#8a8f98] hover:text-[#f7f8f8] px-3 py-2 rounded-md hover:bg-white/[0.04] transition">{t('common.weather')}</Link>
+            <Link href="/vessels" className="text-xs font-medium text-[#8a8f98] hover:text-[#f7f8f8] px-3 py-2 rounded-md hover:bg-white/[0.04] transition">{t('common.vessels')}</Link>
+            <Link href="/crew" className="text-xs font-medium text-[#8a8f98] hover:text-[#f7f8f8] px-3 py-2 rounded-md hover:bg-white/[0.04] transition">{t('common.crew')}</Link>
+            <Link href="/settings" className="text-xs font-medium text-[#8a8f98] hover:text-[#f7f8f8] px-3 py-2 rounded-md hover:bg-white/[0.04] transition">{t('common.settings')}</Link>
+            <Link href="/help" className="text-xs font-medium text-[#8a8f98] hover:text-[#f7f8f8] px-3 py-2 rounded-md hover:bg-white/[0.04] transition">{t('common.help')}</Link>
+            
+            <div className="flex items-center gap-0.5 bg-white/[0.02] border border-white/[0.05] rounded-md p-0.5 ml-2">
+              <button
+                onClick={() => changeLanguage('cs')}
+                className={`px-1.5 py-0.5 text-[9px] font-bold rounded transition ${
+                  lang === 'cs' ? 'bg-[#5e6ad2] text-white' : 'text-[#8a8f98] hover:text-[#f7f8f8]'
+                }`}
+              >
+                CS
+              </button>
+              <button
+                onClick={() => changeLanguage('en')}
+                className={`px-1.5 py-0.5 text-[9px] font-bold rounded transition ${
+                  lang === 'en' ? 'bg-[#5e6ad2] text-white' : 'text-[#8a8f98] hover:text-[#f7f8f8]'
+                }`}
+              >
+                EN
+              </button>
+            </div>
           </nav>
         </div>
       </header>
