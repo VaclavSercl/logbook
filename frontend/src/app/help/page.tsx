@@ -67,7 +67,7 @@ export default function HelpPage() {
               <strong>Ano!</strong> Celé webové rozhraní i databázová architektura jsou od základu navrženy jako multi-tenantní (veřejná služba pro více uživatelů). Každý uživatel má vlastní účet, svá plavidla, posádky a deníky, které jsou chráněny autorizací a ostatní uživatelé k nim nemají přístup.
             </p>
             <p className="text-sm text-[#8a8f98] leading-relaxed">
-              Telegram bot je momentálně v pilotním provozu spárován s jedním chat ID kapitána. V další plánované fázi (Fáze 4) bude do Nastavení přidán unikátní spárovací kód (např. <code className="font-mono-custom text-xs bg-white/[0.05] px-1 py-0.5 rounded text-[#7170ff]">/connect &lt;kód&gt;</code>), kterým si jakýkoliv nový uživatel propojí svůj Telegram účet se svým profilem v aplikaci.
+              Každý kapitán má možnost si vytvořit a nastavit <strong>vlastního privátního Telegram bota</strong> (vytvořeného přes @BotFather), který bude komunikovat výhradně s jeho lodním deníkem. Váš bot bude zcela oddělený a nikdo cizí k němu nebude mít přístup. Možnost vložit vlastní bot token a chat ID bude brzy přidána přímo do sekce Nastavení.
             </p>
           </section>
 
@@ -111,9 +111,9 @@ export default function HelpPage() {
               <div className="flex gap-4 p-4 bg-white/[0.01] border border-white/[0.05] rounded-lg">
                 <div className="text-lg">🤖</div>
                 <div>
-                  <h4 className="text-sm font-semibold text-white mb-1">Vyhledání bota a aktivace</h4>
+                  <h4 className="text-sm font-semibold text-white mb-1">Vytvoření privátního bota na Telegramu</h4>
                   <p className="text-xs text-[#8a8f98] leading-relaxed">
-                    Vyhledejte na Telegramu bota <strong>@caslav_logbook_bot</strong> (nebo zadejte bot token poskytnutý správcem) a odešlete zprávu <code className="font-mono-custom text-xs bg-white/[0.05] px-1 py-0.5 rounded text-[#7170ff]">/start</code>. Zobrazí se Vám přehled dostupných příkazů.
+                    Vyhledejte na Telegramu bota <strong>@BotFather</strong>, odešlete příkaz <code className="font-mono-custom text-xs bg-white/[0.05] px-1 py-0.5 rounded text-[#7170ff]">/newbot</code> a podle instrukcí vytvořte svého vlastního bota. Získaný <strong>Bot Token</strong> vložíte do nastavení svého profilu v sekci Nastavení na webu (tato integrace se připravuje). Spusťte chat se svým botem odesláním zprávy <code className="font-mono-custom text-xs bg-white/[0.05] px-1 py-0.5 rounded text-[#7170ff]">/start</code>.
                   </p>
                 </div>
               </div>
