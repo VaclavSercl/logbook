@@ -44,6 +44,7 @@ logbook/
 | 15.5.2026 | Docker Compose | Snadné nasazení |
 | 16.7.2026 | Implementace Crew & Weather | Dokončení chybějících modulů a stránek v Next.js a FastAPI. Zprovoznění Open-Meteo API. |
 | 17.7.2026 | Oprava mapy & Live Polling | Vyřešení chybějící inicializace mapy MapLibre (mount state) a implementace tichého 10s auto-polling intervalu na frontendu pro okamžité zobrazení bodů z Telegram Live Location. |
+| 17.7.2026 | Oprava UUID v SQLite | Vyřešení problému s mizejícími lodními deníky po refreshnutí stránky. SQLite neumí porovnat raw UUID objekty ze SQLAlchemy filtrů s textovými sloupci, opraveno přetypováním parametrů na string. |
 
 ## Známé problémy / TODO
 
