@@ -192,7 +192,12 @@ export default function LogbookPage({ searchParams }: { searchParams?: { showFor
   // Handle logbook creation
   async function handleCreateLogbook(e: React.FormEvent) {
     e.preventDefault();
-    if (!logbookTitle.trim() || !selectedVesselId || !token) return;
+    if (!logbookTitle.trim() || !token) return;
+
+    if (!selectedVesselId) {
+      alert('⚠️ Nelze vytvořit lodní deník bez vybraného plavidla. Nejprve prosím vytvořte loď.');
+      return;
+    }
 
     try {
       setLogbookLoading(true);
@@ -427,41 +432,62 @@ export default function LogbookPage({ searchParams }: { searchParams?: { showFor
           <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
             <form onSubmit={handleCreateLogbook} className="bg-slate-800 border border-slate-700 rounded-xl p-6 w-full max-w-md shadow-2xl">
               <h2 className="text-lg font-bold mb-4">📖 Vytvořit nový lodní deník</h2>
-              <div className="space-y-4 mb-6">
-                <div>
-                  <label className="block text-sm font-medium text-slate-400 mb-1">Název / Titul deníku</label>
-                  <input
-                    type="text"
-                    required
-                    value={logbookTitle}
-                    onChange={(e) => setLogbookTitle(e.target.value)}
-                    placeholder="Např. Letní plavba 2026"
-                    className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-slate-100 focus:outline-none focus:border-blue-500"
-                  />
+              
+              {vessels.length === 0 ? (
+                <div className="mb-6 p-4 bg-yellow-950/40 border border-yellow-700/60 rounded-lg text-yellow-200 text-sm">
+                  <p className="font-medium mb-1">⚠️ Nemáte založené žádné plavidlo</p>
+                  <p className="text-xs text-slate-300">Před založením lodního deníku je nutné nejprve vytvořit loď, ke které bude deník patřit.</p>
+                  <div className="mt-4 flex justify-end">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowLogbookForm(false);
+                        setShowVesselForm(true);
+                      }}
+                      className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-semibold transition"
+                    >
+                      + Vytvořit loď
+                    </button>
+                  </div>
                 </div>
-                <div className="grid grid-cols-2 gap-3">
+              ) : (
+                <div className="space-y-4 mb-6">
                   <div>
-                    <label className="block text-sm font-medium text-slate-400 mb-1">Z přístavu</label>
+                    <label className="block text-sm font-medium text-slate-400 mb-1">Název / Titul deníku</label>
                     <input
                       type="text"
-                      value={voyageFrom}
-                      onChange={(e) => setVoyageFrom(e.target.value)}
-                      placeholder="Např. Split"
+                      required
+                      value={logbookTitle}
+                      onChange={(e) => setLogbookTitle(e.target.value)}
+                      placeholder="Např. Letní plavba 2026"
                       className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-slate-100 focus:outline-none focus:border-blue-500"
                     />
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-slate-400 mb-1">Do přístavu</label>
-                    <input
-                      type="text"
-                      value={voyageTo}
-                      onChange={(e) => setVoyageTo(e.target.value)}
-                      placeholder="Např. Hvar"
-                      className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-slate-100 focus:outline-none focus:border-blue-500"
-                    />
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-sm font-medium text-slate-400 mb-1">Z přístavu</label>
+                      <input
+                        type="text"
+                        value={voyageFrom}
+                        onChange={(e) => setVoyageFrom(e.target.value)}
+                        placeholder="Např. Split"
+                        className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-slate-100 focus:outline-none focus:border-blue-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-slate-400 mb-1">Do přístavu</label>
+                      <input
+                        type="text"
+                        value={voyageTo}
+                        onChange={(e) => setVoyageTo(e.target.value)}
+                        placeholder="Např. Hvar"
+                        className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-slate-100 focus:outline-none focus:border-blue-500"
+                      />
+                    </div>
                   </div>
                 </div>
-              </div>
+              )}
+
               <div className="flex justify-end gap-3">
                 <button
                   type="button"
@@ -472,8 +498,8 @@ export default function LogbookPage({ searchParams }: { searchParams?: { showFor
                 </button>
                 <button
                   type="submit"
-                  disabled={logbookLoading}
-                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-600 text-white rounded-lg transition"
+                  disabled={logbookLoading || vessels.length === 0}
+                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-600 disabled:text-slate-400 text-white rounded-lg transition"
                 >
                   {logbookLoading ? 'Vytvářím...' : 'Vytvořit deník'}
                 </button>
