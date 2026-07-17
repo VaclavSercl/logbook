@@ -151,9 +151,9 @@ export default function MapPage() {
   }, [token]);
 
   // 2. Fetch track for selected vessel
-  const fetchTrack = async (vesselId: string) => {
+  const fetchTrack = async (vesselId: string, silent = false) => {
     if (!token) return;
-    setLoading(true);
+    if (!silent) setLoading(true);
     try {
       const points = await gpsApi.getTrack(vesselId, token) as GpsPoint[];
       // Sort points chronologically just in case
@@ -164,15 +164,21 @@ export default function MapPage() {
     } catch (err) {
       console.error('Failed to fetch GPS track:', err);
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
   };
 
   useEffect(() => {
-    if (selectedVesselId) {
-      fetchTrack(selectedVesselId);
-    }
-  }, [selectedVesselId]);
+    if (!selectedVesselId) return;
+    fetchTrack(selectedVesselId);
+
+    // Poll for new live GPS track points every 10 seconds silently
+    const interval = setInterval(() => {
+      fetchTrack(selectedVesselId, true);
+    }, 10000);
+
+    return () => clearInterval(interval);
+  }, [selectedVesselId, token]);
 
   // 3. Initialize MapLibre Map
   useEffect(() => {
