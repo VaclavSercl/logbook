@@ -50,6 +50,9 @@ export const authApi = {
 
   getMe: (token: string) =>
     apiFetch('/auth/me', { token }),
+
+  deleteAccount: (token: string) =>
+    apiFetch('/auth/me', { method: 'DELETE', token }),
 };
 
 // Vessels API

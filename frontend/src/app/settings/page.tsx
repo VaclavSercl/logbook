@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { modulesApi } from '@/lib/api';
+import { modulesApi, authApi } from '@/lib/api';
 
 interface Module {
   id: string;
@@ -66,6 +66,29 @@ export default function SettingsPage() {
     } catch (err) {
       console.error('Failed to toggle module:', err);
       alert('Chyba při změně nastavení modulu.');
+    }
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('selectedVesselId');
+    localStorage.removeItem('selectedLogbookId');
+    window.location.href = '/';
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!token || !confirm('⚠️ VAROVÁNÍ: Opravdu chcete trvale smazat svůj účet a všechna data (lodě, deníky, trasy, posádku)? Tato akce je NEVRATNÁ.')) return;
+    
+    try {
+      await authApi.deleteAccount(token);
+      alert('Váš účet a veškerá související data byla trvale smazána.');
+      localStorage.removeItem('token');
+      localStorage.removeItem('selectedVesselId');
+      localStorage.removeItem('selectedLogbookId');
+      window.location.href = '/';
+    } catch (err: any) {
+      console.error('Failed to delete account:', err);
+      alert(`Chyba při mazání účtu: ${err.message || 'Neznámá chyba'}`);
     }
   };
 
@@ -190,6 +213,25 @@ export default function SettingsPage() {
               ))}
             </div>
           )}
+        </section>
+
+        {/* Account Management */}
+        <section className="bg-slate-800 rounded-xl p-6 border border-slate-700/60 shadow space-y-4">
+          <h2 className="text-slate-100 font-semibold mb-2 flex items-center gap-2">🔑 Správa účtu</h2>
+          <div className="flex flex-col sm:flex-row gap-3">
+            <button
+              onClick={handleLogout}
+              className="flex-1 px-4 py-3 bg-slate-700 hover:bg-slate-650 text-slate-100 rounded-lg font-semibold text-sm transition"
+            >
+              🚪 Odhlásit se
+            </button>
+            <button
+              onClick={handleDeleteAccount}
+              className="flex-1 px-4 py-3 bg-red-900/40 hover:bg-red-800/60 text-red-200 border border-red-700/50 rounded-lg font-semibold text-sm transition"
+            >
+              🗑️ Trvale smazat účet
+            </button>
+          </div>
         </section>
 
         {/* Save */}

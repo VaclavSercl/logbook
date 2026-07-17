@@ -7,11 +7,12 @@ import secrets
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from jose import JWTError, jwt
+from sqlalchemy import select, delete
 from sqlalchemy.orm import Session
 
 from app.config import settings
 from app.database import get_db
-from app.models import User
+from app.models import User, Vessel, Logbook, WatchSchedule, GalleyDuty, GpsPoint, CrewMember, AuditLog
 from app.schemas import UserCreate, UserResponse, TokenResponse
 
 router = APIRouter()
@@ -134,3 +135,43 @@ async def login_json(
 @router.get("/me", response_model=UserResponse)
 async def get_me(current_user: User = Depends(get_current_user)):
     return current_user
+
+
+@router.delete("/me")
+async def delete_me(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Delete current user account and all associated data."""
+    user = db.query(User).filter(User.id == current_user.id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+        
+    vessel_ids = [v.id for v in user.vessels]
+    
+    if vessel_ids:
+        # Get logbooks
+        logbook_ids = db.execute(select(Logbook.id).where(Logbook.vessel_id.in_(vessel_ids))).scalars().all()
+        
+        if logbook_ids:
+            # Delete watch schedules & galley duties
+            db.execute(delete(WatchSchedule).where(WatchSchedule.logbook_id.in_(logbook_ids)))
+            db.execute(delete(GalleyDuty).where(GalleyDuty.logbook_id.in_(logbook_ids)))
+            
+        # Delete GPS points
+        db.execute(delete(GpsPoint).where(GpsPoint.vessel_id.in_(vessel_ids)))
+        
+    # Delete crew memberships
+    db.execute(delete(CrewMember).where(CrewMember.user_id == user.id))
+    
+    # Delete vessels (will cascade delete logbooks, entries, media via SQLAlchemy cascades)
+    for vessel in list(user.vessels):
+        db.delete(vessel)
+        
+    # Delete audit logs
+    db.execute(delete(AuditLog).where(AuditLog.user_id == user.id))
+    
+    # Delete user
+    db.delete(user)
+    db.commit()
+    return {"status": "deleted"}
