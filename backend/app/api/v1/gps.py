@@ -149,3 +149,14 @@ async def import_nmea_data(
         db.refresh(p)
     return points
 
+
+@router.get("/public/vessel/{vessel_id}", response_model=list[GpsPointResponse])
+async def get_public_gps_track(
+    vessel_id: UUID,
+    db: Session = Depends(get_db),
+):
+    """Get GPS points for public viewing."""
+    query = select(GpsPoint).where(GpsPoint.vessel_id == str(vessel_id)).order_by(GpsPoint.timestamp)
+    result = db.execute(query)
+    return result.scalars().all()
+

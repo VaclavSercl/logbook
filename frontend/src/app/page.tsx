@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { dashboardApi } from '@/lib/api';
+import { dashboardApi, publicApi } from '@/lib/api';
 
 interface DashboardStats {
   vessels: number;
@@ -21,6 +21,7 @@ export default function DashboardPage() {
 
   const [mounted, setMounted] = useState(false);
   const [token, setToken] = useState<string | null>(null);
+  const [publicLogbooks, setPublicLogbooks] = useState<any[]>([]);
 
   useEffect(() => {
     setMounted(true);
@@ -31,6 +32,13 @@ export default function DashboardPage() {
     if (!token) return;
     dashboardApi.getStats(token)
       .then(setStats)
+      .catch(console.error);
+  }, [token]);
+
+  useEffect(() => {
+    if (token) return;
+    publicApi.listLogbooks()
+      .then(setPublicLogbooks)
       .catch(console.error);
   }, [token]);
 
@@ -184,6 +192,35 @@ export default function DashboardPage() {
             </div>
           </div>
         </section>
+
+        {/* ── Active Public Logbooks Section ── */}
+        {publicLogbooks.length > 0 && (
+          <section className="max-w-3xl mx-auto px-6 pb-16 relative z-10 text-left">
+            <h2 className="text-xs font-semibold text-[#7170ff] uppercase tracking-wider mb-6 flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-red-500 animate-ping" />
+              Sledovat aktivní plavby živě (bez přihlášení)
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {publicLogbooks.map((log) => (
+                <Link
+                  key={log.id}
+                  href={`/public/logbook/${log.id}`}
+                  className="bg-[#0f1011] border border-white/[0.08] hover:border-[#5e6ad2]/50 rounded-xl p-5 block transition group"
+                >
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-xs font-medium text-slate-400 group-hover:text-white transition">⛵ {log.vessel_name}</span>
+                    <span className="px-2 py-0.5 bg-red-950/40 text-red-400 border border-red-800/30 rounded-full text-[10px] font-mono-custom">LIVE TRACKING</span>
+                  </div>
+                  <h3 className="text-sm font-semibold text-white group-hover:text-[#7170ff] transition">{log.title}</h3>
+                  <div className="mt-3 pt-3 border-t border-white/[0.05] flex justify-between items-center text-[11px] text-[#8a8f98]">
+                    <span>Trasa: <strong>{log.voyage_from || 'Neuvedeno'}</strong> → <strong>{log.voyage_to || 'Neuvedeno'}</strong></span>
+                    <span className="text-[#7170ff] font-medium group-hover:translate-x-1 transition-transform inline-flex items-center gap-0.5">Zobrazit trasu →</span>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </section>
+        )}
 
         {/* ── Features Section ── */}
         <section className="max-w-5xl mx-auto px-6 pb-24 relative z-10">

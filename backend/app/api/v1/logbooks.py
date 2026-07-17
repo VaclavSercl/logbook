@@ -84,3 +84,48 @@ async def delete_logbook(
     db.delete(logbook)
     db.flush()
     return {"status": "deleted"}
+
+
+@router.get("/public/list", response_model=list[dict])
+async def list_public_logbooks(db: Session = Depends(get_db)):
+    """List all active logbooks for public viewing (anonymous access)."""
+    query = (
+        select(Logbook, Vessel.name.label("vessel_name"))
+        .join(Vessel)
+        .where(Logbook.status == "active")
+        .order_by(Logbook.created_at.desc())
+    )
+    result = db.execute(query)
+    logbooks_list = []
+    for row in result:
+        logbook = row[0]
+        vessel_name = row[1]
+        logbooks_list.append({
+            "id": logbook.id,
+            "vessel_id": logbook.vessel_id,
+            "vessel_name": vessel_name,
+            "title": logbook.title,
+            "voyage_from": logbook.voyage_from,
+            "voyage_to": logbook.voyage_to,
+            "status": logbook.status,
+            "created_at": logbook.created_at.isoformat() if logbook.created_at else None
+        })
+    return logbooks_list
+
+
+@router.get("/public/{logbook_id}", response_model=dict)
+async def get_public_logbook(logbook_id: UUID, db: Session = Depends(get_db)):
+    """Get single logbook details for public viewing."""
+    result = db.execute(select(Logbook).where(Logbook.id == str(logbook_id)))
+    logbook = result.scalar_one_or_none()
+    if not logbook:
+        raise HTTPException(status_code=404, detail="Logbook not found")
+    return {
+        "id": logbook.id,
+        "vessel_id": logbook.vessel_id,
+        "vessel_name": logbook.vessel.name,
+        "title": logbook.title,
+        "voyage_from": logbook.voyage_from,
+        "voyage_to": logbook.voyage_to,
+        "status": logbook.status
+    }

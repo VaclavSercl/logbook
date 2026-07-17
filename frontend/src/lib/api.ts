@@ -176,5 +176,30 @@ export const galleyApi = {
   deleteDuty: (dutyId: string, token: string) =>
     apiFetch(`/galley/duty/${dutyId}`, { method: 'DELETE', token }),
 };
+// Public API (No tokens required)
+export const publicApi = {
+  listLogbooks: () => apiFetch<Array<{
+    id: string;
+    vessel_id: string;
+    vessel_name: string;
+    title: string;
+    voyage_from?: string;
+    voyage_to?: string;
+    status: string;
+    created_at?: string;
+  }>>('/logbooks/public/list'),
 
+  getLogbook: (id: string) => apiFetch<{
+    id: string;
+    vessel_id: string;
+    vessel_name: string;
+    title: string;
+    voyage_from?: string;
+    voyage_to?: string;
+    status: string;
+  }>(`/logbooks/public/${id}`),
 
+  listEntries: (logbookId: string) => apiFetch<Array<Record<string, any>>>(`/entries/public/logbook/${logbookId}`),
+
+  getGpsTrack: (vesselId: string) => apiFetch<Array<Record<string, any>>>(`/gps/public/vessel/${vesselId}`),
+};

@@ -73,3 +73,17 @@ async def delete_entry(
         raise HTTPException(status_code=400, detail="Entry is locked")
     db.delete(entry)
     return {"status": "deleted"}
+
+
+@router.get("/public/logbook/{logbook_id}", response_model=list[LogEntryResponse])
+async def list_public_entries(
+    logbook_id: UUID,
+    db: Session = Depends(get_db),
+):
+    """List log entries for public viewing."""
+    result = db.execute(
+        select(LogEntry)
+        .where(LogEntry.logbook_id == str(logbook_id))
+        .order_by(LogEntry.timestamp)
+    )
+    return result.scalars().all()
