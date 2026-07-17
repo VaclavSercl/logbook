@@ -11,7 +11,7 @@ from app.api.v1.auth import get_current_user
 router = APIRouter()
 
 
-@router.get("/", response_model=list[dict])
+@router.get("", response_model=list[dict])
 async def list_modules(
     current_user=Depends(get_current_user),
     db: Session = Depends(get_db),

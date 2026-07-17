@@ -44,10 +44,17 @@ function NewLogbookEntryForm() {
   const [fuelLevel, setFuelLevel] = useState('');
   const [batteryLevel, setBatteryLevel] = useState('');
 
-  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+  const [mounted, setMounted] = useState(false);
+  const [token, setToken] = useState<string | null>(null);
+
+  useEffect(() => {
+    setMounted(true);
+    setToken(localStorage.getItem('token'));
+  }, []);
 
   // Resolve logbook and vessel IDs from query parameters or localStorage
   useEffect(() => {
+    if (!mounted) return;
     // Current local time string in YYYY-MM-DDTHH:MM format
     const now = new Date();
     const offset = now.getTimezoneOffset();
@@ -151,7 +158,7 @@ function NewLogbookEntryForm() {
     }
   }
 
-  if (!token) {
+  if (!mounted || !token) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-900 text-slate-100">
         <div className="text-center p-6 bg-slate-800 rounded-lg border border-slate-700 max-w-sm">

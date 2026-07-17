@@ -22,11 +22,17 @@ export default function SettingsPage() {
   const [theme, setTheme] = useState('dark');
   const [notifications, setNotifications] = useState(true);
 
-  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+  const [mounted, setMounted] = useState(false);
+  const [token, setToken] = useState<string | null>(null);
+
+  useEffect(() => {
+    setMounted(true);
+    setToken(localStorage.getItem('token'));
+  }, []);
 
   // 1. Fetch modules list
   const fetchModules = async () => {
-    if (!token) return;
+    if (!mounted || !token) return;
     setLoading(true);
     try {
       const data = await modulesApi.list(token);
@@ -39,8 +45,10 @@ export default function SettingsPage() {
   };
 
   useEffect(() => {
-    fetchModules();
-  }, [token]);
+    if (mounted && token) {
+      fetchModules();
+    }
+  }, [mounted, token]);
 
   // 2. Toggle module activation
   const handleToggleModule = async (mod: Module) => {
@@ -61,7 +69,7 @@ export default function SettingsPage() {
     }
   };
 
-  if (!token) {
+  if (!mounted || !token) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-900">
         <p className="text-slate-400">Pro zobrazení nastavení se musíte přihlásit.</p>

@@ -19,7 +19,13 @@ export default function DashboardPage() {
     activeModules: 0,
   });
 
-  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+  const [mounted, setMounted] = useState(false);
+  const [token, setToken] = useState<string | null>(null);
+
+  useEffect(() => {
+    setMounted(true);
+    setToken(localStorage.getItem('token'));
+  }, []);
 
   useEffect(() => {
     if (!token) return;
@@ -29,7 +35,7 @@ export default function DashboardPage() {
   }, [token]);
 
   // ─── LANDING PAGE (NOT LOGGED IN) ───
-  if (!token) {
+  if (!mounted || !token) {
     return (
       <div className="min-h-screen bg-[#08090a] text-[#f7f8f8] relative overflow-hidden font-sans selection:bg-[#5e6ad2]/30 selection:text-white">
         {/* Google Fonts Link styled with Inter & JetBrains Mono */}
@@ -259,12 +265,20 @@ export default function DashboardPage() {
             <h2 className="text-2xl font-medium tracking-tight text-[#f7f8f8]">Vítej na palubě</h2>
             <p className="text-xs text-[#8a8f98] mt-1">Kompletní správa Vaší námořní flotily z Čáslavi.</p>
           </div>
-          <Link
-            href="/logbook/new"
-            className="px-4 py-2 bg-[#5e6ad2] hover:bg-[#828fff] text-xs font-medium text-white rounded-md transition shadow-md shadow-[#5e6ad2]/10"
-          >
-            + Nový záznam plavby
-          </Link>
+          <div className="flex items-center gap-3">
+            <Link
+              href="/logbook?showForm=true"
+              className="px-4 py-2 bg-[#0f1011] hover:bg-white/[0.04] border border-white/[0.08] text-xs font-medium text-[#f7f8f8] rounded-md transition"
+            >
+              + Nový lodní deník
+            </Link>
+            <Link
+              href="/logbook/new"
+              className="px-4 py-2 bg-[#5e6ad2] hover:bg-[#828fff] text-xs font-medium text-white rounded-md transition shadow-md shadow-[#5e6ad2]/10"
+            >
+              + Nový záznam plavby
+            </Link>
+          </div>
         </div>
 
         {/* Stats Grid */}
@@ -279,7 +293,8 @@ export default function DashboardPage() {
         <h3 className="text-xs font-semibold text-[#62666d] uppercase tracking-wider mb-4">Rychlé akce</h3>
 
         {/* Quick Actions Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+          <QuickAction title="Nový deník" description="Založit novou knihu plavby" href="/logbook?showForm=true" icon="📖" />
           <QuickAction title="Nový záznam" description="Přidat zápis do deníku" href="/logbook/new" icon="📝" />
           <QuickAction title="Zobrazit mapu" description="GPS trasa a OpenSeaMap" href="/map" icon="🗺️" />
           <QuickAction title="Správa plavidel" description="Seznam lodí a rozměry" href="/vessels" icon="🚢" />

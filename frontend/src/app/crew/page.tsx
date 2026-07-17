@@ -93,11 +93,17 @@ export default function CrewPage() {
   const [cleanerId, setCleanerId] = useState('');
   const [galleyNotes, setGalleyNotes] = useState('');
 
-  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+  const [mounted, setMounted] = useState(false);
+  const [token, setToken] = useState<string | null>(null);
+
+  useEffect(() => {
+    setMounted(true);
+    setToken(localStorage.getItem('token'));
+  }, []);
 
   // 1. Fetch vessels list
   useEffect(() => {
-    if (!token) return;
+    if (!mounted || !token) return;
     vesselsApi.list(token)
       .then((data: any) => {
         const list = data as Vessel[];
@@ -295,7 +301,7 @@ export default function CrewPage() {
     );
   };
 
-  if (!token) {
+  if (!mounted || !token) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-900">
         <p className="text-slate-400">Pro zobrazení posádky se musíte přihlásit.</p>

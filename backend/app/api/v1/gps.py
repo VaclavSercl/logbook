@@ -13,7 +13,7 @@ from app.api.v1.auth import get_current_user
 router = APIRouter()
 
 
-@router.post("/", response_model=GpsPointResponse, status_code=201)
+@router.post("", response_model=GpsPointResponse, status_code=201)
 async def add_gps_point(
     data: GpsPointCreate,
     current_user=Depends(get_current_user),

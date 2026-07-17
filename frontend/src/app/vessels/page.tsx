@@ -47,15 +47,22 @@ export default function VesselsPage() {
   const [yearBuilt, setYearBuilt] = useState('');
   const [flagState, setFlagState] = useState('');
 
-  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+  const [mounted, setMounted] = useState(false);
+  const [token, setToken] = useState<string | null>(null);
 
   useEffect(() => {
+    setMounted(true);
+    setToken(localStorage.getItem('token'));
+  }, []);
+
+  useEffect(() => {
+    if (!mounted) return;
     if (!token) {
       router.push('/login');
       return;
     }
     loadVessels();
-  }, [token]);
+  }, [mounted, token]);
 
   async function loadVessels() {
     try {
@@ -166,7 +173,7 @@ export default function VesselsPage() {
     }
   }
 
-  if (!token) return null;
+  if (!mounted || !token) return null;
 
   return (
     <div className="min-h-screen bg-slate-900 text-slate-100 flex flex-col">

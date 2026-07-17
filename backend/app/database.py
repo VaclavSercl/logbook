@@ -1,6 +1,11 @@
 """Database connection and session management."""
+import sqlite3
+import uuid
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, DeclarativeBase
+
+# Register UUID adapter for SQLite compatibility
+sqlite3.register_adapter(uuid.UUID, str)
 
 from app.config import settings
 

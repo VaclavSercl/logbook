@@ -12,7 +12,7 @@ from app.api.v1.auth import get_current_user
 router = APIRouter()
 
 
-@router.get("/", response_model=list[LogbookResponse])
+@router.get("", response_model=list[LogbookResponse])
 async def list_logbooks(
     vessel_id: UUID = None,
     current_user=Depends(get_current_user),
@@ -25,7 +25,7 @@ async def list_logbooks(
     return result.scalars().all()
 
 
-@router.post("/", response_model=LogbookResponse, status_code=201)
+@router.post("", response_model=LogbookResponse, status_code=201)
 async def create_logbook(
     data: LogbookCreate,
     current_user=Depends(get_current_user),

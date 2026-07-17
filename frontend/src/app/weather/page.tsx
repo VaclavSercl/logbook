@@ -26,11 +26,17 @@ export default function WeatherPage() {
   const [weather, setWeather] = useState<WeatherData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+  const [mounted, setMounted] = useState(false);
+  const [token, setToken] = useState<string | null>(null);
+
+  useEffect(() => {
+    setMounted(true);
+    setToken(localStorage.getItem('token'));
+  }, []);
 
   // 1. Fetch vessels list
   useEffect(() => {
-    if (!token) return;
+    if (!mounted || !token) return;
     vesselsApi.list(token)
       .then((data: any) => {
         const list = data as Vessel[];
@@ -50,20 +56,21 @@ export default function WeatherPage() {
 
   // 2. Fetch weather for selected vessel
   useEffect(() => {
-    if (!token || !selectedVesselId) return;
+    if (!mounted || !token || !selectedVesselId) return;
     setLoading(true);
     setError(null);
     weatherApi.get(selectedVesselId, token)
-      .then((data) => {
+      .then((data: any) => {
         setWeather(data as WeatherData);
-        setLoading(false);
       })
       .catch((err) => {
-        console.error('Failed to fetch weather:', err);
-        setError('Nepodařilo se získat data o počasí.');
+        console.error('Failed to load weather:', err);
+        setError('Nepodařilo se stáhnout data o počasí.');
+      })
+      .finally(() => {
         setLoading(false);
       });
-  }, [selectedVesselId, token]);
+  }, [selectedVesselId, mounted, token]);
 
   const getWindRotation = (dir: string) => {
     const compassMap: Record<string, number> = {
@@ -86,7 +93,7 @@ export default function WeatherPage() {
     return 'Bouřlivý vítr / Výchřice (⚠️ Bezpečné kotvení!)';
   };
 
-  if (!token) {
+  if (!mounted || !token) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-900">
         <p className="text-slate-400">Pro zobrazení počasí se musíte přihlásit.</p>

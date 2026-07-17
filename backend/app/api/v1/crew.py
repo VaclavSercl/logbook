@@ -32,7 +32,7 @@ async def list_crew(
     return result.scalars().all()
 
 
-@router.post("/", response_model=CrewMemberResponse, status_code=201)
+@router.post("", response_model=CrewMemberResponse, status_code=201)
 async def create_crew_member(
     data: CrewMemberCreate,
     current_user=Depends(get_current_user),

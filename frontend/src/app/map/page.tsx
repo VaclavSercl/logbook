@@ -92,6 +92,13 @@ const getMapStyle = (layerType: 'osm' | 'seamap' | 'satellite') => {
   return style;
 };
 
+const parseDateSafely = (dateStr: string) => {
+  if (!dateStr) return new Date();
+  const formatted = dateStr.includes('T') ? dateStr : dateStr.replace(' ', 'T');
+  const d = new Date(formatted);
+  return isNaN(d.getTime()) ? new Date() : d;
+};
+
 export default function MapPage() {
   const [vessels, setVessels] = useState<Vessel[]>([]);
   const [selectedVesselId, setSelectedVesselId] = useState<string>('');
@@ -107,15 +114,21 @@ export default function MapPage() {
   const [newPointCourse, setNewPointCourse] = useState<string>('180');
   const [newPointTime, setNewPointTime] = useState<string>('');
 
-  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+  const [mounted, setMounted] = useState(false);
+  const [token, setToken] = useState<string | null>(null);
+
+  useEffect(() => {
+    setMounted(true);
+    setToken(localStorage.getItem('token'));
+  }, []);
 
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<any | null>(null);
 
   // 1. Load vessels list
   useEffect(() => {
-    if (!token) {
-      setLoading(false);
+    if (!mounted || !token) {
+      if (mounted) setLoading(false);
       return;
     }
 
@@ -145,7 +158,7 @@ export default function MapPage() {
       const points = await gpsApi.getTrack(vesselId, token) as GpsPoint[];
       // Sort points chronologically just in case
       const sortedPoints = [...points].sort(
-        (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+        (a, b) => parseDateSafely(a.timestamp).getTime() - parseDateSafely(b.timestamp).getTime()
       );
       setTrack(sortedPoints);
     } catch (err) {
@@ -197,7 +210,7 @@ export default function MapPage() {
       map.remove();
       mapRef.current = null;
     };
-  }, []);
+  }, [mounted, token]);
 
   // 4. Update track line and points when track changes
   useEffect(() => {
@@ -438,7 +451,7 @@ export default function MapPage() {
     }
   };
 
-  if (!token) {
+  if (!mounted || !token) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-900">
         <p className="text-slate-400">Pro zobrazení mapy se musíte přihlásit.</p>
@@ -616,16 +629,16 @@ export default function MapPage() {
                     <div className="flex justify-between items-center">
                       <span className="text-slate-400 font-mono text-xs">#{i + 1}</span>
                       <span className="text-slate-500 text-[10px]">
-                        {new Date(point.timestamp).toLocaleTimeString('cs-CZ', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                        {parseDateSafely(point.timestamp).toLocaleTimeString('cs-CZ', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
                       </span>
                     </div>
                     <div className="flex justify-between text-slate-100 font-medium font-mono text-xs">
-                      <span>{point.latitude.toFixed(5)}° N</span>
-                      <span>{point.longitude.toFixed(5)}° E</span>
+                      <span>{typeof point.latitude === 'number' ? `${point.latitude.toFixed(5)}° N` : '--'}</span>
+                      <span>{typeof point.longitude === 'number' ? `${point.longitude.toFixed(5)}° E` : '--'}</span>
                     </div>
                     <div className="flex justify-between text-[11px] text-slate-400 border-t border-slate-800/60 pt-1.5">
-                      <span>Rychlost: {point.speed !== null ? `${point.speed.toFixed(1)} kn` : '--'}</span>
-                      <span>Kurs: {point.course !== null ? `${point.course.toFixed(0)}°` : '--'}</span>
+                      <span>Rychlost: {typeof point.speed === 'number' ? `${point.speed.toFixed(1)} kn` : '--'}</span>
+                      <span>Kurs: {typeof point.course === 'number' ? `${point.course.toFixed(0)}°` : '--'}</span>
                     </div>
                   </div>
                 ))}

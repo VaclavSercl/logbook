@@ -69,7 +69,7 @@ export const logbooksApi = {
   list: (token: string, vesselId?: string) =>
     apiFetch(`/logbooks/${vesselId ? `?vessel_id=${vesselId}` : ''}`, { token }),
   create: (data: Record<string, unknown>, token: string) =>
-    apiFetch('/logbooks/', { method: 'POST', body: data, token }),
+    apiFetch('/logbooks', { method: 'POST', body: data, token }),
   get: (id: string, token: string) => apiFetch(`/logbooks/${id}`, { token }),
   close: (id: string, token: string) =>
     apiFetch(`/logbooks/${id}/close`, { method: 'POST', token }),
@@ -90,7 +90,7 @@ export const entriesApi = {
 // GPS API
 export const gpsApi = {
   add: (data: Record<string, unknown>, token: string) =>
-    apiFetch('/gps/', { method: 'POST', body: data, token }),
+    apiFetch('/gps', { method: 'POST', body: data, token }),
   getTrack: (vesselId: string, token: string) =>
     apiFetch(`/gps/vessel/${vesselId}`, { token }),
   getLatest: (vesselId: string, token: string) =>
@@ -121,7 +121,7 @@ export const dashboardApi = {
 
 // Modules API
 export const modulesApi = {
-  list: (token: string) => apiFetch('/modules/', { token }),
+  list: (token: string) => apiFetch('/modules', { token }),
   install: (id: string, token: string) =>
     apiFetch(`/modules/${id}/install`, { method: 'POST', token }),
   activate: (id: string, token: string) =>
@@ -135,7 +135,7 @@ export const crewApi = {
   list: (vesselId: string, token: string) =>
     apiFetch(`/crew/vessel/${vesselId}`, { token }),
   create: (data: { vessel_id: string; name: string; role?: string; nationality?: string; passport_number?: string; date_of_birth?: string }, token: string) =>
-    apiFetch('/crew/', { method: 'POST', body: data, token }),
+    apiFetch('/crew', { method: 'POST', body: data, token }),
   delete: (id: string, token: string) =>
     apiFetch(`/crew/${id}`, { method: 'DELETE', token }),
 };

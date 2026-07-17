@@ -65,7 +65,8 @@ async def run_telegram_bot():
                 for update in updates:
                     offset = update.get("update_id", 0) + 1
                     
-                    message = update.get("message")
+                    is_edit = "edited_message" in update
+                    message = update.get("message") or update.get("edited_message")
                     if not message:
                         continue
                     
@@ -75,7 +76,7 @@ async def run_telegram_bot():
                         continue
                     
                     # Process message
-                    await process_telegram_message(message, token, chat_id)
+                    await process_telegram_message(message, token, chat_id, is_edit=is_edit)
                     
         except asyncio.CancelledError:
             print("Telegram Bot: Listener task cancelled.")
@@ -85,27 +86,37 @@ async def run_telegram_bot():
             await asyncio.sleep(5)
 
 
-async def process_telegram_message(message: dict, token: str, chat_id: int):
+async def process_telegram_message(message: dict, token: str, chat_id: int, is_edit: bool = False):
     """Process incoming authorized Telegram message."""
     text = message.get("text", "").strip()
     photo = message.get("photo")
     voice = message.get("voice")
+    location = message.get("location")
     caption = message.get("caption", "").strip()
     
     # Establish DB session
     db: Session = SessionLocal()
     
     try:
-        # Get active vessel (first vessel in database)
-        vessel_result = db.execute(select(Vessel).limit(1))
-        vessel = vessel_result.scalar_one_or_none()
+        # Find user 'Wendy' first (active user created on 2026-07-16)
+        user = db.query(User).filter(User.username == "Wendy").first()
+        if user:
+            vessel_result = db.execute(select(Vessel).where(Vessel.owner_id == user.id).limit(1))
+            vessel = vessel_result.scalar_one_or_none()
+        else:
+            vessel = None
+            
+        if not vessel:
+            # Fallback to the first vessel in the database
+            vessel_result = db.execute(select(Vessel).limit(1))
+            vessel = vessel_result.scalar_one_or_none()
+            if vessel:
+                user = db.query(User).filter(User.id == vessel.owner_id).first()
         
         if not vessel:
             await send_telegram_reply(token, chat_id, "⚠️ V databázi nebyla nalezena žádná registrovaná loď.")
             return
 
-        # Get owner
-        user = db.query(User).filter(User.id == vessel.owner_id).first()
         if not user:
             await send_telegram_reply(token, chat_id, "⚠️ Vlastník lodi nebyl nalezen.")
             return
@@ -125,6 +136,7 @@ async def process_telegram_message(message: dict, token: str, chat_id: int):
                 "• `/status` - Aktuální stav aktivní plavby\n"
                 "• `/vessel` - Informace o lodi\n"
                 "• `/gps [lat] [lng]` - Ruční uložení GPS souřadnic\n"
+                "• *Sdílená poloha* - Pošli mi polohu jako přílohu přímo z Telegramu (Sponka -> Poloha)\n"
                 "• *Textová zpráva* - Cokoliv mi napíšeš, zapíšu jako nový záznam do aktivního deníku.\n"
                 "• *Fotka/Obrázek* - Nahraju ji do galerie a spojím s deníkem."
             )
@@ -169,6 +181,33 @@ async def process_telegram_message(message: dict, token: str, chat_id: int):
                 await send_telegram_reply(token, chat_id, "⚠️ Neplatné souřadnice. Zadejte čísla.")
             return
 
+        # Handle native Telegram Location attachment (including Live Location updates)
+        if location:
+            try:
+                lat = float(location.get("latitude"))
+                lng = float(location.get("longitude"))
+                
+                # Save GPS point
+                gps_point = GpsPoint(
+                    vessel_id=vessel.id,
+                    timestamp=datetime.utcnow(),
+                    latitude=lat,
+                    longitude=lng,
+                    source="telegram"
+                )
+                db.add(gps_point)
+                db.commit()
+                if not is_edit:
+                    await send_telegram_reply(token, chat_id, f"📍 Pozice lodi byla uložena z Telegram polohy: `{lat:.4f}°N`, `{lng:.4f}°E`")
+            except Exception as e:
+                if not is_edit:
+                    await send_telegram_reply(token, chat_id, f"⚠️ Nepodařilo se uložit sdílenou polohu: {str(e)}")
+            return
+
+        # Ignore other edits (e.g. edited text messages or edited photos)
+        if is_edit:
+            return
+
         # Handle command: /status
         if text.startswith("/status"):
             if not logbook:
@@ -199,6 +238,46 @@ async def process_telegram_message(message: dict, token: str, chat_id: int):
             else:
                 status_msg += "Zatím nebyly zapsány žádné body."
             await send_telegram_reply(token, chat_id, status_msg)
+            return
+
+        # Handle Text message with agy AI agent
+        if text:
+            await send_telegram_reply(token, chat_id, "⏳ *Njoror přemýšlí...* (Spouštím agy...)")
+            
+            prompt_context = (
+                f"Jsi Njoror, AI vládce projektu Logbook na serveru Čáslav. Uživatel (Václav Šercl) ti posílá zprávu přes Telegram bot a očekává tvou pomoc. Vyřeš jeho požadavek. Pokud chce zapsat zprávu do deníku, zapiš ji do logbook.db (např. pomocí Python skriptu nebo SQL). Pokud chce zkontrolovat status Pirana bot, spusť k tomu určený skript. Odpověz stručně, věcně a přímo.\n\nZpráva od Václava:\n{text}"
+            )
+            
+            try:
+                process = await asyncio.create_subprocess_exec(
+                    "/home/wwwenda/.local/bin/agy",
+                    "--dangerously-skip-permissions",
+                    "--print",
+                    prompt_context,
+                    stdout=asyncio.subprocess.PIPE,
+                    stderr=asyncio.subprocess.PIPE,
+                )
+                stdout, stderr = await process.communicate()
+                
+                output = stdout.decode().strip()
+                err = stderr.decode().strip()
+                
+                response_text = ""
+                if output:
+                    response_text = output
+                elif err:
+                    response_text = f"⚠️ *Chyba při běhu agy:*\n```\n{err}\n```"
+                else:
+                    response_text = "🤖 Agent neodpověděl."
+                    
+                # Telegram has a limit of 4096 characters per message
+                if len(response_text) > 4000:
+                    response_text = response_text[:3900] + "\n\n...(zkráceno kvůli limitu Telegramu)"
+                    
+                await send_telegram_reply(token, chat_id, response_text)
+                
+            except Exception as ex:
+                await send_telegram_reply(token, chat_id, f"❌ Chyba při spouštění subprocesu: {str(ex)}")
             return
 
         # For text / photos, require active logbook
@@ -407,45 +486,7 @@ async def process_telegram_message(message: dict, token: str, chat_id: int):
             await send_telegram_reply(token, chat_id, "⚠️ Nepodařilo se stáhnout hlasovou nahrávku.")
             return
 
-        # Handle Text message with agy AI agent
-        if text:
-            await send_telegram_reply(token, chat_id, "⏳ *Njoror přemýšlí...* (Spouštím agy...)")
-            
-            prompt_context = (
-                f"Jsi Njoror, AI vládce projektu Logbook na serveru Čáslav. Uživatel (Václav Šercl) ti posílá zprávu přes Telegram bot a očekává tvou pomoc. Vyřeš jeho požadavek. Pokud chce zapsat zprávu do deníku, zapiš ji do logbook.db (např. pomocí Python skriptu nebo SQL). Pokud chce zkontrolovat status Pirana bot, spusť k tomu určený skript. Odpověz stručně, věcně a přímo.\n\nZpráva od Václava:\n{text}"
-            )
-            
-            try:
-                process = await asyncio.create_subprocess_exec(
-                    "/home/wwwenda/.local/bin/agy",
-                    "--dangerously-skip-permissions",
-                    "--print",
-                    prompt_context,
-                    stdout=asyncio.subprocess.PIPE,
-                    stderr=asyncio.subprocess.PIPE,
-                )
-                stdout, stderr = await process.communicate()
-                
-                output = stdout.decode().strip()
-                err = stderr.decode().strip()
-                
-                response_text = ""
-                if output:
-                    response_text = output
-                elif err:
-                    response_text = f"⚠️ *Chyba při běhu agy:*\n```\n{err}\n```"
-                else:
-                    response_text = "🤖 Agent neodpověděl."
-                    
-                # Telegram has a limit of 4096 characters per message
-                if len(response_text) > 4000:
-                    response_text = response_text[:3900] + "\n\n...(zkráceno kvůli limitu Telegramu)"
-                    
-                await send_telegram_reply(token, chat_id, response_text)
-                
-            except Exception as ex:
-                await send_telegram_reply(token, chat_id, f"❌ Chyba při spouštění subprocesu: {str(ex)}")
-            return
+        # (Text handler moved to the top of process_telegram_message)
 
     except Exception as e:
         print(f"Telegram Bot Processing Error: {e}")

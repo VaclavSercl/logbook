@@ -31,7 +31,7 @@ interface LogbookEntry {
   is_locked: boolean;
 }
 
-export default function LogbookPage() {
+export default function LogbookPage({ searchParams }: { searchParams?: { showForm?: string } }) {
   const router = useRouter();
   const [vessels, setVessels] = useState<Vessel[]>([]);
   const [logbooks, setLogbooks] = useState<Logbook[]>([]);
@@ -55,12 +55,24 @@ export default function LogbookPage() {
   const [voyageTo, setVoyageTo] = useState('');
   const [logbookLoading, setLogbookLoading] = useState(false);
 
-  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+  const [mounted, setMounted] = useState(false);
+  const [token, setToken] = useState<string | null>(null);
+
+  useEffect(() => {
+    setMounted(true);
+    setToken(localStorage.getItem('token'));
+  }, []);
+
+  useEffect(() => {
+    if (searchParams?.showForm === 'true') {
+      setShowLogbookForm(true);
+    }
+  }, [searchParams]);
 
   // 1. Initial Load: Fetch Vessels
   useEffect(() => {
-    if (!token) {
-      setLoading(false);
+    if (!mounted || !token) {
+      if (mounted) setLoading(false);
       return;
     }
     
@@ -223,7 +235,7 @@ export default function LogbookPage() {
   }
 
   // Header and layout if not logged in
-  if (!token) {
+  if (!mounted || !token) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-900 text-slate-100">
         <div className="text-center p-6 bg-slate-800 rounded-lg border border-slate-700 max-w-sm">
