@@ -234,6 +234,34 @@ export default function LogbookPage({ searchParams }: { searchParams?: { showFor
     }
   }
 
+  // Handle logbook delete
+  async function handleDeleteLogbook(logbookId: string) {
+    if (!token || !logbookId || !confirm('Opravdu chcete tento lodní deník smazat? Všechny jeho záznamy a trasa budou nevratně smazány.')) return;
+
+    try {
+      setError('');
+      setLoading(true);
+      await logbooksApi.delete(logbookId, token);
+      
+      const updatedLogbooks = logbooks.filter((l) => l.id !== logbookId);
+      setLogbooks(updatedLogbooks);
+      
+      if (updatedLogbooks.length > 0) {
+        setSelectedLogbookId(updatedLogbooks[0].id);
+        localStorage.setItem('selectedLogbookId', updatedLogbooks[0].id);
+      } else {
+        setSelectedLogbookId('');
+        localStorage.removeItem('selectedLogbookId');
+        setEntries([]);
+      }
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Chyba při mazání deníku';
+      setError(msg);
+    } finally {
+      setLoading(false);
+    }
+  }
+
   // Hydration state
   if (!mounted) {
     return (
@@ -504,6 +532,13 @@ export default function LogbookPage({ searchParams }: { searchParams?: { showFor
                 </p>
               </div>
               <div className="flex gap-2">
+                <button
+                  onClick={() => handleDeleteLogbook(selectedLogbookId)}
+                  className="px-4 py-2 bg-red-900/40 hover:bg-red-800/60 text-red-200 border border-red-700/50 rounded-lg font-semibold transition text-sm text-center flex items-center justify-center gap-1.5"
+                  title="Smazat celý lodní deník"
+                >
+                  <span>🗑️ Smazat deník</span>
+                </button>
                 <Link
                   href={`/logbook/new?logbook_id=${selectedLogbookId}&vessel_id=${selectedVesselId}`}
                   className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition text-sm text-center flex items-center justify-center gap-1.5"

@@ -73,6 +73,8 @@ export const logbooksApi = {
   get: (id: string, token: string) => apiFetch(`/logbooks/${id}`, { token }),
   close: (id: string, token: string) =>
     apiFetch(`/logbooks/${id}/close`, { method: 'POST', token }),
+  delete: (id: string, token: string) =>
+    apiFetch(`/logbooks/${id}`, { method: 'DELETE', token }),
 };
 
 // Entries API

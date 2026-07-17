@@ -2,10 +2,10 @@
 from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from sqlalchemy import select
+from sqlalchemy import select, delete
 
 from app.database import get_db
-from app.models import Logbook, Vessel
+from app.models import Logbook, Vessel, WatchSchedule, GalleyDuty
 from app.schemas import LogbookCreate, LogbookResponse
 from app.api.v1.auth import get_current_user
 
@@ -64,3 +64,23 @@ async def close_logbook(
     logbook.status = "closed"
     logbook.closed_at = datetime.utcnow()
     return {"status": "closed"}
+
+
+@router.delete("/{logbook_id}")
+async def delete_logbook(
+    logbook_id: UUID,
+    current_user=Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    result = db.execute(select(Logbook).where(Logbook.id == str(logbook_id)))
+    logbook = result.scalar_one_or_none()
+    if not logbook:
+        raise HTTPException(status_code=404, detail="Logbook not found")
+    if logbook.vessel.owner_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not authorized to delete this logbook")
+
+    db.execute(delete(WatchSchedule).where(WatchSchedule.logbook_id == str(logbook_id)))
+    db.execute(delete(GalleyDuty).where(GalleyDuty.logbook_id == str(logbook_id)))
+    db.delete(logbook)
+    db.flush()
+    return {"status": "deleted"}
