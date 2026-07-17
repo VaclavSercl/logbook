@@ -33,7 +33,7 @@ async def get_gps_track(
     current_user=Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    query = select(GpsPoint).where(GpsPoint.vessel_id == vessel_id)
+    query = select(GpsPoint).where(GpsPoint.vessel_id == str(vessel_id))
     if start:
         query = query.where(GpsPoint.timestamp >= start)
     if end:
@@ -51,7 +51,7 @@ async def get_latest_position(
 ):
     result = db.execute(
         select(GpsPoint)
-        .where(GpsPoint.vessel_id == vessel_id)
+        .where(GpsPoint.vessel_id == str(vessel_id))
         .order_by(GpsPoint.timestamp.desc())
         .limit(1)
     )

@@ -40,7 +40,7 @@ async def install_module(
     current_user=Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    result = db.execute(select(Module).where(Module.id == module_id))
+    result = db.execute(select(Module).where(Module.id == str(module_id)))
     module = result.scalar_one_or_none()
     if not module:
         raise HTTPException(status_code=404, detail="Module not found")
@@ -54,7 +54,7 @@ async def activate_module(
     current_user=Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    result = db.execute(select(Module).where(Module.id == module_id))
+    result = db.execute(select(Module).where(Module.id == str(module_id)))
     module = result.scalar_one_or_none()
     if not module:
         raise HTTPException(status_code=404, detail="Module not found")
@@ -68,7 +68,7 @@ async def deactivate_module(
     current_user=Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    result = db.execute(select(Module).where(Module.id == module_id))
+    result = db.execute(select(Module).where(Module.id == str(module_id)))
     module = result.scalar_one_or_none()
     if not module:
         raise HTTPException(status_code=404, detail="Module not found")

@@ -20,7 +20,7 @@ async def list_logbooks(
 ):
     query = select(Logbook).join(Vessel).where(Vessel.owner_id == current_user.id)
     if vessel_id:
-        query = query.where(Logbook.vessel_id == vessel_id)
+        query = query.where(Logbook.vessel_id == str(vessel_id))
     result = db.execute(query)
     return result.scalars().all()
 
@@ -43,7 +43,7 @@ async def get_logbook(
     current_user=Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    result = db.execute(select(Logbook).where(Logbook.id == logbook_id))
+    result = db.execute(select(Logbook).where(Logbook.id == str(logbook_id)))
     logbook = result.scalar_one_or_none()
     if not logbook:
         raise HTTPException(status_code=404, detail="Logbook not found")
@@ -57,7 +57,7 @@ async def close_logbook(
     db: Session = Depends(get_db),
 ):
     from datetime import datetime
-    result = db.execute(select(Logbook).where(Logbook.id == logbook_id))
+    result = db.execute(select(Logbook).where(Logbook.id == str(logbook_id)))
     logbook = result.scalar_one_or_none()
     if not logbook:
         raise HTTPException(status_code=404, detail="Logbook not found")

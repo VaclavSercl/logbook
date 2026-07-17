@@ -20,7 +20,7 @@ async def list_entries(
 ):
     result = db.execute(
         select(LogEntry)
-        .where(LogEntry.logbook_id == logbook_id)
+        .where(LogEntry.logbook_id == str(logbook_id))
         .order_by(LogEntry.timestamp)
     )
     return result.scalars().all()
@@ -46,7 +46,7 @@ async def update_entry(
     current_user=Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    result = db.execute(select(LogEntry).where(LogEntry.id == entry_id))
+    result = db.execute(select(LogEntry).where(LogEntry.id == str(entry_id)))
     entry = result.scalar_one_or_none()
     if not entry:
         raise HTTPException(status_code=404, detail="Entry not found")
@@ -65,7 +65,7 @@ async def delete_entry(
     current_user=Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    result = db.execute(select(LogEntry).where(LogEntry.id == entry_id))
+    result = db.execute(select(LogEntry).where(LogEntry.id == str(entry_id)))
     entry = result.scalar_one_or_none()
     if not entry:
         raise HTTPException(status_code=404, detail="Entry not found")
