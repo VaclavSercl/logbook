@@ -46,6 +46,7 @@ logbook/
 | 17.7.2026 | Oprava mapy & Live Polling | Vyřešení chybějící inicializace mapy MapLibre (mount state) a implementace tichého 10s auto-polling intervalu na frontendu pro okamžité zobrazení bodů z Telegram Live Location. |
 | 17.7.2026 | Oprava UUID v SQLite | Vyřešení problému s mizejícími lodními deníky po refreshnutí stránky. SQLite neumí porovnat raw UUID objekty ze SQLAlchemy filtrů s textovými sloupci, opraveno přetypováním parametrů na string. |
 | 17.7.2026 | Odstranění problikávání (Hydration flicker) | Rozdělení stavu mountování (hydration) a přihlášení (token) na všech klientských stránkách frontendu. Pokud ještě kód neběží na klientu, vykreslí se neutrální tmavý div, čímž se zamezilo problikávání přihlašovací / úvodní stránky pro přihlášeného uživatele. |
+| 17.7.2026 | Funkce mazání deníků | Přidáno tlačítko "Smazat deník" na frontendu a implementován odpovídající DELETE endpoint na backendu. Při smazání deníku dojde k řetězovému (cascade) vymazání všech souvisejících záznamů, médií, rozpisů hlídek a služeb v kuchyni. |
 
 ## Známé problémy / TODO
 
