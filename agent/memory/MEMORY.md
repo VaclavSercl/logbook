@@ -43,13 +43,13 @@ logbook/
 | 15.5.2026 | JWT autentizace | Bezpečný přístup |
 | 15.5.2026 | Docker Compose | Snadné nasazení |
 | 16.7.2026 | Implementace Crew & Weather | Dokončení chybějících modulů a stránek v Next.js a FastAPI. Zprovoznění Open-Meteo API. |
-| 17.7.2026 | Oprava inicializace mapy | Vyřešení chyby, kdy se neinicializovala mapa MapLibre (prázdná obrazovka) kvůli chybějící závislosti hooku na mount state. |
+| 17.7.2026 | Oprava mapy & Live Polling | Vyřešení chybějící inicializace mapy MapLibre (mount state) a implementace tichého 10s auto-polling intervalu na frontendu pro okamžité zobrazení bodů z Telegram Live Location. |
 
 ## Známé problémy / TODO
 
 - Frontend: chybí pouze stránka galerie (gallery)
 - Backend: AI endpoint je základní (potřebuje Ollama integraci)
-- Backend: chybí WebSocket pro real-time GPS
+- Backend: chybí WebSocket pro real-time GPS (dočasně vyřešeno 10s tichým pollingem na frontendu)
 - Backend: chybí notifikační systém
 - Chybí testy
 - Chybí CI/CD pipeline
