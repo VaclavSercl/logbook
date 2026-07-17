@@ -56,6 +56,7 @@ logbook/
 | 17.7.2026 | Nastavení viditelnosti deníku (is_public) | Přidán sloupec is_public do tabulky logbooks v SQLite. V modálním okně pro vytvoření deníku na frontendu byla přidána možnost zaškrtnout, zda má být deník veřejný. Veřejné endpointy nově vrací pouze ty aktivní deníky, které mají tento příznak zapnutý. |
 | 17.7.2026 | Lokalizace platformy (i18n) | Vytvořen modul i18n.ts pro překlady uživatelského rozhraní. Aplikace nyní podporuje kompletní přepínání mezi češtinou a angličtinou s okamžitou reaktivní aktualizací napříč komponentami. Systém je připraven pro snadné přidání dalších jazyků v budoucnu. |
 | 17.7.2026 | Přepínač jazyků v hlavičce | Přidány čudlíky CS/EN pro přepínání jazyka do anonymní hlavičky úvodní stránky i do navigační lišty přihlášených uživatelů. Přidány překladové klíče pro přihlášení a registraci a lokalizována celá navigace na hlavní nástěnce. |
+| 17.7.2026 | Kompletní reset databáze | Na žádost uživatele byla smazána celá SQLite databáze logbook.db. Služba byla restartována a databázový soubor se automaticky vytvořil zcela čistý se všemi tabulkami (uživatelé, lodě, deníky, GPS body atd.) a s čistým startovním stavem. |
 
 ## Známé problémy / TODO
 
