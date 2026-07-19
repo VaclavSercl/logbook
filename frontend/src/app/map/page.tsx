@@ -211,7 +211,7 @@ export default function MapPage() {
       const { lng, lat } = e.lngLat;
       setNewPointLat(lat);
       setNewPointLng(lng);
-      setNewPointTime(new Date().toISOString().slice(0, 16));
+      setNewPointTime(new Date(new Date().getTime() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16));
       setIsModalOpen(true);
     });
 
@@ -401,7 +401,7 @@ export default function MapPage() {
       setNewPointLat(center.lat);
       setNewPointLng(center.lng);
     }
-    setNewPointTime(new Date().toISOString().slice(0, 16));
+    setNewPointTime(new Date(new Date().getTime() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16));
     setIsModalOpen(true);
   };
 
