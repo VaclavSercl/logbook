@@ -91,7 +91,7 @@ Odpovídej v jazyce: {language}
     # 1. Try Google Gemini API directly
     if settings.GOOGLE_API_KEY:
         try:
-            url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={settings.GOOGLE_API_KEY}"
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key={settings.GOOGLE_API_KEY}"
             payload = {
                 "contents": [
                     {
@@ -121,7 +121,7 @@ Odpovídej v jazyce: {language}
                 "X-Title": "Logbook",
             }
             payload = {
-                "model": "google/gemini-2.5-flash",
+                "model": "google/gemini-3.5-flash",
                 "messages": [
                     {
                         "role": "user",

@@ -207,7 +207,7 @@ Pokyny pro styl a kontinuitu:
         return f"Automatický zápis: Pozice {lat:.4f}°N, {lng:.4f}°E. Rychlost {avg_speed:.1f} kn. Vítr {weather['wind_speed']} kn {weather['wind_direction']}. Tlak {weather['pressure']} hPa."
 
     try:
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={google_key}"
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key={google_key}"
         payload = {
             "contents": [{"parts": [{"text": prompt}]}]
         }
