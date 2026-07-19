@@ -209,7 +209,7 @@ export default function HelpPage() {
                   <strong>Windy Radar:</strong> Na stránce s mapou můžete aktivovat tlačítko <em>Windy Radar</em>, které zobrazí aktuální povětrnostní a srážkovou animaci od Windy.com přímo na vaší pozici.
                 </li>
                 <li>
-                  <strong>Větrné vektory:</strong> U jednotlivých logovacích bodů trasy vidíte barevné šipky směru větru. Rychlost větru je barevně kódována (modrá < 10 uzlů, zelená 10-18 kn, žlutá 18-27 kn, červená > 27 kn).
+                  <strong>Větrné vektory:</strong> U jednotlivých logovacích bodů trasy vidíte barevné šipky směru větru. Rychlost větru je barevně kódována (modrá &lt; 10 uzlů, zelená 10-18 kn, žlutá 18-27 kn, červená &gt; 27 kn).
                 </li>
                 <li>
                   <strong>Offline-First ukládání:</strong> Pokud jste mimo signál a vytvoříte nový zápis, aplikace ho uloží do fronty ve vašem prohlížeči. Jakmile chytíte signál, synchronizátor záznamy automaticky nahraje na server.
