@@ -294,6 +294,8 @@ export default function LogbookPage({ searchParams }: { searchParams?: { showFor
     );
   }
 
+  const selectedLogbook = logbooks.find((l) => l.id === selectedLogbookId);
+
   return (
     <div className="min-h-screen bg-slate-900 text-slate-100 flex flex-col">
       {/* Header */}
@@ -582,7 +584,16 @@ export default function LogbookPage({ searchParams }: { searchParams?: { showFor
                   ID: {selectedLogbookId} • Celkem {entries.length} záznamů
                 </p>
               </div>
-              <div className="flex gap-2">
+              <div className="flex gap-2 text-xs md:text-sm">
+                {selectedLogbook?.status === 'active' && (
+                  <button
+                    onClick={handleCloseLogbook}
+                    className="px-4 py-2 bg-yellow-600 hover:bg-yellow-700 text-white rounded-lg font-semibold transition text-sm text-center flex items-center justify-center gap-1.5"
+                    title="Uzavřít lodní deník"
+                  >
+                    <span>🔒 Uzavřít deník</span>
+                  </button>
+                )}
                 <button
                   onClick={() => handleDeleteLogbook(selectedLogbookId)}
                   className="px-4 py-2 bg-red-900/40 hover:bg-red-800/60 text-red-200 border border-red-700/50 rounded-lg font-semibold transition text-sm text-center flex items-center justify-center gap-1.5"
@@ -590,12 +601,14 @@ export default function LogbookPage({ searchParams }: { searchParams?: { showFor
                 >
                   <span>🗑️ Smazat deník</span>
                 </button>
-                <Link
-                  href={`/logbook/new?logbook_id=${selectedLogbookId}&vessel_id=${selectedVesselId}`}
-                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition text-sm text-center flex items-center justify-center gap-1.5"
-                >
-                  <span>+ Nový zápis</span>
-                </Link>
+                {selectedLogbook?.status === 'active' && (
+                  <Link
+                    href={`/logbook/new?logbook_id=${selectedLogbookId}&vessel_id=${selectedVesselId}`}
+                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition text-sm text-center flex items-center justify-center gap-1.5"
+                  >
+                    <span>+ Nový zápis</span>
+                  </Link>
+                )}
               </div>
             </div>
 
