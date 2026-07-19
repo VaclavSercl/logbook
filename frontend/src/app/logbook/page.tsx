@@ -163,6 +163,47 @@ export default function LogbookPage({ searchParams }: { searchParams?: { showFor
     loadEntries();
   }, [token, selectedLogbookId]);
 
+  // 3b. Offline entries synchronizer
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const syncOfflineEntries = async () => {
+      const queue = JSON.parse(localStorage.getItem('offline_log_entries') || '[]');
+      if (queue.length === 0) return;
+
+      console.log('Online status detected. Syncing offline entries:', queue.length);
+      const remainingQueue = [];
+
+      for (const item of queue) {
+        try {
+          await entriesApi.create(item.logbookId, item.payload, item.token);
+        } catch (err) {
+          console.error('Failed to sync offline entry:', err);
+          remainingQueue.push(item);
+        }
+      }
+
+      localStorage.setItem('offline_log_entries', JSON.stringify(remainingQueue));
+      
+      // If we synced successfully, refresh entries
+      if (remainingQueue.length < queue.length && selectedLogbookId) {
+        try {
+          const entriesList = await entriesApi.list(selectedLogbookId, token!);
+          setEntries(entriesList);
+        } catch (err) {
+          console.error('Failed to refresh entries after sync:', err);
+        }
+      }
+    };
+
+    if (navigator.onLine) {
+      syncOfflineEntries();
+    }
+
+    window.addEventListener('online', syncOfflineEntries);
+    return () => window.removeEventListener('online', syncOfflineEntries);
+  }, [token, selectedLogbookId]);
+
   // Handle vessel creation
   async function handleCreateVessel(e: React.FormEvent) {
     e.preventDefault();
@@ -288,6 +329,53 @@ export default function LogbookPage({ searchParams }: { searchParams?: { showFor
       setLoading(false);
     }
   }
+
+  // Download file helper for API calls with Bearer Token
+  const downloadExportFile = async (url: string, filename: string) => {
+    if (!token) return;
+    try {
+      setLoading(true);
+      setError('');
+      const response = await fetch(url, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      if (!response.ok) throw new Error('Export selhal.');
+      const blob = await response.blob();
+      const blobUrl = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = blobUrl;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(blobUrl);
+    } catch (err: any) {
+      setError(err.message || 'Nepodařilo se exportovat soubor.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleExportPDF = () => {
+    downloadExportFile(`/api/v1/export/pdf/${selectedLogbookId}`, `logbook_${selectedLogbookId}.pdf`);
+  };
+
+  const handleExportGPX = () => {
+    downloadExportFile(`/api/v1/export/gpx/${selectedLogbookId}`, `track_${selectedLogbookId}.gpx`);
+  };
+
+  const handleExportCSV = () => {
+    downloadExportFile(`/api/v1/export/csv/${selectedLogbookId}`, `logbook_${selectedLogbookId}.csv`);
+  };
+
+  const handleShareLogbook = () => {
+    if (typeof window === 'undefined' || !selectedLogbookId) return;
+    const shareUrl = `${window.location.origin}/public/logbook/${selectedLogbookId}`;
+    navigator.clipboard.writeText(shareUrl);
+    alert(`Odkaz pro veřejné sledování plavby byl zkopírován do schránky:\n${shareUrl}`);
+  };
 
   // Hydration state
   if (!mounted) {
@@ -594,40 +682,86 @@ export default function LogbookPage({ searchParams }: { searchParams?: { showFor
         ) : (
           <div className="space-y-6">
             {/* Logbook Dashboard & Quick Action Bar */}
-            <div className="bg-slate-800 rounded-xl p-5 border border-slate-700 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div>
-                <h2 className="text-lg font-bold text-slate-100 flex items-center gap-2">
-                  <span>📖 {logbooks.find((l) => l.id === selectedLogbookId)?.title}</span>
-                </h2>
-                <p className="text-xs text-slate-400 mt-1">
-                  ID: {selectedLogbookId} • Celkem {entries.length} záznamů
-                </p>
-              </div>
-              <div className="flex gap-2 text-xs md:text-sm">
-                {selectedLogbook?.status === 'active' && (
+            <div className="bg-slate-800 rounded-xl border border-slate-700 overflow-hidden shadow-lg">
+              <div className="p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                  <h2 className="text-lg font-bold text-slate-100 flex items-center gap-2">
+                    <span>📖 {logbooks.find((l) => l.id === selectedLogbookId)?.title}</span>
+                    {selectedLogbook?.status === 'active' ? (
+                      <span className="px-2 py-0.5 bg-green-500/20 text-green-400 rounded text-xs font-semibold">
+                        Aktivní
+                      </span>
+                    ) : (
+                      <span className="px-2 py-0.5 bg-slate-700 text-slate-400 rounded text-xs font-semibold">
+                        Uzavřený
+                      </span>
+                    )}
+                  </h2>
+                  <p className="text-xs text-slate-400 mt-1">
+                    ID: {selectedLogbookId} • Celkem {entries.length} záznamů
+                  </p>
+                </div>
+                <div className="flex gap-2 text-xs md:text-sm">
+                  {selectedLogbook?.status === 'active' && (
+                    <button
+                      onClick={handleCloseLogbook}
+                      className="px-4 py-2 bg-yellow-600 hover:bg-yellow-700 text-white rounded-lg font-semibold transition text-sm text-center flex items-center justify-center gap-1.5"
+                      title="Uzavřít lodní deník"
+                    >
+                      <span>🔒 Uzavřít deník</span>
+                    </button>
+                  )}
                   <button
-                    onClick={handleCloseLogbook}
-                    className="px-4 py-2 bg-yellow-600 hover:bg-yellow-700 text-white rounded-lg font-semibold transition text-sm text-center flex items-center justify-center gap-1.5"
-                    title="Uzavřít lodní deník"
+                    onClick={() => handleDeleteLogbook(selectedLogbookId)}
+                    className="px-4 py-2 bg-red-900/40 hover:bg-red-800/60 text-red-200 border border-red-700/50 rounded-lg font-semibold transition text-sm text-center flex items-center justify-center gap-1.5"
+                    title="Smazat celý lodní deník"
                   >
-                    <span>🔒 Uzavřít deník</span>
+                    <span>🗑️ Smazat deník</span>
                   </button>
-                )}
-                <button
-                  onClick={() => handleDeleteLogbook(selectedLogbookId)}
-                  className="px-4 py-2 bg-red-900/40 hover:bg-red-800/60 text-red-200 border border-red-700/50 rounded-lg font-semibold transition text-sm text-center flex items-center justify-center gap-1.5"
-                  title="Smazat celý lodní deník"
-                >
-                  <span>🗑️ Smazat deník</span>
-                </button>
-                {selectedLogbook?.status === 'active' && (
-                  <Link
-                    href={`/logbook/new?logbook_id=${selectedLogbookId}&vessel_id=${selectedVesselId}`}
-                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition text-sm text-center flex items-center justify-center gap-1.5"
+                  {selectedLogbook?.status === 'active' && (
+                    <Link
+                      href={`/logbook/new?logbook_id=${selectedLogbookId}&vessel_id=${selectedVesselId}`}
+                      className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition text-sm text-center flex items-center justify-center gap-1.5"
+                    >
+                      <span>+ Nový zápis</span>
+                    </Link>
+                  )}
+                </div>
+              </div>
+
+              {/* Secondary toolbar for exports and sharing */}
+              <div className="bg-slate-800/50 border-t border-slate-750 px-5 py-3 flex flex-wrap items-center gap-2 justify-between">
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    onClick={handleExportPDF}
+                    className="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 border border-slate-600 text-slate-200 rounded-lg text-xs font-semibold transition flex items-center gap-1.5"
+                    title="Exportovat deník do PDF"
                   >
-                    <span>+ Nový zápis</span>
-                  </Link>
-                )}
+                    <span>📄 PDF Export</span>
+                  </button>
+                  <button
+                    onClick={handleExportGPX}
+                    className="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 border border-slate-600 text-slate-200 rounded-lg text-xs font-semibold transition flex items-center gap-1.5"
+                    title="Exportovat trasu jako GPX"
+                  >
+                    <span>🗺️ GPX Trasa</span>
+                  </button>
+                  <button
+                    onClick={handleExportCSV}
+                    className="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 border border-slate-600 text-slate-200 rounded-lg text-xs font-semibold transition flex items-center gap-1.5"
+                    title="Exportovat data jako CSV"
+                  >
+                    <span>📊 CSV Data</span>
+                  </button>
+                </div>
+                
+                <button
+                  onClick={handleShareLogbook}
+                  className="px-3 py-1.5 bg-emerald-600/20 hover:bg-emerald-600/30 border border-emerald-500/30 text-emerald-400 rounded-lg text-xs font-semibold transition flex items-center gap-1.5"
+                  title="Kopírovat veřejný odkaz pro sledování plavby"
+                >
+                  <span>🔗 Sdílet odkaz plavby</span>
+                </button>
               </div>
             </div>
 

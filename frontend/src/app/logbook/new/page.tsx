@@ -144,12 +144,39 @@ function NewLogbookEntryForm() {
         battery_level: batteryLevel ? parseFloat(batteryLevel) : undefined,
       };
 
-      await entriesApi.create(logbookId, payload, token);
-      setSuccess(true);
-      
-      setTimeout(() => {
-        router.push('/logbook');
-      }, 1000);
+      // If offline, save to queue immediately
+      if (typeof window !== 'undefined' && !navigator.onLine) {
+        const queue = JSON.parse(localStorage.getItem('offline_log_entries') || '[]');
+        queue.push({ logbookId, payload, token });
+        localStorage.setItem('offline_log_entries', JSON.stringify(queue));
+        
+        setSuccess(true);
+        setError('Uloženo offline. Zápis se automaticky odešle, jakmile získáte signál.');
+        setTimeout(() => {
+          router.push('/logbook');
+        }, 3000);
+        return;
+      }
+
+      try {
+        await entriesApi.create(logbookId, payload, token);
+        setSuccess(true);
+        
+        setTimeout(() => {
+          router.push('/logbook');
+        }, 1000);
+      } catch (err: unknown) {
+        // Fallback for network error
+        const queue = JSON.parse(localStorage.getItem('offline_log_entries') || '[]');
+        queue.push({ logbookId, payload, token });
+        localStorage.setItem('offline_log_entries', JSON.stringify(queue));
+        
+        setSuccess(true);
+        setError('Detekován výpadek spojení. Uloženo offline pro budoucí synchronizaci.');
+        setTimeout(() => {
+          router.push('/logbook');
+        }, 3000);
+      }
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Chyba při zápisu do deníku';
       setError(msg);

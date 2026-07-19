@@ -2,7 +2,7 @@
 import asyncio
 import os
 import uuid
-from datetime import datetime
+from datetime import datetime, timedelta
 import httpx
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -136,11 +136,76 @@ async def process_telegram_message(message: dict, token: str, chat_id: int, is_e
                 "• `/status` - Aktuální stav aktivní plavby\n"
                 "• `/vessel` - Informace o lodi\n"
                 "• `/gps [lat] [lng]` - Ruční uložení GPS souřadnic\n"
+                "• `/mob` - Nouzový záznam: MUŽ PŘES PALUBU!\n"
                 "• *Sdílená poloha* - Pošli mi polohu jako přílohu přímo z Telegramu (Sponka -> Poloha)\n"
                 "• *Textová zpráva* - Cokoliv mi napíšeš, zapíšu jako nový záznam do aktivního deníku.\n"
                 "• *Fotka/Obrázek* - Nahraju ji do galerie a spojím s deníkem."
             )
             await send_telegram_reply(token, chat_id, help_msg)
+            return
+
+        # Handle command: /mob
+        if text.startswith("/mob"):
+            # Get latest GPS coordinates for entry position
+            latest_gps_result = db.execute(
+                select(GpsPoint)
+                .where(GpsPoint.vessel_id == vessel.id)
+                .order_by(GpsPoint.timestamp.desc())
+                .limit(1)
+            )
+            latest_gps = latest_gps_result.scalar_one_or_none()
+            lat = latest_gps.latitude if latest_gps else 43.5081
+            lng = latest_gps.longitude if latest_gps else 16.4402
+            
+            # Fetch weather if possible
+            weather = {"temp": "N/A", "wind": "N/A", "pressure": "N/A"}
+            try:
+                w_res = httpx.get(
+                    f"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lng}&current=temperature_2m,surface_pressure,wind_speed_10m,wind_direction_10m",
+                    timeout=5.0
+                )
+                if w_res.status_code == 200:
+                    w_data = w_res.json()["current"]
+                    weather["temp"] = f"{w_data['temperature_2m']} °C"
+                    weather["wind"] = f"{(w_data['wind_speed_10m'] * 0.539957):.1f} kn"
+                    weather["pressure"] = f"{w_data['surface_pressure']} hPa"
+            except Exception:
+                pass
+            
+            now_utc = datetime.utcnow()
+            local_time_str = (now_utc + timedelta(hours=2)).strftime("%H:%M:%S")  # CEST / UTC+2
+            
+            entry_id_str = "N/A"
+            if logbook:
+                entry = LogEntry(
+                    id=str(uuid.uuid4()),
+                    logbook_id=logbook.id,
+                    timestamp=now_utc,
+                    latitude=lat,
+                    longitude=lng,
+                    notes=f"🚨 EMERGENCY: MAN OVERBOARD! Muž přes palubu na pozici {lat:.5f}°N, {lng:.5f}°E!",
+                    category="incident",
+                    speed=0.0
+                )
+                try:
+                    entry.temperature = float(weather["temp"].split()[0])
+                    entry.wind_speed = float(weather["wind"].split()[0])
+                    entry.pressure = float(weather["pressure"].split()[0])
+                except Exception:
+                    pass
+                db.add(entry)
+                db.commit()
+                entry_id_str = entry.id
+
+            mob_msg = (
+                f"🚨 *MAN OVERBOARD! MUŽ PŘES PALUBU!* 🚨\n\n"
+                f"📍 *Pozice:* `{lat:.5f}°N`, `{lng:.5f}°E`\n"
+                f"⏰ *Čas:* `{local_time_str}` LT (místní čas)\n"
+                f"🌡️ *Počasí:* Teplota {weather['temp']}, vítr {weather['wind']}, tlak {weather['pressure']}\n\n"
+                f"Záznam byl zapsán do lodního deníku pod ID: `{entry_id_str}`.\n"
+                f"Posádko, zahajte manévr pro vyzvednutí! Otočit loď, sledovat cíl, stisknout MOB tlačítko na GPS!"
+            )
+            await send_telegram_reply(token, chat_id, mob_msg)
             return
 
         # Handle command: /vessel

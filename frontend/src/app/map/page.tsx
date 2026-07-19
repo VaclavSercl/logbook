@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
-import { vesselsApi, gpsApi } from '@/lib/api';
+import { vesselsApi, gpsApi, logbooksApi, entriesApi } from '@/lib/api';
 import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 
@@ -19,6 +19,21 @@ interface Vessel {
   id: string;
   name: string;
   vessel_type?: string | null;
+}
+
+interface LogbookEntry {
+  id: string;
+  timestamp: string;
+  latitude: number | null;
+  longitude: number | null;
+  course: number | null;
+  speed: number | null;
+  wind_direction: number | null;
+  wind_speed: number | null;
+  pressure: number | null;
+  temperature: number | null;
+  notes: string | null;
+  category: string | null;
 }
 
 // Function to generate the style configuration for MapLibre
@@ -107,8 +122,10 @@ export default function MapPage() {
   const [vessels, setVessels] = useState<Vessel[]>([]);
   const [selectedVesselId, setSelectedVesselId] = useState<string>('');
   const [track, setTrack] = useState<GpsPoint[]>([]);
+  const [entries, setEntries] = useState<LogbookEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [layer, setLayer] = useState<'osm' | 'seamap' | 'satellite'>('osm');
+  const [showWindy, setShowWindy] = useState(false);
 
   // Modal form states for manual entry
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -120,6 +137,8 @@ export default function MapPage() {
 
   const [mounted, setMounted] = useState(false);
   const [token, setToken] = useState<string | null>(null);
+
+  const markersRef = useRef<any[]>([]);
 
   useEffect(() => {
     setMounted(true);
@@ -172,17 +191,72 @@ export default function MapPage() {
     }
   };
 
+  const fetchEntries = async (vesselId: string) => {
+    if (!token) return;
+    try {
+      const logbooksList = await logbooksApi.list(token, vesselId);
+      const activeLogbook = logbooksList.find((l: any) => l.status === 'active');
+      if (activeLogbook) {
+        const entriesList = await entriesApi.list(activeLogbook.id, token);
+        setEntries(entriesList);
+      } else {
+        setEntries([]);
+      }
+    } catch (err) {
+      console.error('Failed to fetch active logbook entries:', err);
+    }
+  };
+
   useEffect(() => {
     if (!selectedVesselId) return;
     fetchTrack(selectedVesselId);
+    fetchEntries(selectedVesselId);
 
-    // Poll for new live GPS track points every 10 seconds silently
+    // Poll for new live GPS track points and entries every 10 seconds silently
     const interval = setInterval(() => {
       fetchTrack(selectedVesselId, true);
+      fetchEntries(selectedVesselId);
     }, 10000);
 
     return () => clearInterval(interval);
   }, [selectedVesselId, token]);
+
+  // Offline entries synchronizer for Map page
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const syncOfflineEntries = async () => {
+      const queue = JSON.parse(localStorage.getItem('offline_log_entries') || '[]');
+      if (queue.length === 0) return;
+
+      console.log('Online status detected on Map. Syncing offline entries:', queue.length);
+      const remainingQueue = [];
+
+      for (const item of queue) {
+        try {
+          await entriesApi.create(item.logbookId, item.payload, item.token);
+        } catch (err) {
+          console.error('Failed to sync offline entry on Map:', err);
+          remainingQueue.push(item);
+        }
+      }
+
+      localStorage.setItem('offline_log_entries', JSON.stringify(remainingQueue));
+      
+      // If we synced successfully, refresh track and entries
+      if (remainingQueue.length < queue.length && selectedVesselId) {
+        fetchTrack(selectedVesselId, true);
+        fetchEntries(selectedVesselId);
+      }
+    };
+
+    if (navigator.onLine) {
+      syncOfflineEntries();
+    }
+
+    window.addEventListener('online', syncOfflineEntries);
+    return () => window.removeEventListener('online', syncOfflineEntries);
+  }, [token, selectedVesselId]);
 
   // 3. Initialize MapLibre Map
   useEffect(() => {
@@ -237,7 +311,97 @@ export default function MapPage() {
         mapRef.current.on('load', onMapLoad);
       }
     }
-  }, [track]);
+  }, [layer, track]);
+
+  // 6. Draw HTML markers for logbook entries and wind vectors
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+
+    // Clear old markers
+    markersRef.current.forEach(m => m.remove());
+    markersRef.current = [];
+
+    // Draw markers for log entries
+    entries.forEach((entry) => {
+      if (entry.latitude === null || entry.longitude === null) return;
+
+      // Create a container for our marker
+      const el = document.createElement('div');
+      el.className = 'group relative flex flex-col items-center justify-center';
+
+      // 1. Wind arrow styling (if wind data exists)
+      let windArrowHtml = '';
+      if (entry.wind_direction !== null && entry.wind_speed !== null) {
+        // Color based on wind speed (knots)
+        let color = '#38bdf8'; // light blue (< 10 kn)
+        if (entry.wind_speed >= 10 && entry.wind_speed < 18) {
+          color = '#22c55e'; // green (10-18 kn)
+        } else if (entry.wind_speed >= 18 && entry.wind_speed < 27) {
+          color = '#eab308'; // yellow (18-27 kn)
+        } else if (entry.wind_speed >= 27) {
+          color = '#ef4444'; // red (>= 27 kn)
+        }
+
+        // SVG Arrow pointing in the wind direction
+        // Note: wind direction degrees indicate where the wind is coming from.
+        // So the arrow (representing the air flow) should point to (wind_direction + 180) degrees.
+        const rotation = (entry.wind_direction + 180) % 360;
+
+        windArrowHtml = `
+          <div style="transform: rotate(${rotation}deg); color: ${color}; font-size: 16px; font-weight: bold; line-height: 1;" class="transition hover:scale-125 cursor-pointer">
+            ➔
+          </div>
+        `;
+      }
+
+      // 2. Main Marker Body (anchor or book icon)
+      const isIncident = entry.category === 'incident';
+      const markerChar = isIncident ? '🚨' : (entry.category === 'anchor' ? '⚓' : '📖');
+      const markerBg = isIncident ? 'bg-red-500/20 border-red-500' : 'bg-blue-500/20 border-blue-500';
+
+      el.innerHTML = `
+        ${windArrowHtml}
+        <div class="w-7 h-7 flex items-center justify-center rounded-full border-2 ${markerBg} backdrop-blur-sm bg-slate-900/80 shadow-lg text-sm transition hover:scale-110 cursor-pointer">
+          ${markerChar}
+        </div>
+      `;
+
+      // 3. Popup on click
+      const localTimeStr = new Date(entry.timestamp).toLocaleTimeString('cs-CZ', { hour: '2-digit', minute: '2-digit' });
+      const dateStr = new Date(entry.timestamp).toLocaleDateString('cs-CZ');
+      
+      const popupHtml = `
+        <div class="bg-slate-900 border border-slate-700 text-slate-100 p-3 rounded-lg text-xs max-w-xs space-y-1.5 shadow-2xl leading-relaxed">
+          <div class="flex justify-between items-center border-b border-slate-700 pb-1.5 font-semibold text-slate-300 gap-4">
+            <span>${markerChar} Zápis v deníku</span>
+            <span>${dateStr} ${localTimeStr}</span>
+          </div>
+          <p class="font-medium text-slate-200">${entry.notes || 'Bez poznámky.'}</p>
+          <div class="grid grid-cols-2 gap-1.5 text-[10px] text-slate-400 pt-1 border-t border-slate-800">
+            <div>💨 Rychlost: ${entry.speed !== null ? `${entry.speed.toFixed(1)} kn` : 'N/A'}</div>
+            <div>🧭 Kurz: ${entry.course !== null ? `${entry.course.toFixed(0)}°` : 'N/A'}</div>
+            <div>🌬️ Vítr: ${entry.wind_direction !== null ? `${entry.wind_direction.toFixed(0)}°` : 'N/A'} / ${entry.wind_speed !== null ? `${entry.wind_speed.toFixed(0)} kn` : 'N/A'}</div>
+            <div>🌡️ Teplota: ${entry.temperature !== null ? `${entry.temperature.toFixed(1)} °C` : 'N/A'}</div>
+          </div>
+        </div>
+      `;
+
+      const popup = new maplibregl.Popup({ offset: 15, closeButton: false }).setHTML(popupHtml);
+
+      const marker = new maplibregl.Marker({ element: el })
+        .setLngLat([entry.longitude, entry.latitude])
+        .setPopup(popup)
+        .addTo(map);
+
+      markersRef.current.push(marker);
+    });
+
+    return () => {
+      markersRef.current.forEach(m => m.remove());
+      markersRef.current = [];
+    };
+  }, [entries, layer, track]);
 
   // 5. Update map style when layer changes, then restore track
   useEffect(() => {
@@ -585,6 +749,16 @@ export default function MapPage() {
             >
               Satellite
             </button>
+            <button
+              onClick={() => setShowWindy(!showWindy)}
+              className={`px-3 py-1.5 rounded text-xs font-semibold transition flex items-center gap-1.5 ${
+                showWindy
+                  ? 'bg-orange-600 text-white animate-pulse'
+                  : 'text-slate-300 hover:bg-slate-800'
+              }`}
+            >
+              💨 Windy Radar
+            </button>
           </div>
 
           {/* Quick Helper Banner */}
@@ -604,6 +778,32 @@ export default function MapPage() {
             </div>
           )}
         </div>
+
+        {/* Windy Radar side panel */}
+        {showWindy && (
+          <div className="w-96 bg-slate-900 border-l border-slate-700 flex flex-col flex-shrink-0 h-full relative z-10">
+            <div className="p-3 border-b border-slate-700 flex justify-between items-center bg-slate-850">
+              <span className="text-sm font-semibold text-orange-400 flex items-center gap-1.5">
+                💨 Windy Radar
+              </span>
+              <button 
+                onClick={() => setShowWindy(false)}
+                className="text-xs text-slate-400 hover:text-slate-200"
+              >
+                ✕ Zavřít
+              </button>
+            </div>
+            <div className="flex-1 bg-slate-950">
+              <iframe 
+                src={`https://embed.windy.com/embed2.html?lat=${track[track.length - 1]?.latitude || 43.5081}&lon=${track[track.length - 1]?.longitude || 16.4402}&zoom=6&level=surface&overlay=wind&menu=&message=true&marker=true&calendar=now&pressure=true&type=map&location=coordinates&detail=true&metricWind=default&metricTemp=default`}
+                width="100%"
+                height="100%"
+                frameBorder="0"
+                className="w-full h-full"
+              ></iframe>
+            </div>
+          </div>
+        )}
 
         {/* Sidebar */}
         <div className="w-80 bg-slate-800 border-l border-slate-700 flex flex-col flex-shrink-0 h-full">
