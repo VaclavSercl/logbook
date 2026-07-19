@@ -152,7 +152,7 @@ class LogEntry(Base):
 class GpsPoint(Base):
     __tablename__ = "gps_points"
 
-    id = Column(BigInteger, primary_key=True, autoincrement=True)
+    id = Column(BigInteger().with_variant(Integer, "sqlite"), primary_key=True, autoincrement=True)
     vessel_id = Column(String(36), ForeignKey("vessels.id"), index=True)
     timestamp = Column(DateTime, nullable=False, index=True)
     latitude = Column(Float, nullable=False)
@@ -184,7 +184,7 @@ class Media(Base):
 class AuditLog(Base):
     __tablename__ = "audit_logs"
 
-    id = Column(BigInteger, primary_key=True, autoincrement=True)
+    id = Column(BigInteger().with_variant(Integer, "sqlite"), primary_key=True, autoincrement=True)
     table_name = Column(String(100), nullable=False)
     record_id = Column(String(36), nullable=False)
     action = Column(String(20), nullable=False)
