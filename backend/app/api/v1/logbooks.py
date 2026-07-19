@@ -57,13 +57,36 @@ async def close_logbook(
     db: Session = Depends(get_db),
 ):
     from datetime import datetime
+    from app.services.integrity_service import sign_logbook
+    
     result = db.execute(select(Logbook).where(Logbook.id == str(logbook_id)))
     logbook = result.scalar_one_or_none()
     if not logbook:
         raise HTTPException(status_code=404, detail="Logbook not found")
-    logbook.status = "closed"
-    logbook.closed_at = datetime.utcnow()
-    return {"status": "closed"}
+    
+    try:
+        signature = sign_logbook(str(logbook_id), db)
+        logbook.closed_at = datetime.utcnow()
+        return {"status": "closed", "signature": signature}
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.get("/{logbook_id}/verify")
+async def verify_logbook(
+    logbook_id: UUID,
+    current_user=Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    from app.services.integrity_service import verify_logbook_integrity
+    
+    result = db.execute(select(Logbook).where(Logbook.id == str(logbook_id)))
+    logbook = result.scalar_one_or_none()
+    if not logbook:
+        raise HTTPException(status_code=404, detail="Logbook not found")
+        
+    verification = verify_logbook_integrity(str(logbook_id), db)
+    return verification
 
 
 @router.delete("/{logbook_id}")

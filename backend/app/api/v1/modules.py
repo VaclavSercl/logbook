@@ -45,6 +45,7 @@ async def install_module(
     if not module:
         raise HTTPException(status_code=404, detail="Module not found")
     module.is_installed = True
+    db.commit()
     return {"status": "installed"}
 
 
@@ -59,6 +60,7 @@ async def activate_module(
     if not module:
         raise HTTPException(status_code=404, detail="Module not found")
     module.is_active = True
+    db.commit()
     return {"status": "activated"}
 
 
@@ -73,4 +75,5 @@ async def deactivate_module(
     if not module:
         raise HTTPException(status_code=404, detail="Module not found")
     module.is_active = False
+    db.commit()
     return {"status": "deactivated"}

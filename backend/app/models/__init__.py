@@ -141,6 +141,7 @@ class LogEntry(Base):
     ai_comment = Column(Text)
     category = Column(String(50))
     is_locked = Column(Boolean, default=False)
+    entry_hash = Column(String(64), nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     modified_at = Column(DateTime)
     modified_by = Column(String(36), ForeignKey("users.id"))

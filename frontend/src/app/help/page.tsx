@@ -189,7 +189,7 @@ export default function HelpPage() {
                       <strong>Nouzový příkaz /mob:</strong> Okamžitě zapíše a zvýrazní nouzovou událost s přesným časem a aktuálními GPS souřadnicemi do deníku a odešle instrukce pro zahájení záchrany.
                     </li>
                     <li>
-                      <strong>Strážce polohy (Watchdog):</strong> Pokud plujete (poslední známá rychlost > 0.8 uzlů), ale po dobu 30 minut nedorazil žádný nový GPS bod ze sdílení polohy, bot vám zašle varování.
+                      <strong>Strážce polohy (Watchdog):</strong> Pokud plujete (poslední známá rychlost &gt; 0.8 uzlů), ale po dobu 30 minut nedorazil žádný nový GPS bod ze sdílení polohy, bot vám zašle varování.
                     </li>
                   </ul>
                 </div>

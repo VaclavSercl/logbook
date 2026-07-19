@@ -18,6 +18,11 @@ from sqlalchemy import create_engine, select
 from sqlalchemy.orm import sessionmaker
 from app.config import settings
 from app.models import GpsPoint, Logbook, LogEntry, Vessel
+from app.services.ai_service import generate_hourly_log_entry
+from app.services.audit_service import register_audit_listeners
+
+# Register SQLAlchemy audit listeners
+register_audit_listeners()
 
 # Override relative database URL to absolute path
 db_url = settings.DATABASE_URL
@@ -169,56 +174,16 @@ async def get_location_details(lat, lng):
     }
 
 async def generate_log_narrative(vessel_name, current_time_str, lat, lng, location_info, avg_speed, weather, last_entries=None):
-    # Formulate memory context
-    memory_context = ""
-    if last_entries:
-        memory_context = "\n=== PAMĚŤ: PŘEDCHOZÍ ZÁPISY DENÍKU ===\n"
-        for entry in reversed(last_entries):
-            entry_time = entry.timestamp.strftime('%d. %m. %Y %H:%M') if hasattr(entry.timestamp, 'strftime') else entry.timestamp
-            memory_context += f"- [{entry_time}] {entry.notes}\n"
-        memory_context += "=======================================\n"
-
-    prompt = f"""
-Jsi Njoror, AI vládce projektu lodního deníku na lodi {vessel_name}.
-Sestav profesionální námořní zápis do lodního deníku pro aktuální hodinu plavby v češtině.
-{memory_context}
-Telemetrická data a kontext pro tento zápis:
-- Aktuální čas: {current_time_str}
-- Pozice: {lat:.5f}°N, {lng:.5f}°E
-- Lokalita (reverzní geokódování): {location_info['display_name']}
-- Typ místa: {location_info['place_type']} {f'({location_info["place_name"]})' if location_info['place_name'] else ''}
-- Průměrná rychlost od vyplutí / zahájení pohybu: {avg_speed:.1f} uzlů
-- Aktuální vítr: {weather['wind_speed']:.1f} uzlů, směr {weather['wind_direction']}
-- Tlak vzduchu: {weather['pressure']:.1f} hPa
-- Teplota vzduchu: {weather['temperature']:.1f} °C
-- Stav moře (Douglasova stupnice): {weather['sea_state']}
-- Oblačnost: {weather['clouds']}%
-
-Pokyny pro styl a kontinuitu:
-- Zápis musí znít jako od velmi zkušeného, stručného a věcného kapitána námořní plavby.
-- Navazuj plynule na předchozí zápisy (pokud jsou k dispozici). Zkontroluj, zda loď změnila polohu, zda se mění počasí (např. zesílení větru, pokles tlaku) a napiš to jako plynulé pokračování cesty.
-- Udržuj naprosto stejnou strukturu, terminologii a formát vyjadřování jako v předchozích zápisech pro zachování jednotného stylu celého deníku.
-- Nepoužívej žádný úvodní ani závěrečný doprovodný text (např. "Zde je váš zápis"). Začni ihned samotným textem zápisu.
-- Zápis by měl mít délku 2 až 4 věty. Nepoužívej zbytečné fráze.
-"""
-    google_key = settings.GOOGLE_API_KEY
-    if not google_key:
-        print("GOOGLE_API_KEY not configured. Using fallback text.")
-        return f"Automatický zápis: Pozice {lat:.4f}°N, {lng:.4f}°E. Rychlost {avg_speed:.1f} kn. Vítr {weather['wind_speed']} kn {weather['wind_direction']}. Tlak {weather['pressure']} hPa."
-
-    try:
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key={google_key}"
-        payload = {
-            "contents": [{"parts": [{"text": prompt}]}]
-        }
-        async with httpx.AsyncClient() as client:
-            res = await client.post(url, json=payload, timeout=20.0)
-            if res.status_code == 200:
-                data = res.json()
-                return data["candidates"][0]["content"]["parts"][0]["text"].strip()
-    except Exception as e:
-        print(f"Gemini API failed: {e}")
-    return f"Automatický zápis: Pozice {lat:.4f}°N, {lng:.4f}°E. Rychlost {avg_speed:.1f} kn. Vítr {weather['wind_speed']} kn {weather['wind_direction']}. Tlak {weather['pressure']} hPa."
+    return await generate_hourly_log_entry(
+        vessel_name=vessel_name,
+        current_time_str=current_time_str,
+        lat=lat,
+        lng=lng,
+        location_info=location_info,
+        avg_speed=avg_speed,
+        weather=weather,
+        last_entries=last_entries
+    )
 
 async def main():
     db = SessionLocal()

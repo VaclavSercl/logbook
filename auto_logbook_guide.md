@@ -21,9 +21,9 @@ Otevřete systémový cron příkazem:
 crontab -e
 ```
 
-Vložte do crontabu následující řádek, který každou celou hodinu spustí agenta `agy` s modelem **Gemini 3.5 Flash (Medium)**:
+Vložte do crontabu následující řádek, který každou celou hodinu spustí přímo Python skript v příslušném virtuálním prostředí backendu (tím se vyhnete vyčerpání limitů/kvóty pro spouštění plnohodnotného AI agenta `agy`):
 ```cron
-0 * * * * cd /home/wwwenda/workspace/logbook && agy --model "Gemini 3.5 Flash (Medium)" --dangerously-skip-permissions --print "Spusť hodinový zápis do lodního deníku" >> /home/wwwenda/workspace/logbook/auto_logbook.log 2>&1
+0 * * * * cd /home/wwwenda/workspace/logbook/backend && ./venv/bin/python3 app/services/auto_logbook.py >> /home/wwwenda/workspace/logbook/auto_logbook.log 2>&1
 ```
 
 ---

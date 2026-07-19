@@ -5,9 +5,24 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import settings
-from app.database import engine, Base
+from app.database import engine, Base, SessionLocal
+from app.services.seed_modules import seed_default_modules
+from app.services.audit_service import register_audit_listeners
 from app.api.v1 import auth, vessels, logbooks, entries, gps, ai, export, modules, dashboard, sparrow, crew, weather, watches, galley
 
+# Register SQLAlchemy audit listeners
+register_audit_listeners()
+
+
+# Create tables
+Base.metadata.create_all(bind=engine)
+
+# Seed default modules
+db = SessionLocal()
+try:
+    seed_default_modules(db)
+finally:
+    db.close()
 
 app = FastAPI(
     title="Logbook API",
