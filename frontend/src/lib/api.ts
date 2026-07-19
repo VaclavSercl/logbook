@@ -100,6 +100,8 @@ export const gpsApi = {
     apiFetch(`/gps/vessel/${vesselId}`, { token }),
   getLatest: (vesselId: string, token: string) =>
     apiFetch(`/gps/vessel/${vesselId}/latest`, { token }),
+  delete: (pointId: number, token: string) =>
+    apiFetch(`/gps/${pointId}`, { method: 'DELETE', token }),
 };
 
 // AI API

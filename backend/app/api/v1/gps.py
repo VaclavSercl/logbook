@@ -160,3 +160,25 @@ async def get_public_gps_track(
     result = db.execute(query)
     return result.scalars().all()
 
+
+@router.delete("/{point_id}")
+async def delete_gps_point(
+    point_id: int,
+    current_user=Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    from app.models import Vessel
+    result = db.execute(select(GpsPoint).where(GpsPoint.id == point_id))
+    point = result.scalar_one_or_none()
+    if not point:
+        raise HTTPException(status_code=404, detail="GPS point not found")
+        
+    vessel_result = db.execute(select(Vessel).where(Vessel.id == point.vessel_id))
+    vessel = vessel_result.scalar_one_or_none()
+    if not vessel or vessel.owner_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not authorized to delete this point")
+        
+    db.delete(point)
+    db.commit()
+    return {"status": "deleted"}
+
