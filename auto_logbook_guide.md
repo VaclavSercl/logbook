@@ -1,50 +1,41 @@
 # ⚓ Automatický zapisovatel lodního deníku (Njoror)
 
-Tento modul automaticky vytváří každou hodinu zápisy do aktivního lodního deníku. Zápisy generuje umělá inteligence **Gemini 2.5 Flash** (pod kapitolou **Njoror**, AI vládce lodního deníku) na základě telemetrických dat, počasí a geolokace.
+Tento modul automaticky vytváří každou hodinu zápisy do aktivního lodního deníku. Zápisy generuje a řídí umělá inteligence **Gemini 3.5 Flash** (vystupující jako **Njoror**, AI vládce lodního deníku).
+
+Všechny instrukce jsou definovány přímo v souboru `AGENTS.md` v kořeni projektu. Agent `agy` si při každém spuštění tyto instrukce načte a autonomně provede celý proces.
 
 ## 🚀 Jak to funguje
-1. **Detekce plavby:** Skript vyhledá v databázi `logbook.db` aktivní lodní deník a jeho přiřazenou loď.
+1. **Detekce plavby:** Vyhledá v databázi `logbook.db` aktivní lodní deník a jeho loď.
 2. **Analýza trasy:** Načte poslední GPS body a spočítá **průměrnou rychlost** od posledního okamžiku, kdy se loď začala pohybovat (rychlost > 0.5 uzlu). Pokud loď stojí, rychlost je 0.
-3. **Geolokace (Nominatim):** Zjistí přesnou lokalitu podle souřadnic. Pokud se loď nachází v přístavu, marině nebo zátoce, vyhledá její název. Na širém moři označí polohu jako otevřené moře.
-4. **Počasí (Open-Meteo):** Stáhne aktuální data pro danou polohu: teplotu, tlak, rychlost a směr větru, oblačnost a odhadne stav moře podle Douglasovy stupnice.
-5. **AI Zápis (Super Prompt):** Gemini 2.5 Flash zformuje věcný, stručný námořní zápis odpovídající situaci (jiný styl v přístavu/marině, jiný na otevřeném moři při plavbě).
-6. **Zápis do DB:** Vytvoří a uloží nový záznam do tabulky `log_entries` se všemi naměřenými hodnotami.
+3. **Geolokace (Nominatim):** Zjistí přesnou lokalitu podle souřadnic (přístavy, mariny, zátoky).
+4. **Počasí (Open-Meteo):** Stáhne aktuální data pro polohu: teplotu, tlak, rychlost a směr větru, oblačnost a určí stav moře podle Douglasovy stupnice.
+5. **Paměť (Kontinuita):** Načte poslední 2 zápisy, aby navázal na styl vyjadřování a průběh plavby.
+6. **Zápis do DB:** Sestaví věcný námořní zápis a vloží ho jako nový řádek do tabulky `log_entries` se všemi naměřenými hodnotami.
 
 ---
 
 ## 📅 Nastavení automatického spouštění (Cron)
 
-Máte dvě možnosti, jak automatický zápis spouštět každou hodinu. Otevřete systémový cron příkazem:
+Otevřete systémový cron příkazem:
 ```bash
 crontab -e
 ```
 
-### Varianta A: Přímé spuštění Python skriptu (Doporučeno)
-Tato metoda je nejrychlejší (trvá cca 2-3 sekundy), nejspolehlivější a nespotřebovává zbytečné tokeny za uvažování agenta.
-
-Vložte do crontabu následující řádek:
+Vložte do crontabu následující řádek, který každou celou hodinu spustí agenta `agy` s modelem **Gemini 3.5 Flash (Medium)**:
 ```cron
-0 * * * * cd /home/wwwenda/workspace/logbook/backend && ./venv/bin/python3 app/services/auto_logbook.py >> /home/wwwenda/workspace/logbook/backend/auto_logbook.log 2>&1
-```
-
-### Varianta B: Spuštění přes Antigravity agenta (`agy`)
-Pokud chcete, aby celý proces řídil a dozoroval agent `agy` s využitím přirozeného jazyka (jak bylo požadováno):
-
-Vložte do crontabu:
-```cron
-0 * * * * cd /home/wwwenda/workspace/logbook/backend && agy --dangerously-skip-permissions --print "Spusť python skript app/services/auto_logbook.py pro zápis hodinového lodního deníku" >> /home/wwwenda/workspace/logbook/backend/auto_logbook.log 2>&1
+0 * * * * cd /home/wwwenda/workspace/logbook && agy --model "Gemini 3.5 Flash (Medium)" --dangerously-skip-permissions --print "Spusť hodinový zápis do lodního deníku" >> /home/wwwenda/workspace/logbook/auto_logbook.log 2>&1
 ```
 
 ---
 
-## 📝 Super Prompt pro Gemini 2.5 Flash
-Pokud byste chtěli generovat zápis čistě textově přes agenta (bez skriptu), skript interně používá tento **Super Prompt**:
+## 📝 Instrukční Super Prompt (AGENTS.md)
+Kompletní chování a prováděcí kroky agenta jsou definovány v souboru `AGENTS.md` a vypadají následovně:
 
-```text
+```markdown
 Jsi Njoror, AI vládce projektu lodního deníku na lodi {vessel_name}.
 Sestav profesionální námořní zápis do lodního deníku pro aktuální hodinu plavby v češtině.
 
-Telemetrická data a kontext:
+Telemetrická data a kontext pro tento zápis:
 - Aktuální čas: {current_time_str}
 - Pozice: {lat:.5f}°N, {lng:.5f}°E
 - Lokalita (reverzní geokódování): {location_info['display_name']}
@@ -56,9 +47,10 @@ Telemetrická data a kontext:
 - Stav moře (Douglasova stupnice): {weather['sea_state']}
 - Oblačnost: {weather['clouds']}%
 
-Pokyny pro styl:
-- Zápis musí znít jako od zkušeného a věcného kapitána námořní plavby.
-- Pokud jsme v přístavu, na kotvě nebo v marině (podle lokality a rychlosti), popiš stručně toto místo, manévry spojené s kotvením, nebo stav lodi u mola.
-- Pokud jsme na otevřeném moři (typ místa je open_sea), napiš standardní hodinové hlášení o plavbě, rychlosti, směru větru, plachtění/motorování a chování lodi na vlnách.
-- Zápis musí být stručný (2 až 4 věty), odborný, bez úvodních slov či komentářů (začni rovnou samotným zápisem deníku).
+Pokyny pro styl a kontinuitu:
+- Zápis musí znít jako od velmi zkušeného, stručného a věcného kapitána námořní plavby.
+- Navazuj plynule na předchozí zápisy (pokud jsou k dispozici). Zkontroluj, zda loď změnila polohu, zda se mění počasí (např. zesílení větru, pokles tlaku) a napiš to jako plynulé pokračování cesty.
+- Udržuj naprosto stejnou strukturu, terminologii a formát vyjadřování jako v předchozích zápisech pro zachování jednotného stylu celého deníku.
+- Nepoužívej žádný úvodní ani závěrečný doprovodný text (např. "Zde je váš zápis"). Začni ihned samotným textem zápisu.
+- Zápis by měl mít délku 2 až 4 věty. Nepoužívej zbytečné fráze.
 ```
