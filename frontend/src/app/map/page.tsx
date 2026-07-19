@@ -108,8 +108,8 @@ const getMapStyle = (layerType: 'osm' | 'seamap' | 'satellite') => {
   return style;
 };
 
-const parseDateSafely = (dateStr: string) => {
-  if (!dateStr) return new Date();
+const parseDateSafely = (dateStr: any) => {
+  if (typeof dateStr !== 'string') return new Date();
   let formatted = dateStr.includes('T') ? dateStr : dateStr.replace(' ', 'T');
   if (!formatted.endsWith('Z') && !/[+-]\d{2}:\d{2}$/.test(formatted)) {
     formatted += 'Z';
@@ -332,21 +332,24 @@ export default function MapPage() {
 
       // 1. Wind arrow styling (if wind data exists)
       let windArrowHtml = '';
-      if (entry.wind_direction !== null && entry.wind_speed !== null) {
+      if (entry.wind_direction !== null && entry.wind_direction !== undefined && entry.wind_speed !== null && entry.wind_speed !== undefined) {
+        const wSpeed = Number(entry.wind_speed);
+        const wDir = Number(entry.wind_direction);
+        
         // Color based on wind speed (knots)
         let color = '#38bdf8'; // light blue (< 10 kn)
-        if (entry.wind_speed >= 10 && entry.wind_speed < 18) {
+        if (wSpeed >= 10 && wSpeed < 18) {
           color = '#22c55e'; // green (10-18 kn)
-        } else if (entry.wind_speed >= 18 && entry.wind_speed < 27) {
+        } else if (wSpeed >= 18 && wSpeed < 27) {
           color = '#eab308'; // yellow (18-27 kn)
-        } else if (entry.wind_speed >= 27) {
+        } else if (wSpeed >= 27) {
           color = '#ef4444'; // red (>= 27 kn)
         }
 
         // SVG Arrow pointing in the wind direction
         // Note: wind direction degrees indicate where the wind is coming from.
         // So the arrow (representing the air flow) should point to (wind_direction + 180) degrees.
-        const rotation = (entry.wind_direction + 180) % 360;
+        const rotation = (wDir + 180) % 360;
 
         windArrowHtml = `
           <div style="transform: rotate(${rotation}deg); color: ${color}; font-size: 16px; font-weight: bold; line-height: 1;" class="transition hover:scale-125 cursor-pointer">
@@ -368,8 +371,9 @@ export default function MapPage() {
       `;
 
       // 3. Popup on click
-      const localTimeStr = new Date(entry.timestamp).toLocaleTimeString('cs-CZ', { hour: '2-digit', minute: '2-digit' });
-      const dateStr = new Date(entry.timestamp).toLocaleDateString('cs-CZ');
+      const entryDate = parseDateSafely(entry.timestamp);
+      const localTimeStr = entryDate.toLocaleTimeString('cs-CZ', { hour: '2-digit', minute: '2-digit' });
+      const dateStr = entryDate.toLocaleDateString('cs-CZ');
       
       const popupHtml = `
         <div class="bg-slate-900 border border-slate-700 text-slate-100 p-3 rounded-lg text-xs max-w-xs space-y-1.5 shadow-2xl leading-relaxed">
@@ -379,10 +383,10 @@ export default function MapPage() {
           </div>
           <p class="font-medium text-slate-200">${entry.notes || 'Bez poznámky.'}</p>
           <div class="grid grid-cols-2 gap-1.5 text-[10px] text-slate-400 pt-1 border-t border-slate-800">
-            <div>💨 Rychlost: ${entry.speed !== null ? `${entry.speed.toFixed(1)} kn` : 'N/A'}</div>
-            <div>🧭 Kurz: ${entry.course !== null ? `${entry.course.toFixed(0)}°` : 'N/A'}</div>
-            <div>🌬️ Vítr: ${entry.wind_direction !== null ? `${entry.wind_direction.toFixed(0)}°` : 'N/A'} / ${entry.wind_speed !== null ? `${entry.wind_speed.toFixed(0)} kn` : 'N/A'}</div>
-            <div>🌡️ Teplota: ${entry.temperature !== null ? `${entry.temperature.toFixed(1)} °C` : 'N/A'}</div>
+            <div>💨 Rychlost: ${entry.speed !== null && entry.speed !== undefined ? `${Number(entry.speed).toFixed(1)} kn` : 'N/A'}</div>
+            <div>🧭 Kurz: ${entry.course !== null && entry.course !== undefined ? `${Number(entry.course).toFixed(0)}°` : 'N/A'}</div>
+            <div>🌬️ Vítr: ${entry.wind_direction !== null && entry.wind_direction !== undefined ? `${Number(entry.wind_direction).toFixed(0)}°` : 'N/A'} / ${entry.wind_speed !== null && entry.wind_speed !== undefined ? `${Number(entry.wind_speed).toFixed(0)} kn` : 'N/A'}</div>
+            <div>🌡️ Teplota: ${entry.temperature !== null && entry.temperature !== undefined ? `${Number(entry.temperature).toFixed(1)} °C` : 'N/A'}</div>
           </div>
         </div>
       `;
