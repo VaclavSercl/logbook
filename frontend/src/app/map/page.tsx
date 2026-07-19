@@ -7,6 +7,7 @@ import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 
 interface GpsPoint {
+  id: number;
   latitude: number;
   longitude: number;
   speed: number | null;
@@ -460,6 +461,20 @@ export default function MapPage() {
     }
   };
 
+  // Handle deleting a GPS Point
+  const handleDeletePoint = async (e: React.MouseEvent, pointId: number) => {
+    e.stopPropagation(); // prevent map centering
+    if (!token || !selectedVesselId) return;
+    if (!confirm("Opravdu chcete tento GPS bod smazat?")) return;
+
+    try {
+      await gpsApi.delete(pointId, token);
+      await fetchTrack(selectedVesselId);
+    } catch (err: any) {
+      alert(`Chyba při mazání bodu: ${err.message}`);
+    }
+  };
+
   // Hydration state
   if (!mounted) {
     return (
@@ -645,9 +660,20 @@ export default function MapPage() {
                   >
                     <div className="flex justify-between items-center">
                       <span className="text-slate-400 font-mono text-xs">#{i + 1}</span>
-                      <span className="text-slate-500 text-[10px]">
-                        {parseDateSafely(point.timestamp).toLocaleTimeString('cs-CZ', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-slate-500 text-[10px]">
+                          {parseDateSafely(point.timestamp).toLocaleTimeString('cs-CZ', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                        </span>
+                        <button
+                          onClick={(e) => handleDeletePoint(e, point.id)}
+                          className="text-slate-500 hover:text-red-400 p-1 rounded hover:bg-slate-800 transition"
+                          title="Smazat bod"
+                        >
+                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                        </button>
+                      </div>
                     </div>
                     <div className="flex justify-between text-slate-100 font-medium font-mono text-xs">
                       <span>{typeof point.latitude === 'number' ? `${point.latitude.toFixed(5)}° N` : '--'}</span>
