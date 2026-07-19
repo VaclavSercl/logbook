@@ -696,7 +696,7 @@ export default function MapPage() {
                   </label>
                   <input
                     type="number"
-                    step="0.000001"
+                    step="any"
                     min="-90"
                     max="90"
                     value={newPointLat}
@@ -711,7 +711,7 @@ export default function MapPage() {
                   </label>
                   <input
                     type="number"
-                    step="0.000001"
+                    step="any"
                     min="-180"
                     max="180"
                     value={newPointLng}

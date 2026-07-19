@@ -269,7 +269,7 @@ function NewLogbookEntryForm() {
                 <label className="block text-xs text-slate-300 font-medium mb-1">Zeměpisná šířka (Lat)</label>
                 <input
                   type="number"
-                  step="0.000001"
+                  step="any"
                   min="-90"
                   max="90"
                   value={latitude}
@@ -283,7 +283,7 @@ function NewLogbookEntryForm() {
                 <label className="block text-xs text-slate-300 font-medium mb-1">Zeměpisná délka (Lon)</label>
                 <input
                   type="number"
-                  step="0.000001"
+                  step="any"
                   min="-180"
                   max="180"
                   value={longitude}
