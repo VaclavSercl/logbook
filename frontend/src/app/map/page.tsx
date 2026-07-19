@@ -324,7 +324,7 @@ export default function MapPage() {
 
     // Draw markers for log entries
     entries.forEach((entry) => {
-      if (entry.latitude === null || entry.longitude === null) return;
+      if (typeof entry.latitude !== 'number' || typeof entry.longitude !== 'number') return;
 
       // Create a container for our marker
       const el = document.createElement('div');
@@ -431,9 +431,9 @@ export default function MapPage() {
     if (map.getLayer('track-points')) map.removeLayer('track-points');
     if (map.getSource('track')) map.removeSource('track');
 
-    if (points.length === 0) return;
-
-    const coordinates = points.map(p => [p.longitude, p.latitude]);
+    const validPoints = points.filter(p => typeof p.latitude === 'number' && typeof p.longitude === 'number');
+    if (validPoints.length === 0) return;
+    const coordinates = validPoints.map(p => [p.longitude, p.latitude]);
 
     const geojson: any = {
       type: 'FeatureCollection',
@@ -446,7 +446,7 @@ export default function MapPage() {
           },
           properties: {}
         },
-        ...points.map((p, i) => ({
+        ...validPoints.map((p, i) => ({
           type: 'Feature',
           geometry: {
             type: 'Point',
