@@ -102,6 +102,27 @@ export default function HelpPage() {
             </div>
           </section>
 
+          {/* Section: GPS Management */}
+          <section className="space-y-4">
+            <h3 className="text-xl font-medium text-white">📍 Správa GPS bodů a trasy na mapě</h3>
+            <div className="bg-[#0f1011] border border-white/[0.05] rounded-lg p-5 space-y-3">
+              <p className="text-sm text-[#8a8f98] leading-relaxed">
+                Logbook umožňuje plnou interaktivní správu zaznamenaných tras přímo na stránce <strong>Mapa</strong>:
+              </p>
+              <ul className="list-disc list-inside text-xs text-[#8a8f98] space-y-2">
+                <li>
+                  <strong>Přidání bodů kliknutím do mapy:</strong> Jednoduše klikněte kamkoliv do mapy. Otevře se formulář s předvyplněnými přesnými souřadnicemi a aktuálním místním časem.
+                </li>
+                <li>
+                  <strong>Neomezená přesnost souřadnic:</strong> Vstupní pole podporují libovolný počet desetinných míst (atribut <code className="font-mono-custom text-xs bg-white/[0.05] px-1 py-0.5 rounded text-[#7170ff]">step="any"</code>), takže můžete zadávat i maximálně přesné body vygenerované mapou nebo GPS přijímačem.
+                </li>
+                <li>
+                  <strong>Mazání bodů z historie:</strong> V pravém panelu v sekci <em>Historie GPS Bodů</em> najdete seznam všech uložených bodů. U každého bodu je ikona popelnice 🗑️, kterou lze bod po potvrzení trvale smazat. Mapa i trasa se okamžitě překreslí.
+                </li>
+              </ul>
+            </div>
+          </section>
+
           {/* Section 3: Telegram setup */}
           <section className="space-y-6">
             <h3 className="text-xl font-medium text-white">💬 Propojení s Telegramem</h3>
