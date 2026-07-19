@@ -168,13 +168,56 @@ export default function HelpPage() {
                     Cokoliv botovi napíšete, se automaticky zaznamená jako záznam do Vašeho aktivního deníku. Můžete také poslat **hlasovou zprávu**:
                   </p>
                   <p className="text-xs text-[#8a8f98] leading-relaxed">
-                    Díky integraci s <strong>Gemini 2.5 API</strong> bot nahrávku analyzuje, přepíše ji do češtiny a automaticky z ní extrahuje parametry jako je <em>kurz lodi, rychlost plavby, síla a směr větru, barometrický tlak</em> a uloží je do patřičných kolonek v deníku.
+                    Díky integraci s <strong>Gemini 3.5 Flash API</strong> bot nahrávku analyzuje, přepíše ji do češtiny a automaticky z ní extrahuje parametry jako je <em>kurz lodi, rychlost plavby, síla a směr větru, barometrický tlak</em> a uloží je do patřičných kolonek v deníku.
                   </p>
                   <div className="mt-2.5 p-2.5 bg-white/[0.02] border border-white/[0.05] rounded text-[11px] font-mono-custom text-[#7170ff]">
                     Příklad: "Kurz 180, rychlost 7 uzlů, fouká severní vítr 15 uzlů, tlak 1012 hPa. Vyplouváme z mariny."
                   </div>
                 </div>
               </div>
+
+              {/* Point 4 */}
+              <div className="flex gap-4 p-4 bg-white/[0.01] border border-white/[0.05] rounded-lg">
+                <div className="text-lg">🚨</div>
+                <div>
+                  <h4 className="text-sm font-semibold text-white mb-1">Příkaz /mob (Muž přes palubu) a Strážce polohy</h4>
+                  <p className="text-xs text-[#8a8f98] leading-relaxed mb-2">
+                    Bezpečnost na moři je klíčová. Njoror obsahuje dva nouzové/ochranné systémy přes Telegram:
+                  </p>
+                  <ul className="list-disc list-inside text-xs text-[#8a8f98] space-y-1.5">
+                    <li>
+                      <strong>Nouzový příkaz /mob:</strong> Okamžitě zapíše a zvýrazní nouzovou událost s přesným časem a aktuálními GPS souřadnicemi do deníku a odešle instrukce pro zahájení záchrany.
+                    </li>
+                    <li>
+                      <strong>Strážce polohy (Watchdog):</strong> Pokud plujete (poslední známá rychlost > 0.8 uzlů), ale po dobu 30 minut nedorazil žádný nový GPS bod ze sdílení polohy, bot vám zašle varování.
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* Section 4: Advanced Map & Offline Features */}
+          <section className="space-y-4">
+            <h3 className="text-xl font-medium text-white">🗺️ Pokročilá mapa, Windy a Offline synchronizace</h3>
+            <div className="bg-[#0f1011] border border-white/[0.05] rounded-lg p-5 space-y-3">
+              <p className="text-sm text-[#8a8f98] leading-relaxed">
+                Naše mapa je plně optimalizována pro reálné použití na jachtě, i bez stabilního signálu:
+              </p>
+              <ul className="list-disc list-inside text-xs text-[#8a8f98] space-y-2">
+                <li>
+                  <strong>Windy Radar:</strong> Na stránce s mapou můžete aktivovat tlačítko <em>Windy Radar</em>, které zobrazí aktuální povětrnostní a srážkovou animaci od Windy.com přímo na vaší pozici.
+                </li>
+                <li>
+                  <strong>Větrné vektory:</strong> U jednotlivých logovacích bodů trasy vidíte barevné šipky směru větru. Rychlost větru je barevně kódována (modrá < 10 uzlů, zelená 10-18 kn, žlutá 18-27 kn, červená > 27 kn).
+                </li>
+                <li>
+                  <strong>Offline-First ukládání:</strong> Pokud jste mimo signál a vytvoříte nový zápis, aplikace ho uloží do fronty ve vašem prohlížeči. Jakmile chytíte signál, synchronizátor záznamy automaticky nahraje na server.
+                </li>
+                <li>
+                  <strong>Exporty a Sdílení:</strong> Z detailu lodního deníku můžete přímo exportovat <strong>PDF verzi deníku</strong> pro tisk, <strong>GPX trasu</strong> pro navigaci, nebo <strong>CSV soubor</strong> s daty. Můžete také jedním kliknutím zkopírovat <strong>Live Tracking odkaz</strong> pro veřejné sledování.
+                </li>
+              </ul>
             </div>
           </section>
         </div>
