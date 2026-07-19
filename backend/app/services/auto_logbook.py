@@ -168,12 +168,21 @@ async def get_location_details(lat, lng):
         "place_type": "open_sea"
     }
 
-async def generate_log_narrative(vessel_name, current_time_str, lat, lng, location_info, avg_speed, weather):
+async def generate_log_narrative(vessel_name, current_time_str, lat, lng, location_info, avg_speed, weather, last_entries=None):
+    # Formulate memory context
+    memory_context = ""
+    if last_entries:
+        memory_context = "\n=== PAMĚŤ: PŘEDCHOZÍ ZÁPISY DENÍKU ===\n"
+        for entry in reversed(last_entries):
+            entry_time = entry.timestamp.strftime('%d. %m. %Y %H:%M') if hasattr(entry.timestamp, 'strftime') else entry.timestamp
+            memory_context += f"- [{entry_time}] {entry.notes}\n"
+        memory_context += "=======================================\n"
+
     prompt = f"""
 Jsi Njoror, AI vládce projektu lodního deníku na lodi {vessel_name}.
 Sestav profesionální námořní zápis do lodního deníku pro aktuální hodinu plavby v češtině.
-
-Telemetrická data a kontext:
+{memory_context}
+Telemetrická data a kontext pro tento zápis:
 - Aktuální čas: {current_time_str}
 - Pozice: {lat:.5f}°N, {lng:.5f}°E
 - Lokalita (reverzní geokódování): {location_info['display_name']}
@@ -185,11 +194,12 @@ Telemetrická data a kontext:
 - Stav moře (Douglasova stupnice): {weather['sea_state']}
 - Oblačnost: {weather['clouds']}%
 
-Pokyny pro styl:
-- Zápis musí znít jako od zkušeného a věcného kapitána námořní plavby.
-- Pokud jsme v přístavu, na kotvě nebo v marině (podle lokality a rychlosti), popiš stručně toto místo, manévry spojené s kotvením, nebo stav lodi u mola.
-- Pokud jsme na otevřeném moři (typ místa je open_sea), napiš standardní hodinové hlášení o plavbě, rychlosti, směru větru, plachtění/motorování a chování lodi na vlnách.
-- Zápis musí být stručný (2 až 4 věty), odborný, bez úvodních slov či komentářů (začni rovnou samotným zápisem deníku).
+Pokyny pro styl a kontinuitu:
+- Zápis musí znít jako od velmi zkušeného, stručného a věcného kapitána námořní plavby.
+- Navazuj plynule na předchozí zápisy (pokud jsou k dispozici). Zkontroluj, zda loď změnila polohu, zda se mění počasí (např. zesílení větru, pokles tlaku) a napiš to jako plynulé pokračování cesty.
+- Udržuj naprosto stejnou strukturu, terminologii a formát vyjadřování jako v předchozích zápisech pro zachování jednotného stylu celého deníku.
+- Nepoužívej žádný úvodní ani závěrečný doprovodný text (např. "Zde je váš zápis"). Začni ihned samotným textem zápisu.
+- Zápis by měl mít délku 2 až 4 věty. Nepoužívej zbytečné fráze.
 """
     google_key = settings.GOOGLE_API_KEY
     if not google_key:
@@ -252,10 +262,19 @@ async def main():
         # 6. Fetch reverse-geocoding details
         location_info = await get_location_details(lat, lng)
 
-        # 7. Generate AI narrative
+        # 7. Get last 2 log entries for memory context
+        last_entries_result = db.execute(
+            select(LogEntry)
+            .where(LogEntry.logbook_id == logbook.id)
+            .order_by(LogEntry.timestamp.desc())
+            .limit(2)
+        )
+        last_entries = last_entries_result.scalars().all()
+
+        # 8. Generate AI narrative
         current_time_str = datetime.now().strftime("%d. %m. %Y %H:%M")
         narrative = await generate_log_narrative(
-            vessel.name, current_time_str, lat, lng, location_info, avg_speed, weather
+            vessel.name, current_time_str, lat, lng, location_info, avg_speed, weather, last_entries
         )
 
         # Determine category based on place type & speed
@@ -263,7 +282,7 @@ async def main():
         if location_info["place_type"] in ["marina", "harbour", "port"] or avg_speed < 0.5:
             category = "anchor"
 
-        # 8. Create Log Entry in DB
+        # 9. Create Log Entry in DB
         log_entry = LogEntry(
             logbook_id=logbook.id,
             timestamp=datetime.now(UTC).replace(tzinfo=None),  # SQLite compatible datetime
