@@ -270,6 +270,25 @@ export default function LogbookPage({ searchParams }: { searchParams?: { showFor
     }
   }
 
+  // Handle logbook close
+  async function handleCloseLogbook() {
+    if (!token || !selectedLogbookId || !confirm('Opravdu chcete tento lodní deník uzavřít? Po uzavření již do něj nebude možné přidávat nové záznamy a jeho stav bude uzamčen.')) return;
+
+    try {
+      setError('');
+      setLoading(true);
+      await logbooksApi.close(selectedLogbookId, token);
+      
+      const logbooksList = await logbooksApi.list(token, selectedVesselId);
+      setLogbooks(logbooksList);
+      setLoading(false);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Chyba při uzavírání deníku';
+      setError(msg);
+      setLoading(false);
+    }
+  }
+
   // Hydration state
   if (!mounted) {
     return (
