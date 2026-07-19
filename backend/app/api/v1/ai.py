@@ -71,3 +71,38 @@ async def generate_entry(
     )
 
     return AiGenerateResponse(text=narrative)
+
+
+from fastapi import UploadFile, File
+from app.services.ai_service import transcribe_voice_note
+
+@router.post("/voice-to-log")
+async def voice_to_log(
+    file: UploadFile = File(...),
+    current_user=Depends(get_current_user),
+):
+    """Transcribe and format voice note into structured text using Gemini Audio API."""
+    mime_type = file.content_type
+    if not mime_type or not mime_type.startswith("audio/"):
+        filename = file.filename.lower() if file.filename else ""
+        if filename.endswith(".mp3"):
+            mime_type = "audio/mp3"
+        elif filename.endswith(".wav"):
+            mime_type = "audio/wav"
+        elif filename.endswith(".m4a"):
+            mime_type = "audio/m4a"
+        elif filename.endswith(".ogg"):
+            mime_type = "audio/ogg"
+        else:
+            raise HTTPException(status_code=400, detail="Invalid file type. Must be an audio file.")
+
+    try:
+        audio_bytes = await file.read()
+        transcription = await transcribe_voice_note(audio_bytes, mime_type)
+        return {"text": transcription}
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except RuntimeError as e:
+        raise HTTPException(status_code=502, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")

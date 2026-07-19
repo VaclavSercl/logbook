@@ -1,4 +1,4 @@
-"""Centralized AI Service for generating logbook narratives."""
+import base64
 import httpx
 from app.config import settings
 
@@ -166,3 +166,49 @@ Odpovídej v jazyce: {language}
                 lines.append(f"**Max speed:** {max_speed:.1f} knots")
             lines.append(f"**GPS points:** {gps_points_count}")
             return "\n".join(lines)
+
+
+async def transcribe_voice_note(audio_bytes: bytes, mime_type: str) -> str:
+    """Transcribe and format an audio recording using Google Gemini API."""
+    google_key = settings.GOOGLE_API_KEY
+    if not google_key:
+        raise ValueError("GOOGLE_API_KEY is not configured.")
+        
+    base64_audio = base64.b64encode(audio_bytes).decode("utf-8")
+    
+    prompt = (
+        "Jsi Njoror, AI vládce projektu lodního deníku.\n"
+        "Tato nahrávka obsahuje hlasový záznam kapitána z paluby plavidla.\n"
+        "Přepiš tuto hlasovou nahrávku do spisovné češtiny a zformuj z ní stručný, profesionální a věcný námořní zápis do lodního deníku (délka 1 až 3 věty).\n"
+        "Odpověz přímo samotným textem zápisu, nepiš žádné úvody, komentáře ani uvozovky."
+    )
+    
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key={google_key}"
+    payload = {
+        "contents": [
+            {
+                "parts": [
+                    {
+                        "inlineData": {
+                            "mimeType": mime_type,
+                            "data": base64_audio
+                        }
+                    },
+                    {
+                        "text": prompt
+                    }
+                ]
+            }
+        ]
+    }
+    
+    async with httpx.AsyncClient() as client:
+        res = await client.post(url, json=payload, timeout=30.0)
+        if res.status_code == 200:
+            data = res.json()
+            try:
+                return data["candidates"][0]["content"]["parts"][0]["text"].strip()
+            except (KeyError, IndexError) as e:
+                raise RuntimeError(f"Failed to parse Gemini response: {e}")
+        else:
+            raise RuntimeError(f"Gemini API returned error status {res.status_code}: {res.text}")

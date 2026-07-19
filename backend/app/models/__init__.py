@@ -261,3 +261,44 @@ class GalleyDuty(Base):
     cook = relationship("CrewMember", foreign_keys=[cook_id])
     cleaner = relationship("CrewMember", foreign_keys=[cleaner_id])
 
+
+class AisTarget(Base):
+    __tablename__ = "ais_targets"
+
+    id = Column(String(36), primary_key=True, default=gen_uuid)
+    logbook_id = Column(String(36), ForeignKey("logbooks.id"))
+    mmsi = Column(String(20), nullable=False)
+    name = Column(String(100))
+    call_sign = Column(String(20))
+    ship_type = Column(String(50))
+    latitude = Column(Float, nullable=False)
+    longitude = Column(Float, nullable=False)
+    speed = Column(Float)
+    course = Column(Float)
+    heading = Column(Float)
+    cpa = Column(Float)
+    tcpa = Column(Float)
+    is_danger = Column(Boolean, default=False)
+    timestamp = Column(DateTime, default=datetime.utcnow, index=True)
+
+    logbook = relationship("Logbook")
+
+
+class GeofenceZone(Base):
+    __tablename__ = "geofence_zones"
+
+    id = Column(String(36), primary_key=True, default=gen_uuid)
+    logbook_id = Column(String(36), ForeignKey("logbooks.id"), index=True)
+    name = Column(String(100), nullable=False)
+    zone_type = Column(String(50), default="anchor_watch") # anchor_watch, marina, danger_zone
+    latitude = Column(Float) # center latitude for circular zones
+    longitude = Column(Float) # center longitude for circular zones
+    radius = Column(Float) # radius in meters for circular zones
+    polygon_coordinates = Column(JSON) # JSON list: [[lat, lng], [lat, lng], ...] for polygons
+    is_active = Column(Boolean, default=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    logbook = relationship("Logbook")
+
+
+

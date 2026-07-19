@@ -304,3 +304,68 @@ class GalleyDutyResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+# ── AIS ───────────────────────────────────────────────
+
+class AisTargetCreate(BaseModel):
+    logbook_id: UUID
+    mmsi: str = Field(..., max_length=20)
+    name: Optional[str] = None
+    call_sign: Optional[str] = None
+    ship_type: Optional[str] = None
+    latitude: float
+    longitude: float
+    speed: Optional[float] = None
+    course: Optional[float] = None
+    heading: Optional[float] = None
+
+
+class AisTargetResponse(BaseModel):
+    id: UUID
+    logbook_id: UUID
+    mmsi: str
+    name: Optional[str]
+    call_sign: Optional[str]
+    ship_type: Optional[str]
+    latitude: float
+    longitude: float
+    speed: Optional[float]
+    course: Optional[float]
+    heading: Optional[float]
+    cpa: Optional[float]
+    tcpa: Optional[float]
+    is_danger: bool
+    timestamp: datetime
+
+    class Config:
+        from_attributes = True
+
+
+# ── Geofence Zones ────────────────────────────────────
+
+class GeofenceZoneCreate(BaseModel):
+    logbook_id: UUID
+    name: str = Field(..., max_length=100)
+    zone_type: str = "anchor_watch"  # anchor_watch, marina, danger_zone
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+    radius: Optional[float] = None
+    polygon_coordinates: Optional[List[List[float]]] = None
+    is_active: Optional[bool] = True
+
+
+class GeofenceZoneResponse(BaseModel):
+    id: UUID
+    logbook_id: UUID
+    name: str
+    zone_type: str
+    latitude: Optional[float]
+    longitude: Optional[float]
+    radius: Optional[float]
+    polygon_coordinates: Optional[List[List[float]]]
+    is_active: bool
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
