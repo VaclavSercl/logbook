@@ -94,7 +94,10 @@ const getMapStyle = (layerType: 'osm' | 'seamap' | 'satellite') => {
 
 const parseDateSafely = (dateStr: string) => {
   if (!dateStr) return new Date();
-  const formatted = dateStr.includes('T') ? dateStr : dateStr.replace(' ', 'T');
+  let formatted = dateStr.includes('T') ? dateStr : dateStr.replace(' ', 'T');
+  if (!formatted.endsWith('Z') && !/[+-]\d{2}:\d{2}$/.test(formatted)) {
+    formatted += 'Z';
+  }
   const d = new Date(formatted);
   return isNaN(d.getTime()) ? new Date() : d;
 };
