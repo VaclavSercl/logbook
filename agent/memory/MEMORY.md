@@ -59,6 +59,7 @@ logbook/
 | 17.7.2026 | Kompletní reset databáze | Na žádost uživatele byla smazána celá SQLite databáze logbook.db. Služba byla restartována a databázový soubor se automaticky vytvořil zcela čistý se všemi tabulkami (uživatelé, lodě, deníky, GPS body atd.) a s čistým startovním stavem. |
 | 17.7.2026 | Dynamická maketa deníku (Landing Page) | Maketa prohlížeče na úvodní stránce byla předělána na dynamickou. Při načtení se buď vytáhnou reálná data právě probíhající veřejné plavby z databáze, nebo (pokud je databáze prázdná) se vybere jedna ze čtyř detailně zpracovaných ukázkových plaveb (Jadran, Egejské moře, Karibik, Baltské moře) s odpovídajícími údaji o rychlosti, počasí a lodních zápisech. |
 | 19.7.2026 | Úprava hodinového cronu | Změna spouštěče hodinového zápisu v crontabu ze spouštění agenta `agy` na přímé volání Python skriptu `auto_logbook.py` ve venv. Tím se předešlo vyčerpání kvót Antigravity CLI, protože skript nyní volá Gemini API přímo pomocí svého `GOOGLE_API_KEY` bez režie CLI agenta. |
+| 19.7.2026 | Implementace Fáze 3 (Pokročilé) | Přidány modely, schemas a API endpointy pro AIS, výpočty CPA/TCPA, hlasové zápisy (Voice-to-log) přes inline Gemini Audio a Geofencing s podporou kruhových i polygonálních zón. Všechna data jsou ukládána do SQLite a synchronizována. |
 
 ## Známé problémy / TODO
 
