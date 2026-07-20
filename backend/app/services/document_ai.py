@@ -4,7 +4,7 @@ Processes uploaded files, local folder paths, and URLs to automatically populate
 - Vessel specifications (Name, Type, Length, Beam, Draft, Year, Port, Flag State, Charter Company)
 - Voyage route and itinerary details (departure port, destination port, notes)
 - Financial expenses in Cashbox (Deposit, Charter Fees)
-- Crew members list (only if present in documents)
+- Crew members list (only if present in documents, with full Czech encoding repair CP1250/UTF-8)
 """
 import os
 import re
@@ -19,17 +19,74 @@ from app.models import VoyageDocument, Logbook, Vessel, CrewMember, LogEntry, Ca
 from app.services.schedule_generator import auto_generate_schedules
 
 
+def decode_bytes_to_str(content: bytes) -> str:
+    """Decodes bytes to string using UTF-8-SIG, UTF-8, CP1250 (Windows Czech), ISO-8859-2."""
+    if not content:
+        return ""
+    try:
+        return content.decode('utf-8-sig')
+    except UnicodeDecodeError:
+        pass
+
+    try:
+        decoded = content.decode('utf-8')
+        if not any(bad in decoded for bad in ['Ã¡', 'Å¡', 'Ã¨', 'Ã½', 'Ã']):
+            return decoded
+    except UnicodeDecodeError:
+        pass
+
+    try:
+        return content.decode('cp1250')
+    except UnicodeDecodeError:
+        pass
+
+    try:
+        return content.decode('iso-8859-2')
+    except UnicodeDecodeError:
+        pass
+
+    return content.decode('utf-8', errors='replace')
+
+
+def fix_mojibake(text: str) -> str:
+    """Fixes common Mojibake UTF-8 vs CP1250 double-encoding artifacts in Czech text."""
+    if not text:
+        return ""
+    
+    replacements = {
+        'Ã¡': 'á', 'Ã©': 'é', 'Ã­': 'í', 'Ã³': 'ó', 'Ãº': 'ú', 'Ã¹': 'ů', 'Ã½': 'ý',
+        'Ä\x8d': 'č', 'Ä\x8c': 'Č', 'Å¡': 'š', 'Å\x90': 'Š', 'Å¾': 'ž', 'Å½': 'Ž',
+        'Å\x99': 'ř', 'Å\x98': 'Ř', 'Å¥': 'ť', 'Å¤': 'Ť', 'Ä\x8f': 'ď', 'Ä\x8e': 'Ď',
+        'Å\x88': 'ň', 'Å\x87': 'Ň', 'Ä\x9b': 'ě', 'Ä\x9a': 'Ě',
+        'Á¡': 'á', 'Á©': 'é', 'Á­': 'í', 'Á³': 'ó', 'Áº': 'ú', 'Á¹': 'ů', 'Á½': 'ý',
+        'ÄŤ': 'č', 'ÄŚ': 'Č', 'Ĺˇ': 'š', 'ĹŠ': 'Š', 'Ĺľ': 'ž', 'ĹŽ': 'Ž',
+        'Ĺ™': 'ř', 'ĹŘ': 'Ř', 'ĹĄ': 'ť', 'ĹŤ': 'Ť', 'ÄŹ': 'ď', 'ÄĎ': 'Ď',
+        'Ĺˆ': 'ň', 'ĹŇ': 'Ň', 'Ä•': 'ě', 'ÄŞ': 'Ě'
+    }
+    for bad, good in replacements.items():
+        text = text.replace(bad, good)
+    return text.strip()
+
+
 def parse_crew_from_text_or_rows(rows_or_text: List[List[str]]) -> List[Dict[str, Any]]:
     """Helper to extract crew members from matrix of text/csv/excel rows."""
     crew_found = []
     if not rows_or_text:
         return crew_found
 
+    # Normalize single-string rows
+    normalized_rows = []
+    for r in rows_or_text:
+        if r and len(r) == 1 and ',' in str(r[0]):
+            normalized_rows.append([c.strip() for c in str(r[0]).split(',')])
+        elif r:
+            normalized_rows.append([str(c).strip() for c in r])
+
     header_idx = -1
     col_map = {}
 
-    for idx, row in enumerate(rows_or_text[:10]):
-        row_lower = [str(c).strip().lower() for c in row]
+    for idx, row in enumerate(normalized_rows[:10]):
+        row_lower = [c.lower() for c in row]
         for c_i, cell in enumerate(row_lower):
             if any(k in cell for k in ["jméno", "jmeno", "first name", "name", "člen", "posádka", "skupina"]):
                 header_idx = idx
@@ -38,7 +95,7 @@ def parse_crew_from_text_or_rows(rows_or_text: List[List[str]]) -> List[Dict[str
             break
 
     if header_idx != -1:
-        header_row = [str(c).strip().lower() for c in rows_or_text[header_idx]]
+        header_row = [c.lower() for c in normalized_rows[header_idx]]
         for c_i, cell in enumerate(header_row):
             if "přezdívka" in cell or "prezdivka" in cell or "nick" in cell:
                 col_map["nickname"] = c_i
@@ -49,9 +106,11 @@ def parse_crew_from_text_or_rows(rows_or_text: List[List[str]]) -> List[Dict[str
             elif "role" in cell or "funkce" in cell or "pozice" in cell:
                 col_map["role"] = c_i
 
-        data_rows = rows_or_text[header_idx + 1:]
+        data_rows = normalized_rows[header_idx + 1:]
     else:
-        data_rows = rows_or_text
+        data_rows = normalized_rows
+
+    valid_name_regex = re.compile(r'^[a-zA-ZáčďéěíňóřšťúůýžÁČĎÉĚÍŇÓŘŠŤÚŮÝŽ\s\.\-]{2,30}$')
 
     for row in data_rows:
         if not row or not any(str(c).strip() for c in row):
@@ -75,15 +134,21 @@ def parse_crew_from_text_or_rows(rows_or_text: List[List[str]]) -> List[Dict[str
             cells = [str(c).strip() for c in row if str(c).strip()]
             if cells and len(cells[0]) < 40:
                 parts = cells[0].split()
-                if len(parts) >= 2 and not any(kw in cells[0].lower() for kw in ["délka", "ponor", "vyplutí", "vítr", "tlak", "http", "bavaria", "charter"]):
+                if len(parts) >= 2 and not any(kw in cells[0].lower() for kw in ["délka", "ponor", "vyplutí", "vítr", "tlak", "http", "bavaria", "charter", "const", "var", "function"]):
                     first_name, last_name = parts[0], parts[1]
 
-        if first_name or last_name or nickname:
+        fn = fix_mojibake(first_name)
+        ln = fix_mojibake(last_name)
+        nk = fix_mojibake(nickname)
+        rl = fix_mojibake(role)
+
+        # Validate that name consists of actual letters/diacritics and not JS/HTML code noise
+        if (fn and valid_name_regex.match(fn)) or (ln and valid_name_regex.match(ln)):
             crew_found.append({
-                "first_name": first_name,
-                "last_name": last_name,
-                "nickname": nickname,
-                "role": role,
+                "first_name": fn,
+                "last_name": ln,
+                "nickname": nk,
+                "role": rl or "Člen posádky",
             })
 
     return crew_found
@@ -92,17 +157,18 @@ def parse_crew_from_text_or_rows(rows_or_text: List[List[str]]) -> List[Dict[str
 def extract_vessel_specs(text: str) -> Dict[str, Any]:
     """Extracts rich vessel specs: name, type, draft, length, beam, year_built, port, flag_state, charter, deposit."""
     specs = {}
-    text_lower = text.lower()
+    text_fixed = fix_mojibake(text)
+    text_lower = text_fixed.lower()
 
     # Name of vessel
     m = re.search(r'plachetnice\s+([a-z0-9\s]{3,40})\s+k\s+pronájmu', text_lower)
     if not m:
-        m = re.search(r'\"name\"\s*:\s*\"([^\"]+)\"', text)
+        m = re.search(r'\"name\"\s*:\s*\"([^\"]+)\"', text_fixed)
     if not m:
         m = re.search(r'bavaria\s*\d{2,3}[^\n,<]*', text_lower)
     if m:
         name_val = m.group(1) if m.groups() else m.group(0)
-        name_val = name_val.strip().title()
+        name_val = fix_mojibake(name_val.strip().title())
         if len(name_val) > 2 and "Yachting.Com" not in name_val:
             specs["name"] = name_val
 
@@ -143,7 +209,7 @@ def extract_vessel_specs(text: str) -> Dict[str, Any]:
     else:
         m = re.search(r'(?:marina|přístav|port)\s*[:=]?\s*([a-záčďéěíňóřšťúůýž0-9\s,-]{3,50})(?=\n|<|,|\.|$)', text_lower)
         if m:
-            val = m.group(1).strip().title()
+            val = fix_mojibake(m.group(1).strip().title())
             if len(val) > 3:
                 specs["port"] = val
 
@@ -189,24 +255,24 @@ def extract_vessel_specs(text: str) -> Dict[str, Any]:
 def extract_voyage_details(text: str) -> Dict[str, Any]:
     """Extracts voyage departure, destination, itinerary notes."""
     details = {}
-    lines = text.splitlines()
+    lines = fix_mojibake(text).splitlines()
 
     for line in lines:
         l_lower = line.lower()
         if any(kw in l_lower for kw in ["vyplutí", "start", "z přístavu", "departure"]):
             parts = line.split(":", 1)
             if len(parts) == 2 and len(parts[1].strip()) > 2:
-                details["voyage_from"] = parts[1].strip()
+                details["voyage_from"] = fix_mojibake(parts[1].strip())
         elif any(kw in l_lower for kw in ["cíl", "do přístavu", "destination", "příjezd"]):
             parts = line.split(":", 1)
             if len(parts) == 2 and len(parts[1].strip()) > 2:
-                details["voyage_to"] = parts[1].strip()
+                details["voyage_to"] = fix_mojibake(parts[1].strip())
 
     return details
 
 
 def process_voyage_document_ai(db: Session, doc_id: str) -> Dict[str, Any]:
-    """Intelligently analyzes a voyage document/folder/URL with AI extraction."""
+    """Intelligently analyzes a voyage document/folder/URL with AI extraction and encoding repair."""
     doc = db.query(VoyageDocument).filter(VoyageDocument.id == str(doc_id)).first()
     if not doc:
         return {"status": "error", "message": "Document not found"}
@@ -224,7 +290,8 @@ def process_voyage_document_ai(db: Session, doc_id: str) -> Dict[str, Any]:
             try:
                 req = urllib.request.Request(doc.url, headers={'User-Agent': 'Mozilla/5.0'})
                 with urllib.request.urlopen(req, timeout=10) as resp:
-                    raw_text = resp.read().decode('utf-8', errors='ignore')
+                    raw_bytes = resp.read()
+                    raw_text = decode_bytes_to_str(raw_bytes)
                     text_only = re.sub(r'<[^>]+>', ' ', raw_text)
                     lines = [[w.strip() for w in text_only.splitlines() if w.strip()]]
                     extracted_crew.extend(parse_crew_from_text_or_rows(lines))
@@ -240,8 +307,9 @@ def process_voyage_document_ai(db: Session, doc_id: str) -> Dict[str, Any]:
                         f_path = os.path.join(root, f)
                         if f.endswith('.csv'):
                             try:
-                                with open(f_path, 'r', encoding='utf-8', errors='ignore') as fp:
-                                    reader = csv.reader(fp)
+                                with open(f_path, 'rb') as fp:
+                                    csv_content = decode_bytes_to_str(fp.read())
+                                    reader = csv.reader(csv_content.splitlines())
                                     rows = list(reader)
                                     extracted_crew.extend(parse_crew_from_text_or_rows(rows))
                                     summary_lines.append(f"📄 Načten CSV soubor: {f}")
@@ -249,8 +317,8 @@ def process_voyage_document_ai(db: Session, doc_id: str) -> Dict[str, Any]:
                                 pass
                         elif f.endswith('.txt') or f.endswith('.md'):
                             try:
-                                with open(f_path, 'r', encoding='utf-8', errors='ignore') as fp:
-                                    content = fp.read()
+                                with open(f_path, 'rb') as fp:
+                                    content = decode_bytes_to_str(fp.read())
                                     folder_texts.append(content)
                                     lines = [line.strip().split() for line in content.splitlines() if line.strip()]
                                     extracted_crew.extend(parse_crew_from_text_or_rows(lines))
@@ -265,8 +333,9 @@ def process_voyage_document_ai(db: Session, doc_id: str) -> Dict[str, Any]:
             ext = os.path.splitext(doc.file_path)[1].lower()
 
             if ext == '.csv':
-                with open(doc.file_path, 'r', encoding='utf-8', errors='ignore') as fp:
-                    reader = csv.reader(fp)
+                with open(doc.file_path, 'rb') as fp:
+                    csv_content = decode_bytes_to_str(fp.read())
+                    reader = csv.reader(csv_content.splitlines())
                     rows = list(reader)
                     extracted_crew.extend(parse_crew_from_text_or_rows(rows))
                     raw_text = "\n".join([",".join(r) for r in rows])
@@ -274,18 +343,18 @@ def process_voyage_document_ai(db: Session, doc_id: str) -> Dict[str, Any]:
                 try:
                     import pandas as pd
                     df = pd.read_excel(doc.file_path)
-                    rows = [df.columns.tolist()] + df.values.tolist()
+                    rows = [[fix_mojibake(str(cell)) for cell in row] for row in [df.columns.tolist()] + df.values.tolist()]
                     extracted_crew.extend(parse_crew_from_text_or_rows(rows))
                     raw_text = df.to_string()
                     summary_lines.append(f"📊 Načten Excel list s {len(df)} řádky.")
                 except Exception:
-                    with open(doc.file_path, 'r', encoding='utf-8', errors='ignore') as fp:
-                        raw_text = fp.read()
+                    with open(doc.file_path, 'rb') as fp:
+                        raw_text = decode_bytes_to_str(fp.read())
                         lines = [line.strip().split() for line in raw_text.splitlines() if line.strip()]
                         extracted_crew.extend(parse_crew_from_text_or_rows(lines))
             else:
-                with open(doc.file_path, 'r', encoding='utf-8', errors='ignore') as fp:
-                    raw_text = fp.read()
+                with open(doc.file_path, 'rb') as fp:
+                    raw_text = decode_bytes_to_str(fp.read())
                     lines = [line.strip().split() for line in raw_text.splitlines() if line.strip()]
                     extracted_crew.extend(parse_crew_from_text_or_rows(lines))
 
@@ -296,6 +365,11 @@ def process_voyage_document_ai(db: Session, doc_id: str) -> Dict[str, Any]:
             logbook = db.query(Logbook).filter(Logbook.id == logbook_id).first()
             if logbook:
                 vessel_id = logbook.vessel_id
+
+        if not vessel_id:
+            first_vessel = db.query(Vessel).first()
+            if first_vessel:
+                vessel_id = first_vessel.id
 
         vessel = db.query(Vessel).filter(Vessel.id == vessel_id).first() if vessel_id else None
         logbook = db.query(Logbook).filter(Logbook.id == logbook_id).first() if logbook_id else None
@@ -345,7 +419,6 @@ def process_voyage_document_ai(db: Session, doc_id: str) -> Dict[str, Any]:
                 vessel.call_sign = v_specs["call_sign"]
                 updated_specs.append(f"volačka = {v_specs['call_sign']}")
 
-            # Register deposit / service fee to cashbox if found
             if "deposit" in v_specs:
                 exp = CashboxExpense(
                     vessel_id=vessel.id,
@@ -398,9 +471,9 @@ def process_voyage_document_ai(db: Session, doc_id: str) -> Dict[str, Any]:
             }
 
             for c_data in extracted_crew:
-                fn = c_data.get("first_name", "").strip()
-                ln = c_data.get("last_name", "").strip()
-                nick = c_data.get("nickname", "").strip()
+                fn = fix_mojibake(c_data.get("first_name", ""))
+                ln = fix_mojibake(c_data.get("last_name", ""))
+                nick = fix_mojibake(c_data.get("nickname", ""))
                 full_key = f"{fn} {ln}".strip().lower()
 
                 if full_key and full_key not in existing_names:
