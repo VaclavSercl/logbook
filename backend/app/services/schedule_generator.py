@@ -75,10 +75,21 @@ def auto_generate_schedules(
 
         for idx, members in enumerate(groups_members):
             name = group_names[idx] if idx < len(group_names) else f"Hlídka {idx + 1}"
-            member_names = [m.first_name or m.name for m in members]
+            member_names = []
+            for m in members:
+                parts = []
+                if m.first_name:
+                    parts.append(m.first_name)
+                if m.last_name:
+                    parts.append(m.last_name)
+                m_str = " ".join(parts) if parts else (m.name or "")
+                if m.nickname:
+                    m_str += f' „{m.nickname}“'
+                member_names.append(m_str)
             name_with_members = f"{name} ({', '.join(member_names)})"
 
             wg = WatchGroup(vessel_id=str(vessel_id), name=name_with_members)
+            wg.members = members
             db.add(wg)
             db.flush()
             created_groups_count += 1

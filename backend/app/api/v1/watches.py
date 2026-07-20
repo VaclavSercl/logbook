@@ -37,6 +37,25 @@ async def list_watch_groups(
     return result.scalars().all()
 
 
+def format_group_name_with_members(group: WatchGroup, base_name: str | None = None) -> str:
+    raw = base_name if base_name is not None else group.name
+    clean_base = raw.split(' (')[0].strip() if raw else "Hlídka"
+    if group.members:
+        member_names = []
+        for m in group.members:
+            parts = []
+            if m.first_name:
+                parts.append(m.first_name)
+            if m.last_name:
+                parts.append(m.last_name)
+            m_str = " ".join(parts) if parts else (m.name or "")
+            if m.nickname:
+                m_str += f' „{m.nickname}“'
+            member_names.append(m_str)
+        return f"{clean_base} ({', '.join(member_names)})"
+    return clean_base
+
+
 @router.post("/group", response_model=WatchGroupResponse, status_code=201)
 async def create_watch_group(
     data: WatchGroupCreate,
@@ -61,6 +80,8 @@ async def create_watch_group(
             select(CrewMember).where(CrewMember.id.in_([str(mid) for mid in data.member_ids]))
         )
         group.members = list(members_result.scalars().all())
+
+    group.name = format_group_name_with_members(group, data.name)
 
     db.add(group)
     db.commit()
@@ -139,14 +160,14 @@ async def update_watch_group(
     if not group:
         raise HTTPException(status_code=404, detail="Watch group not found")
 
-    if data.name is not None:
-        group.name = data.name
-
     if data.member_ids is not None:
         members_result = db.execute(
             select(CrewMember).where(CrewMember.id.in_([str(mid) for mid in data.member_ids]))
         )
         group.members = list(members_result.scalars().all())
+
+    new_base_name = data.name if data.name is not None else group.name
+    group.name = format_group_name_with_members(group, new_base_name)
 
     db.commit()
     db.refresh(group)

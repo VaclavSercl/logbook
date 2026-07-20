@@ -386,7 +386,8 @@ export default function CrewPage() {
 
   const handleOpenEditGroupModal = (group: WatchGroup) => {
     setEditingGroup(group);
-    setGroupName(group.name);
+    const cleanBaseName = group.name ? group.name.split(' (')[0].trim() : '';
+    setGroupName(cleanBaseName);
     setSelectedCrewIds(group.members ? group.members.map(m => m.id) : []);
     setIsGroupModalOpen(true);
   };
