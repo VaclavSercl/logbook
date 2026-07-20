@@ -7,8 +7,8 @@ from sqlalchemy import select, delete
 from app.database import get_db
 from app.models import WatchGroup, WatchSchedule, Vessel, CrewMember, Logbook
 from app.schemas import (
-    WatchGroupCreate, WatchGroupResponse,
-    WatchScheduleCreate, WatchScheduleResponse,
+    WatchGroupCreate, WatchGroupResponse, WatchGroupUpdate,
+    WatchScheduleCreate, WatchScheduleResponse, WatchScheduleUpdate,
     AutoScheduleGenerateRequest
 )
 from app.api.v1.auth import get_current_user
@@ -128,6 +128,31 @@ async def create_watch_schedule(
     return schedule
 
 
+@router.put("/group/{group_id}", response_model=WatchGroupResponse)
+async def update_watch_group(
+    group_id: UUID,
+    data: WatchGroupUpdate,
+    current_user=Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    group = db.query(WatchGroup).filter(WatchGroup.id == str(group_id)).first()
+    if not group:
+        raise HTTPException(status_code=404, detail="Watch group not found")
+
+    if data.name is not None:
+        group.name = data.name
+
+    if data.member_ids is not None:
+        members_result = db.execute(
+            select(CrewMember).where(CrewMember.id.in_([str(mid) for mid in data.member_ids]))
+        )
+        group.members = list(members_result.scalars().all())
+
+    db.commit()
+    db.refresh(group)
+    return group
+
+
 @router.delete("/schedule/{schedule_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_watch_schedule(
     schedule_id: UUID,
@@ -141,6 +166,31 @@ async def delete_watch_schedule(
     db.delete(schedule)
     db.commit()
     return
+
+
+@router.put("/schedule/{schedule_id}", response_model=WatchScheduleResponse)
+async def update_watch_schedule(
+    schedule_id: UUID,
+    data: WatchScheduleUpdate,
+    current_user=Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    schedule = db.query(WatchSchedule).filter(WatchSchedule.id == str(schedule_id)).first()
+    if not schedule:
+        raise HTTPException(status_code=404, detail="Schedule entry not found")
+
+    if data.watch_group_id is not None:
+        schedule.watch_group_id = str(data.watch_group_id)
+    if data.start_time is not None:
+        schedule.start_time = data.start_time
+    if data.end_time is not None:
+        schedule.end_time = data.end_time
+    if data.notes is not None:
+        schedule.notes = data.notes
+
+    db.commit()
+    db.refresh(schedule)
+    return schedule
 
 
 @router.post("/auto-generate")

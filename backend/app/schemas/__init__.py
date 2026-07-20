@@ -328,6 +328,25 @@ class GalleyDutyCreate(BaseModel):
     notes: Optional[str] = None
 
 
+class GalleyDutyUpdate(BaseModel):
+    date: Optional[datetime] = None
+    cook_id: Optional[UUID] = None
+    cleaner_id: Optional[UUID] = None
+    notes: Optional[str] = None
+
+
+class WatchGroupUpdate(BaseModel):
+    name: Optional[str] = None
+    member_ids: Optional[List[UUID]] = None
+
+
+class WatchScheduleUpdate(BaseModel):
+    watch_group_id: Optional[UUID] = None
+    start_time: Optional[datetime] = None
+    end_time: Optional[datetime] = None
+    notes: Optional[str] = None
+
+
 class GalleyDutyResponse(BaseModel):
     id: UUID
     logbook_id: UUID

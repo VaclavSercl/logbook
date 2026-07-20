@@ -91,6 +91,9 @@ export default function CrewPage() {
 
   // Crew Member Form
   const [editingMember, setEditingMember] = useState<CrewMember | null>(null);
+  const [editingGroup, setEditingGroup] = useState<WatchGroup | null>(null);
+  const [editingSchedule, setEditingSchedule] = useState<WatchSchedule | null>(null);
+  const [editingGalley, setEditingGalley] = useState<GalleyDuty | null>(null);
 
   // Watch Group Form
   const [groupName, setGroupName] = useState('');
@@ -374,21 +377,43 @@ export default function CrewPage() {
   };
 
   // ─── WATCH GROUP OPERATIONS ───
-  const handleAddGroup = async (e: React.FormEvent) => {
+  const handleOpenAddGroupModal = () => {
+    setEditingGroup(null);
+    setGroupName('');
+    setSelectedCrewIds([]);
+    setIsGroupModalOpen(true);
+  };
+
+  const handleOpenEditGroupModal = (group: WatchGroup) => {
+    setEditingGroup(group);
+    setGroupName(group.name);
+    setSelectedCrewIds(group.members ? group.members.map(m => m.id) : []);
+    setIsGroupModalOpen(true);
+  };
+
+  const handleSaveGroup = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!token || !selectedVesselId || !groupName) return;
     try {
-      await watchesApi.createGroup({
-        vessel_id: selectedVesselId,
-        name: groupName,
-        member_ids: selectedCrewIds,
-      }, token);
+      if (editingGroup) {
+        await watchesApi.updateGroup(editingGroup.id, {
+          name: groupName,
+          member_ids: selectedCrewIds,
+        }, token);
+      } else {
+        await watchesApi.createGroup({
+          vessel_id: selectedVesselId,
+          name: groupName,
+          member_ids: selectedCrewIds,
+        }, token);
+      }
       setIsGroupModalOpen(false);
+      setEditingGroup(null);
       setGroupName('');
       setSelectedCrewIds([]);
       fetchData(selectedVesselId);
-    } catch (err) {
-      alert('Chyba při ukládání hlídky.');
+    } catch (err: any) {
+      alert(`Chyba při ukládání hlídky: ${err.message || err}`);
     }
   };
 
@@ -403,25 +428,53 @@ export default function CrewPage() {
   };
 
   // ─── WATCH SCHEDULE OPERATIONS ───
-  const handleAddSchedule = async (e: React.FormEvent) => {
+  const handleOpenAddScheduleModal = () => {
+    setEditingSchedule(null);
+    setSelectedGroupId('');
+    setStartTime('');
+    setEndTime('');
+    setScheduleNotes('');
+    setIsScheduleModalOpen(true);
+  };
+
+  const handleOpenEditScheduleModal = (sched: WatchSchedule) => {
+    setEditingSchedule(sched);
+    setSelectedGroupId(sched.watch_group_id);
+    setStartTime(new Date(sched.start_time).toISOString().slice(0, 16));
+    setEndTime(new Date(sched.end_time).toISOString().slice(0, 16));
+    setScheduleNotes(sched.notes || '');
+    setIsScheduleModalOpen(true);
+  };
+
+  const handleSaveSchedule = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!token || !activeLogbookId || !selectedGroupId || !startTime || !endTime) return;
     try {
-      await watchesApi.createSchedule({
-        logbook_id: activeLogbookId,
-        watch_group_id: selectedGroupId,
-        start_time: new Date(startTime).toISOString(),
-        end_time: new Date(endTime).toISOString(),
-        notes: scheduleNotes,
-      }, token);
+      if (editingSchedule) {
+        await watchesApi.updateSchedule(editingSchedule.id, {
+          watch_group_id: selectedGroupId,
+          start_time: new Date(startTime).toISOString(),
+          end_time: new Date(endTime).toISOString(),
+          notes: scheduleNotes,
+        }, token);
+      } else {
+        await watchesApi.createSchedule({
+          logbook_id: activeLogbookId,
+          watch_group_id: selectedGroupId,
+          start_time: new Date(startTime).toISOString(),
+          end_time: new Date(endTime).toISOString(),
+          notes: scheduleNotes,
+        }, token);
+      }
       setIsScheduleModalOpen(false);
+      setEditingSchedule(null);
       setSelectedGroupId('');
       setStartTime('');
       setEndTime('');
       setScheduleNotes('');
       fetchData(selectedVesselId);
-    } catch (err) {
-      alert('Chyba při zápisu do rozvrhu.');
+    } catch (err: any) {
+      alert(`Chyba při zápisu do rozvrhu: ${err.message || err}`);
     }
   };
 
@@ -436,25 +489,53 @@ export default function CrewPage() {
   };
 
   // ─── GALLEY DUTY OPERATIONS ───
-  const handleAddGalley = async (e: React.FormEvent) => {
+  const handleOpenAddGalleyModal = () => {
+    setEditingGalley(null);
+    setGalleyDate('');
+    setCookId('');
+    setCleanerId('');
+    setGalleyNotes('');
+    setIsGalleyModalOpen(true);
+  };
+
+  const handleOpenEditGalleyModal = (duty: GalleyDuty) => {
+    setEditingGalley(duty);
+    setGalleyDate(new Date(duty.date).toISOString().slice(0, 10));
+    setCookId(duty.cook_id);
+    setCleanerId(duty.cleaner_id);
+    setGalleyNotes(duty.notes || '');
+    setIsGalleyModalOpen(true);
+  };
+
+  const handleSaveGalley = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!token || !activeLogbookId || !galleyDate || !cookId || !cleanerId) return;
     try {
-      await galleyApi.createDuty({
-        logbook_id: activeLogbookId,
-        date: new Date(galleyDate).toISOString(),
-        cook_id: cookId,
-        cleaner_id: cleanerId,
-        notes: galleyNotes,
-      }, token);
+      if (editingGalley) {
+        await galleyApi.updateDuty(editingGalley.id, {
+          date: new Date(galleyDate).toISOString(),
+          cook_id: cookId,
+          cleaner_id: cleanerId,
+          notes: galleyNotes,
+        }, token);
+      } else {
+        await galleyApi.createDuty({
+          logbook_id: activeLogbookId,
+          date: new Date(galleyDate).toISOString(),
+          cook_id: cookId,
+          cleaner_id: cleanerId,
+          notes: galleyNotes,
+        }, token);
+      }
       setIsGalleyModalOpen(false);
+      setEditingGalley(null);
       setGalleyDate('');
       setCookId('');
       setCleanerId('');
       setGalleyNotes('');
       fetchData(selectedVesselId);
-    } catch (err) {
-      alert('Chyba při ukládání služby.');
+    } catch (err: any) {
+      alert(`Chyba při ukládání služby: ${err.message || err}`);
     }
   };
 
@@ -588,13 +669,13 @@ export default function CrewPage() {
           {activeTab === 'watches' && (
             <div className="flex gap-2">
               <button
-                onClick={() => setIsGroupModalOpen(true)}
+                onClick={handleOpenAddGroupModal}
                 className="px-3 py-2 bg-slate-700 hover:bg-slate-650 text-white rounded-lg font-medium text-sm transition"
               >
                 + Vytvořit hlídku
               </button>
               <button
-                onClick={() => setIsScheduleModalOpen(true)}
+                onClick={handleOpenAddScheduleModal}
                 disabled={!activeLogbookId}
                 className="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium text-sm transition disabled:opacity-50"
               >
@@ -604,7 +685,7 @@ export default function CrewPage() {
           )}
           {activeTab === 'galley' && (
             <button
-              onClick={() => setIsGalleyModalOpen(true)}
+              onClick={handleOpenAddGalleyModal}
               disabled={!activeLogbookId}
               className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium text-sm transition disabled:opacity-50"
             >
@@ -766,12 +847,22 @@ export default function CrewPage() {
                           <div>
                             <div className="flex items-center justify-between">
                               <h3 className="font-semibold text-slate-200">{group.name}</h3>
-                              <button
-                                onClick={() => handleDeleteGroup(group.id)}
-                                className="text-slate-500 hover:text-red-400 text-xs transition"
-                              >
-                                Smazat
-                              </button>
+                              <div className="flex items-center gap-1">
+                                <button
+                                  onClick={() => handleOpenEditGroupModal(group)}
+                                  className="text-slate-400 hover:text-blue-400 text-xs transition p-1"
+                                  title="Upravit název a členy hlídky"
+                                >
+                                  ✏️
+                                </button>
+                                <button
+                                  onClick={() => handleDeleteGroup(group.id)}
+                                  className="text-slate-400 hover:text-red-400 text-xs transition p-1"
+                                  title="Smazat hlídkovou skupinu"
+                                >
+                                  🗑️
+                                </button>
+                              </div>
                             </div>
                             <div className="mt-3 flex flex-wrap gap-1.5">
                               {group.members.map(m => (
@@ -817,12 +908,22 @@ export default function CrewPage() {
                               </div>
                               {sched.notes && <p className="text-slate-400 text-xs italic">{sched.notes}</p>}
                             </div>
-                            <button
-                              onClick={() => handleDeleteSchedule(sched.id)}
-                              className="text-slate-500 hover:text-red-400 text-sm transition"
-                            >
-                              🗑️
-                            </button>
+                            <div className="flex items-center gap-1">
+                              <button
+                                onClick={() => handleOpenEditScheduleModal(sched)}
+                                className="text-slate-400 hover:text-blue-400 text-sm transition p-1"
+                                title="Upravit položku střídání"
+                              >
+                                ✏️
+                              </button>
+                              <button
+                                onClick={() => handleDeleteSchedule(sched.id)}
+                                className="text-slate-400 hover:text-red-400 text-sm transition p-1"
+                                title="Smazat ze střídání"
+                              >
+                                🗑️
+                              </button>
+                            </div>
                           </div>
                         ))}
                       </div>
@@ -872,12 +973,22 @@ export default function CrewPage() {
                             <span className="text-sm font-semibold text-slate-100">
                               📅 {new Date(duty.date).toLocaleDateString('cs-CZ')}
                             </span>
-                            <button
-                              onClick={() => handleDeleteGalley(duty.id)}
-                              className="text-slate-500 hover:text-red-400 text-sm transition"
-                            >
-                              🗑️
-                            </button>
+                            <div className="flex items-center gap-1">
+                              <button
+                                onClick={() => handleOpenEditGalleyModal(duty)}
+                                className="text-slate-400 hover:text-blue-400 text-sm transition p-1"
+                                title="Upravit službu v kuchyni"
+                              >
+                                ✏️
+                              </button>
+                              <button
+                                onClick={() => handleDeleteGalley(duty.id)}
+                                className="text-slate-400 hover:text-red-400 text-sm transition p-1"
+                                title="Smazat službu v kuchyni"
+                              >
+                                🗑️
+                              </button>
+                            </div>
                           </div>
                           <div className="space-y-2">
                             <div className="flex items-center gap-2 text-xs">
@@ -1003,8 +1114,10 @@ export default function CrewPage() {
       {isGroupModalOpen && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-slate-800 border border-slate-700 rounded-xl max-w-md w-full p-6 shadow-2xl">
-            <h2 className="text-lg font-bold text-slate-100 mb-4">Nová hlídková skupina</h2>
-            <form onSubmit={handleAddGroup} className="space-y-4">
+            <h2 className="text-lg font-bold text-slate-100 mb-4">
+              {editingGroup ? '✏️ Upravit hlídkovou skupinu' : 'Nová hlídková skupina'}
+            </h2>
+            <form onSubmit={handleSaveGroup} className="space-y-4">
               <div>
                 <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">Název hlídky</label>
                 <input
@@ -1046,8 +1159,10 @@ export default function CrewPage() {
       {isScheduleModalOpen && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-slate-800 border border-slate-700 rounded-xl max-w-md w-full p-6 shadow-2xl">
-            <h2 className="text-lg font-bold text-slate-100 mb-4">Naplánovat střídání hlídky</h2>
-            <form onSubmit={handleAddSchedule} className="space-y-4">
+            <h2 className="text-lg font-bold text-slate-100 mb-4">
+              {editingSchedule ? '✏️ Upravit položku střídání' : 'Naplánovat střídání hlídky'}
+            </h2>
+            <form onSubmit={handleSaveSchedule} className="space-y-4">
               <div>
                 <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">Vybrat hlídkovou skupinu</label>
                 <select required value={selectedGroupId} onChange={(e) => setSelectedGroupId(e.target.value)} className="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-slate-100 focus:outline-none">
@@ -1084,8 +1199,10 @@ export default function CrewPage() {
       {isGalleyModalOpen && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-slate-800 border border-slate-700 rounded-xl max-w-md w-full p-6 shadow-2xl">
-            <h2 className="text-lg font-bold text-slate-100 mb-4">Nová služba v kuchyni</h2>
-            <form onSubmit={handleAddGalley} className="space-y-4">
+            <h2 className="text-lg font-bold text-slate-100 mb-4">
+              {editingGalley ? '✏️ Upravit službu v kuchyni' : 'Nová služba v kuchyni'}
+            </h2>
+            <form onSubmit={handleSaveGalley} className="space-y-4">
               <div>
                 <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">Datum služby</label>
                 <input type="date" required value={galleyDate} onChange={(e) => setGalleyDate(e.target.value)} className="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-slate-100 focus:outline-none" />
