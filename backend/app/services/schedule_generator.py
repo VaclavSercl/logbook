@@ -23,6 +23,7 @@ def auto_generate_schedules(
     for the entire voyage duration, with fair rotation among crew members.
     Enforces STCW fatigue management: crew on Galley Duty on a given day are
     excluded from Navigation Watch on that day.
+    Creates a clean, fixed set of Watch Groups for the vessel.
     """
     logbook = db.query(Logbook).filter(Logbook.id == str(logbook_id)).first()
     if not logbook:
@@ -92,7 +93,7 @@ def auto_generate_schedules(
             current_date += timedelta(days=1)
             cook_idx += 2
 
-    # ── 2. GENERATE WATCH GROUPS & SCHEDULES ─────────────────────────────
+    # ── 2. CREATE FIXED CLEAN WATCH GROUPS FOR VESSEL ─────────────────────
     if watch_crew:
         def get_member_name_str(m: CrewMember) -> str:
             parts = []
@@ -105,10 +106,31 @@ def auto_generate_schedules(
                 m_str += f' „{m.nickname}“'
             return m_str
 
-        group_names = ["Hlídka Alfa", "Hlídka Beta", "Hlídka Gama", "Hlídka Delta", "Hlídka Éta"]
         n_per_watch = max(1, persons_per_watch)
+        groups_members: List[List[CrewMember]] = []
+        for i in range(0, len(watch_crew), n_per_watch):
+            chunk = watch_crew[i:i + n_per_watch]
+            if len(chunk) < n_per_watch and groups_members:
+                groups_members[-1].extend(chunk)
+            else:
+                groups_members.append(chunk)
 
-        # Calculate watch start time on Day 1
+        group_names = ["Hlídka Alfa", "Hlídka Beta", "Hlídka Gama", "Hlídka Delta", "Hlídka Éta"]
+        db_watch_groups: List[WatchGroup] = []
+
+        for idx, members in enumerate(groups_members):
+            base_n = group_names[idx] if idx < len(group_names) else f"Hlídka {idx + 1}"
+            member_names = [get_member_name_str(m) for m in members]
+            full_wg_name = f"{base_n} ({', '.join(member_names)})"
+
+            wg = WatchGroup(vessel_id=str(vessel_id), name=full_wg_name)
+            wg.members = members
+            db.add(wg)
+            db.flush()
+            created_groups_count += 1
+            db_watch_groups.append(wg)
+
+        # ── 3. ASSIGN WATCH SCHEDULES ─────────────────────────────────────
         day1_watch_start = datetime.combine(
             started_at.date(),
             time(hour=watch_start_hour, minute=watch_start_minute)
@@ -119,7 +141,7 @@ def auto_generate_schedules(
             current_watch_time = day1_watch_start
 
         step_delta = timedelta(hours=watch_duration_hours)
-        date_groups_cache: Dict[Any, List[WatchGroup]] = {}
+        watch_slot_counter: Dict[Any, int] = {}
 
         while current_watch_time < ended_at:
             watch_end = current_watch_time + step_delta
@@ -129,40 +151,17 @@ def auto_generate_schedules(
             watch_date = current_watch_time.date()
             busy_set = galley_busy_by_date.get(watch_date, set())
 
-            # Exclude crew members who have Galley Duty on watch_date
-            available_crew = [c for c in watch_crew if str(c.id) not in busy_set]
-            if not available_crew:
-                available_crew = watch_crew
+            # Filter watch groups whose members do NOT have Galley Duty on watch_date
+            available_groups = [
+                g for g in db_watch_groups
+                if not any(str(m.id) in busy_set for m in g.members)
+            ]
+            if not available_groups:
+                available_groups = db_watch_groups
 
-            if watch_date not in date_groups_cache:
-                # Group available_crew into teams of persons_per_watch
-                groups_members: List[List[CrewMember]] = []
-                for i in range(0, len(available_crew), n_per_watch):
-                    chunk = available_crew[i:i + n_per_watch]
-                    if len(chunk) < n_per_watch and groups_members:
-                        groups_members[-1].extend(chunk)
-                    else:
-                        groups_members.append(chunk)
-
-                db_groups_for_date: List[WatchGroup] = []
-                for idx, members in enumerate(groups_members):
-                    base_n = group_names[idx] if idx < len(group_names) else f"Hlídka {idx + 1}"
-                    member_names = [get_member_name_str(m) for m in members]
-                    full_wg_name = f"{base_n} ({', '.join(member_names)})"
-
-                    wg = WatchGroup(vessel_id=str(vessel_id), name=full_wg_name)
-                    wg.members = members
-                    db.add(wg)
-                    db.flush()
-                    created_groups_count += 1
-                    db_groups_for_date.append(wg)
-
-                date_groups_cache[watch_date] = db_groups_for_date
-
-            groups_today = date_groups_cache[watch_date]
-            hours_today = current_watch_time.hour + (current_watch_time.minute / 60.0)
-            slot_index = int(hours_today // watch_duration_hours)
-            assigned_group = groups_today[slot_index % len(groups_today)]
+            counter = watch_slot_counter.get(watch_date, 0)
+            assigned_group = available_groups[counter % len(available_groups)]
+            watch_slot_counter[watch_date] = counter + 1
 
             sched = WatchSchedule(
                 logbook_id=str(logbook_id),
