@@ -88,6 +88,9 @@ export default function CrewPage() {
   const [includeInWatches, setIncludeInWatches] = useState(false);
   const [includeInGalley, setIncludeInGalley] = useState(false);
 
+  // Crew Member Form
+  const [editingMember, setEditingMember] = useState<CrewMember | null>(null);
+
   // Watch Group Form
   const [groupName, setGroupName] = useState('');
   const [selectedCrewIds, setSelectedCrewIds] = useState<string[]>([]);
@@ -218,6 +221,36 @@ export default function CrewPage() {
   }, [selectedVesselId]);
 
   // ─── CREW OPERATIONS ───
+  const handleOpenAddCrewModal = () => {
+    setEditingMember(null);
+    setFirstName('');
+    setLastName('');
+    setNickname('');
+    setName('');
+    setPassportNumber('');
+    setDob('');
+    setRole('Crew (Posádka)');
+    setNationality('CZE');
+    setIncludeInWatches(true);
+    setIncludeInGalley(true);
+    setIsCrewModalOpen(true);
+  };
+
+  const handleOpenEditCrewModal = (member: CrewMember) => {
+    setEditingMember(member);
+    setFirstName(member.first_name || '');
+    setLastName(member.last_name || '');
+    setNickname(member.nickname || '');
+    setName(member.name || '');
+    setPassportNumber(member.passport_number || '');
+    setNationality(member.nationality || 'CZE');
+    setRole(member.role || 'Crew (Posádka)');
+    setDob(member.date_of_birth ? member.date_of_birth.slice(0, 10) : '');
+    setIncludeInWatches(member.include_in_watches !== false);
+    setIncludeInGalley(member.include_in_galley !== false);
+    setIsCrewModalOpen(true);
+  };
+
   const handleRoleSelectChange = (newRole: string) => {
     setRole(newRole);
     const isCrewRole = newRole === 'Crew (Posádka)';
@@ -225,14 +258,15 @@ export default function CrewPage() {
     setIncludeInGalley(isCrewRole);
   };
 
-  const handleAddCrew = async (e: React.FormEvent) => {
+  const handleSaveCrew = async (e: React.FormEvent) => {
     e.preventDefault();
     const activeToken = token || localStorage.getItem('token');
     if (!activeToken || !selectedVesselId) return;
     const computedName = `${firstName} ${lastName}`.trim() || nickname || name;
     if (!computedName) return;
+
     try {
-      await crewApi.create({
+      const payload = {
         vessel_id: selectedVesselId,
         first_name: firstName,
         last_name: lastName,
@@ -244,20 +278,19 @@ export default function CrewPage() {
         date_of_birth: dob ? new Date(dob).toISOString() : undefined,
         include_in_watches: includeInWatches,
         include_in_galley: includeInGalley,
-      }, activeToken);
+      };
+
+      if (editingMember) {
+        await crewApi.update(editingMember.id, payload, activeToken);
+      } else {
+        await crewApi.create(payload, activeToken);
+      }
+
       setIsCrewModalOpen(false);
-      setFirstName('');
-      setLastName('');
-      setNickname('');
-      setName('');
-      setPassportNumber('');
-      setDob('');
-      setRole('Skipper (Kapitán)');
-      setIncludeInWatches(false);
-      setIncludeInGalley(false);
+      setEditingMember(null);
       fetchData(selectedVesselId);
-    } catch (err) {
-      alert('Chyba při ukládání.');
+    } catch (err: any) {
+      alert(`Chyba při ukládání člena posádky: ${err.message || err}`);
     }
   };
 
@@ -492,7 +525,7 @@ export default function CrewPage() {
 
           {activeTab === 'crew' && (
             <button
-              onClick={() => setIsCrewModalOpen(true)}
+              onClick={handleOpenAddCrewModal}
               className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium text-sm transition"
             >
               + Přidat člena
@@ -618,13 +651,22 @@ export default function CrewPage() {
                               Příslušnost: <span className="text-slate-300 font-medium">{member.nationality}</span> • Pas: <span className="text-slate-300 font-medium">{member.passport_number || 'Neuvedeno'}</span>
                             </p>
                           </div>
-                          <button
-                            onClick={() => handleDeleteCrew(member.id)}
-                            className="p-1.5 text-slate-500 hover:text-red-400 transition"
-                            title="Odebrat člena"
-                          >
-                            🗑️
-                          </button>
+                          <div className="flex items-center gap-1">
+                            <button
+                              onClick={() => handleOpenEditCrewModal(member)}
+                              className="p-1.5 text-slate-400 hover:text-blue-400 transition"
+                              title="Upravit člena posádky"
+                            >
+                              ✏️
+                            </button>
+                            <button
+                              onClick={() => handleDeleteCrew(member.id)}
+                              className="p-1.5 text-slate-400 hover:text-red-400 transition"
+                              title="Odebrat člena posádky"
+                            >
+                              🗑️
+                            </button>
+                          </div>
                         </div>
 
                         {/* Interactive Duty Checkboxes */}
@@ -814,8 +856,10 @@ export default function CrewPage() {
       {isCrewModalOpen && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-slate-800 border border-slate-700 rounded-xl max-w-md w-full p-6 shadow-2xl space-y-4">
-            <h2 className="text-lg font-bold text-slate-100 border-b border-slate-700 pb-2">Nový člen posádky</h2>
-            <form onSubmit={handleAddCrew} className="space-y-4">
+            <h2 className="text-lg font-bold text-slate-100 border-b border-slate-700 pb-2">
+              {editingMember ? '✏️ Upravit člena posádky' : '👥 Nový člen posádky'}
+            </h2>
+            <form onSubmit={handleSaveCrew} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">Jméno *</label>
