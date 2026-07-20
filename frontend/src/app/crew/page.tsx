@@ -104,6 +104,15 @@ export default function CrewPage() {
   const [cleanerId, setCleanerId] = useState('');
   const [galleyNotes, setGalleyNotes] = useState('');
 
+  // Auto Schedule Generator State
+  const [isAutoModalOpen, setIsAutoModalOpen] = useState(false);
+  const [autoStart, setAutoStart] = useState('');
+  const [autoEnd, setAutoEnd] = useState('');
+  const [autoWatchDuration, setAutoWatchDuration] = useState('2');
+  const [autoPersonsPerWatch, setAutoPersonsPerWatch] = useState('2');
+  const [autoWatchStartTime, setAutoWatchStartTime] = useState('20:00');
+  const [autoGenerating, setAutoGenerating] = useState(false);
+
   const [mounted, setMounted] = useState(false);
   const [token, setToken] = useState<string | null>(null);
 
@@ -378,6 +387,59 @@ export default function CrewPage() {
     );
   };
 
+  const handleOpenAutoModal = () => {
+    const now = new Date();
+    const startStr = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+    const endDate = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+    const endStr = new Date(endDate.getTime() - endDate.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+
+    setAutoStart(startStr);
+    setAutoEnd(endStr);
+    setAutoWatchDuration('2');
+    setAutoPersonsPerWatch('2');
+    setAutoWatchStartTime('20:00');
+    setIsAutoModalOpen(true);
+  };
+
+  const handleAutoGenerateSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!activeLogbookId || !selectedVesselId) {
+      alert('⚠️ Nemáte spuštěnou aktivní plavbu v lodním deníku pro příslušnou loď.');
+      return;
+    }
+    const activeToken = token || localStorage.getItem('token');
+    if (!activeToken) return;
+
+    try {
+      setAutoGenerating(true);
+      const [hStr, mStr] = autoWatchStartTime.split(':');
+      const startHour = parseInt(hStr || '20', 10);
+      const startMin = parseInt(mStr || '0', 10);
+
+      await watchesApi.autoGenerate(
+        {
+          logbook_id: activeLogbookId,
+          started_at: new Date(autoStart).toISOString(),
+          ended_at: new Date(autoEnd).toISOString(),
+          watch_duration_hours: parseFloat(autoWatchDuration) || 2.0,
+          persons_per_watch: parseInt(autoPersonsPerWatch, 10) || 2,
+          watch_start_hour: startHour,
+          watch_start_minute: startMin,
+          clear_existing: true,
+        },
+        activeToken
+      );
+
+      setIsAutoModalOpen(false);
+      await fetchData(selectedVesselId);
+      alert('⚡ Rotace hlídek (2h po 2 osobách od 20:00) a služba v kuchyni (24h kuchař+pomocník) byly úspěšně naplánovány!');
+    } catch (err: any) {
+      alert(`Chyba při generování hlídek: ${err.message}`);
+    } finally {
+      setAutoGenerating(false);
+    }
+  };
+
   // Hydration state
   if (!mounted) {
     return (
@@ -415,6 +477,17 @@ export default function CrewPage() {
                 </option>
               ))}
             </select>
+          )}
+
+          {activeLogbookId && (
+            <button
+              onClick={handleOpenAutoModal}
+              className="px-3.5 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-semibold rounded-lg text-sm transition shadow flex items-center gap-1.5"
+              title="Automaticky naplánuje rotaci hlídek i službu v kuchyni pro celou plavbu"
+            >
+              <span>⚡</span>
+              <span>Generovat rozpis (AI)</span>
+            </button>
           )}
 
           {activeTab === 'crew' && (
@@ -946,6 +1019,113 @@ export default function CrewPage() {
               <div className="flex justify-end gap-3 pt-4 border-t border-slate-700">
                 <button type="button" onClick={() => setIsGalleyModalOpen(false)} className="px-4 py-2 bg-transparent text-slate-300 hover:bg-slate-700 rounded-lg text-sm transition">Zrušit</button>
                 <button type="submit" className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm transition">Uložit</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+      {/* 5. Auto Schedule Generator Modal */}
+      {isAutoModalOpen && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-slate-800 border border-slate-700 rounded-xl max-w-lg w-full p-6 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-700 pb-3">
+              <h2 className="text-lg font-bold text-slate-100 flex items-center gap-2">
+                <span>⚡</span> Automatické naplánování hlídek a kuchyně (AI)
+              </h2>
+              <button onClick={() => setIsAutoModalOpen(false)} className="text-slate-400 hover:text-slate-200">✕</button>
+            </div>
+
+            <form onSubmit={handleAutoGenerateSubmit} className="space-y-4 text-xs">
+              <div className="bg-indigo-950/40 border border-indigo-700/50 rounded-lg p-3 text-indigo-200 leading-relaxed">
+                ℹ️ Algoritmus vypočítá spravedlivou rotaci pro celou plavbu. Lodní hlídky začínají v <strong>20:00</strong> (standardně po 2 hodinách a 2 osobách). Služba v kuchyni trvá <strong>24 hodin (00:00–24:00)</strong> pro kuchaře a pomocníka.
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-semibold uppercase tracking-wider text-slate-400 mb-1">Začátek plavby *</label>
+                  <input
+                    type="datetime-local"
+                    required
+                    value={autoStart}
+                    onChange={(e) => setAutoStart(e.target.value)}
+                    className="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-slate-100 focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block font-semibold uppercase tracking-wider text-slate-400 mb-1">Konec plavby *</label>
+                  <input
+                    type="datetime-local"
+                    required
+                    value={autoEnd}
+                    onChange={(e) => setAutoEnd(e.target.value)}
+                    className="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-slate-100 focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-3 gap-3">
+                <div>
+                  <label className="block font-semibold uppercase tracking-wider text-slate-400 mb-1">Délka hlídky (h)</label>
+                  <input
+                    type="number"
+                    step="0.5"
+                    min="0.5"
+                    max="12"
+                    required
+                    value={autoWatchDuration}
+                    onChange={(e) => setAutoWatchDuration(e.target.value)}
+                    className="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-slate-100 focus:outline-none"
+                  />
+                  <span className="text-[10px] text-slate-400 mt-0.5 block">Standard: 2 hodiny</span>
+                </div>
+                <div>
+                  <label className="block font-semibold uppercase tracking-wider text-slate-400 mb-1">Osob na hlídku</label>
+                  <input
+                    type="number"
+                    min="1"
+                    max="10"
+                    required
+                    value={autoPersonsPerWatch}
+                    onChange={(e) => setAutoPersonsPerWatch(e.target.value)}
+                    className="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-slate-100 focus:outline-none"
+                  />
+                  <span className="text-[10px] text-slate-400 mt-0.5 block">Standard: 2 osoby</span>
+                </div>
+                <div>
+                  <label className="block font-semibold uppercase tracking-wider text-slate-400 mb-1">1. Hlídka v</label>
+                  <input
+                    type="time"
+                    required
+                    value={autoWatchStartTime}
+                    onChange={(e) => setAutoWatchStartTime(e.target.value)}
+                    className="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-slate-100 focus:outline-none"
+                  />
+                  <span className="text-[10px] text-slate-400 mt-0.5 block">Standard: 20:00</span>
+                </div>
+              </div>
+
+              <div className="bg-slate-900/60 p-3 rounded-lg border border-slate-700/60 space-y-1 text-slate-300">
+                <p className="font-semibold text-slate-200">🍳 Služba v kuchyni (24 hod):</p>
+                <p>• Trvání: 24h (od 00:00 do 24:00)</p>
+                <p>• Dvojice: 1× Kuchař + 1× Pomocník kuchaře</p>
+                <p>• Rotace: Pravidelně střídána mezi všemi způsobilými členy posádky</p>
+              </div>
+
+              <div className="flex justify-end gap-3 pt-3 border-t border-slate-700">
+                <button
+                  type="button"
+                  onClick={() => setIsAutoModalOpen(false)}
+                  className="px-4 py-2 bg-transparent text-slate-300 hover:bg-slate-700 rounded-lg text-sm transition"
+                >
+                  Zrušit
+                </button>
+                <button
+                  type="submit"
+                  disabled={autoGenerating}
+                  className="px-5 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-semibold rounded-lg text-sm transition shadow disabled:opacity-50 flex items-center gap-2"
+                >
+                  {autoGenerating ? 'Generuji...' : '⚡ Vygenerovat a spustit rotaci'}
+                </button>
               </div>
             </form>
           </div>

@@ -204,6 +204,19 @@ export const watchesApi = {
     apiFetch('/watches/schedule', { method: 'POST', body: data, token }),
   deleteSchedule: (scheduleId: string, token: string) =>
     apiFetch(`/watches/schedule/${scheduleId}`, { method: 'DELETE', token }),
+  autoGenerate: (
+    data: {
+      logbook_id: string;
+      started_at: string;
+      ended_at: string;
+      watch_duration_hours?: number;
+      persons_per_watch?: number;
+      watch_start_hour?: number;
+      watch_start_minute?: number;
+      clear_existing?: boolean;
+    },
+    token: string
+  ) => apiFetch('/watches/auto-generate', { method: 'POST', body: data, token }),
 };
 
 // Galley API

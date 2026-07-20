@@ -113,6 +113,7 @@ class Logbook(Base):
     voyage_to = Column(String(255))
     status = Column(String(20), default="active")
     started_at = Column(DateTime)
+    ended_at = Column(DateTime)
     closed_at = Column(DateTime)
     signed_hash = Column(String(255))
     is_public = Column(Boolean, default=True, server_default="1")

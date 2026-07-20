@@ -83,6 +83,8 @@ class LogbookCreate(BaseModel):
     title: str = Field(..., max_length=255)
     voyage_from: Optional[str] = None
     voyage_to: Optional[str] = None
+    started_at: Optional[datetime] = None
+    ended_at: Optional[datetime] = None
     is_public: Optional[bool] = True
 
 
@@ -95,6 +97,7 @@ class LogbookResponse(BaseModel):
     status: str
     is_public: bool
     started_at: Optional[datetime]
+    ended_at: Optional[datetime]
     closed_at: Optional[datetime]
     created_at: datetime
 
@@ -302,6 +305,17 @@ class WatchScheduleResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class AutoScheduleGenerateRequest(BaseModel):
+    logbook_id: UUID
+    started_at: datetime
+    ended_at: datetime
+    watch_duration_hours: float = 2.0
+    persons_per_watch: int = 2
+    watch_start_hour: int = 20
+    watch_start_minute: int = 0
+    clear_existing: Optional[bool] = True
 
 
 # ── Galley Duties ─────────────────────────────────────

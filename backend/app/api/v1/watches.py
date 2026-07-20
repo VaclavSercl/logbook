@@ -8,9 +8,11 @@ from app.database import get_db
 from app.models import WatchGroup, WatchSchedule, Vessel, CrewMember, Logbook
 from app.schemas import (
     WatchGroupCreate, WatchGroupResponse,
-    WatchScheduleCreate, WatchScheduleResponse
+    WatchScheduleCreate, WatchScheduleResponse,
+    AutoScheduleGenerateRequest
 )
 from app.api.v1.auth import get_current_user
+from app.services.schedule_generator import auto_generate_schedules
 
 router = APIRouter()
 
@@ -139,3 +141,31 @@ async def delete_watch_schedule(
     db.delete(schedule)
     db.commit()
     return
+
+
+@router.post("/auto-generate")
+async def generate_auto_schedules(
+    data: AutoScheduleGenerateRequest,
+    current_user=Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    logbook = db.query(Logbook).filter(Logbook.id == str(data.logbook_id)).first()
+    if not logbook:
+        raise HTTPException(status_code=404, detail="Logbook not found")
+
+    try:
+        result = auto_generate_schedules(
+            db=db,
+            logbook_id=str(data.logbook_id),
+            started_at=data.started_at,
+            ended_at=data.ended_at,
+            watch_duration_hours=data.watch_duration_hours,
+            persons_per_watch=data.persons_per_watch,
+            watch_start_hour=data.watch_start_hour,
+            watch_start_minute=data.watch_start_minute,
+            clear_existing=bool(data.clear_existing),
+        )
+        return result
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
