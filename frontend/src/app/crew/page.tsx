@@ -104,8 +104,11 @@ export default function CrewPage() {
 
   // 1. Fetch vessels list
   useEffect(() => {
-    if (!mounted || !token) return;
-    vesselsApi.list(token)
+    if (!mounted) return;
+    const activeToken = token || localStorage.getItem('token');
+    if (!activeToken) return;
+
+    vesselsApi.list(activeToken)
       .then((data: any) => {
         const list = data as Vessel[];
         setVessels(list);
@@ -120,34 +123,35 @@ export default function CrewPage() {
         setError('Nepodařilo se načíst lodě.');
         setLoading(false);
       });
-  }, [token]);
+  }, [mounted, token]);
 
   // 2. Fetch all crew, active logbook, watches, and galley duties
   const fetchData = async (vesselId: string) => {
-    if (!token) return;
+    const activeToken = token || (typeof window !== 'undefined' ? localStorage.getItem('token') : null);
+    if (!activeToken) return;
     setLoading(true);
     setError(null);
     try {
       // Crew
-      const crewData = await crewApi.list(vesselId, token);
+      const crewData = await crewApi.list(vesselId, activeToken);
       setCrew(crewData as CrewMember[]);
 
       // Watch groups
-      const groupsData = await watchesApi.listGroups(vesselId, token);
+      const groupsData = await watchesApi.listGroups(vesselId, activeToken);
       setWatchGroups(groupsData as WatchGroup[]);
 
       // Logbooks -> active one
-      const logbooksData: any = await logbooksApi.list(vesselId, token);
+      const logbooksData: any = await logbooksApi.list(vesselId, activeToken);
       const active = logbooksData.find((l: any) => l.status === 'active');
       if (active) {
         setActiveLogbookId(active.id);
         
         // Fetch schedules
-        const schedules = await watchesApi.listSchedules(active.id, token);
+        const schedules = await watchesApi.listSchedules(active.id, activeToken);
         setWatchSchedules(schedules as WatchSchedule[]);
 
         // Fetch galley duties
-        const galley = await galleyApi.listDuties(active.id, token);
+        const galley = await galleyApi.listDuties(active.id, activeToken);
         setGalleyDuties(galley as GalleyDuty[]);
       } else {
         setActiveLogbookId('');

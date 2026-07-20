@@ -132,6 +132,33 @@ async def login_json(
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@router.post("/refresh", response_model=TokenResponse)
+async def refresh_token(
+    credentials: dict,
+    db: Session = Depends(get_db),
+):
+    refresh_tok = credentials.get("refresh_token")
+    if not refresh_tok:
+        raise HTTPException(status_code=401, detail="Refresh token required")
+    try:
+        payload = jwt.decode(refresh_tok, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
+        if payload.get("type") != "refresh":
+            raise HTTPException(status_code=401, detail="Invalid token type")
+        user_id = payload.get("sub")
+        if not user_id:
+            raise HTTPException(status_code=401, detail="Invalid token payload")
+        user = db.query(User).filter(User.id == str(user_id)).first()
+        if not user:
+            raise HTTPException(status_code=401, detail="User not found")
+        token_data = {"sub": user.id, "username": user.username, "role": user.role}
+        return TokenResponse(
+            access_token=create_access_token(token_data),
+            refresh_token=create_refresh_token(token_data),
+        )
+    except JWTError:
+        raise HTTPException(status_code=401, detail="Invalid refresh token")
+
+
 @router.get("/me", response_model=UserResponse)
 async def get_me(current_user: User = Depends(get_current_user)):
     return current_user

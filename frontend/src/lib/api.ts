@@ -8,21 +8,51 @@ interface FetchOptions {
 }
 
 async function apiFetch<T = any>(path: string, options: FetchOptions = {}): Promise<T> {
-  const { method = 'GET', body, token } = options;
+  const { method = 'GET', body } = options;
+  let authToken = options.token || (typeof window !== 'undefined' ? localStorage.getItem('token') || undefined : undefined);
+
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
   };
-  if (token) {
-    headers['Authorization'] = `Bearer ${token}`;
+  if (authToken) {
+    headers['Authorization'] = `Bearer ${authToken}`;
   }
 
-  const res = await fetch(`${API_BASE}${path}`, {
+  let res = await fetch(`${API_BASE}${path}`, {
     method,
     headers,
     body: body ? JSON.stringify(body) : undefined,
   });
 
-  if (!res.ok) {
+  if (res.status === 401 && !path.startsWith('/auth/login') && !path.startsWith('/auth/refresh')) {
+    // Attempt automatic token refresh
+    const refreshToken = typeof window !== 'undefined' ? localStorage.getItem('refresh_token') : null;
+    if (refreshToken) {
+      try {
+        const refreshRes = await fetch(`${API_BASE}/auth/refresh`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ refresh_token: refreshToken }),
+        });
+        if (refreshRes.ok) {
+          const newTokens = await refreshRes.json();
+          if (typeof window !== 'undefined') {
+            localStorage.setItem('token', newTokens.access_token);
+            localStorage.setItem('refresh_token', newTokens.refresh_token);
+          }
+          // Retry original request with new token
+          headers['Authorization'] = `Bearer ${newTokens.access_token}`;
+          res = await fetch(`${API_BASE}${path}`, {
+            method,
+            headers,
+            body: body ? JSON.stringify(body) : undefined,
+          });
+        }
+      } catch (err) {
+        console.error('Token refresh failed:', err);
+      }
+    }
+
     if (res.status === 401) {
       if (typeof window !== 'undefined') {
         localStorage.removeItem('token');
@@ -30,6 +60,9 @@ async function apiFetch<T = any>(path: string, options: FetchOptions = {}): Prom
         window.location.href = '/login';
       }
     }
+  }
+
+  if (!res.ok) {
     const error = await res.json().catch(() => ({ detail: 'Unknown error' }));
     throw new Error(error.detail || `API error: ${res.status}`);
   }
