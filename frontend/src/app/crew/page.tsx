@@ -149,43 +149,53 @@ export default function CrewPage() {
     if (!activeToken) return;
     setLoading(true);
     setError(null);
+
     try {
-      // Crew
-      const crewData = await crewApi.list(vesselId, activeToken);
-      setCrew(crewData as CrewMember[]);
-
-      // Watch groups
-      const groupsData = await watchesApi.listGroups(vesselId, activeToken);
-      setWatchGroups(groupsData as WatchGroup[]);
-
-      // Logbooks -> active one
-      const logbooksData: any = await logbooksApi.list(vesselId, activeToken);
-      const active = logbooksData.find((l: any) => l.status === 'active');
-      if (active) {
-        setActiveLogbookId(active.id);
-        
-        // Fetch schedules
-        const schedules = await watchesApi.listSchedules(active.id, activeToken);
-        setWatchSchedules(schedules as WatchSchedule[]);
-
-        // Fetch galley duties
-        const galley = await galleyApi.listDuties(active.id, activeToken);
-        setGalleyDuties(galley as GalleyDuty[]);
-      } else {
-        setActiveLogbookId('');
-        setWatchSchedules([]);
-        setGalleyDuties([]);
-      }
-    } catch (err: any) {
-      console.error('Failed to fetch crew/duties:', err);
-      if (err?.message?.includes('401') || err?.message?.includes('Unauthorized')) {
-        if (typeof window !== 'undefined') {
-          localStorage.removeItem('token');
-          localStorage.removeItem('refresh_token');
-          window.location.href = '/login';
+      // 1. Crew
+      try {
+        const crewData = await crewApi.list(vesselId, activeToken);
+        setCrew(crewData as CrewMember[]);
+      } catch (err: any) {
+        console.error('Failed to fetch crew:', err);
+        if (err?.message?.includes('401') || err?.message?.includes('Unauthorized')) {
+          if (typeof window !== 'undefined') {
+            localStorage.removeItem('token');
+            localStorage.removeItem('refresh_token');
+            window.location.href = '/login';
+            return;
+          }
         }
-      } else {
-        setError('Nepodařilo se načíst data.');
+      }
+
+      // 2. Watch groups
+      try {
+        const groupsData = await watchesApi.listGroups(vesselId, activeToken);
+        setWatchGroups(groupsData as WatchGroup[]);
+      } catch (err) {
+        console.error('Failed to fetch watch groups:', err);
+      }
+
+      // 3. Logbooks & duties
+      try {
+        const logbooksData: any = await logbooksApi.list(vesselId, activeToken);
+        const active = Array.isArray(logbooksData) ? logbooksData.find((l: any) => l.status === 'active') : null;
+        if (active) {
+          setActiveLogbookId(active.id);
+          try {
+            const schedules = await watchesApi.listSchedules(active.id, activeToken);
+            setWatchSchedules(schedules as WatchSchedule[]);
+          } catch (e) {}
+          try {
+            const galley = await galleyApi.listDuties(active.id, activeToken);
+            setGalleyDuties(galley as GalleyDuty[]);
+          } catch (e) {}
+        } else {
+          setActiveLogbookId('');
+          setWatchSchedules([]);
+          setGalleyDuties([]);
+        }
+      } catch (err) {
+        console.error('Failed to fetch logbooks:', err);
       }
     } finally {
       setLoading(false);

@@ -238,11 +238,11 @@ class CrewMemberResponse(BaseModel):
     first_name: Optional[str] = None
     last_name: Optional[str] = None
     nickname: Optional[str] = None
-    name: str
-    role: Optional[str]
-    nationality: Optional[str]
-    passport_number: Optional[str]
-    date_of_birth: Optional[datetime]
+    name: Optional[str] = "Člen posádky"
+    role: Optional[str] = None
+    nationality: Optional[str] = None
+    passport_number: Optional[str] = None
+    date_of_birth: Optional[datetime] = None
     include_in_watches: bool = True
     include_in_galley: bool = True
     joined_at: Optional[datetime] = None
