@@ -88,6 +88,13 @@ async def delete_galley_duty(
     if not duty:
         raise HTTPException(status_code=404, detail="Galley duty not found")
 
+    logbook = db.query(Logbook).filter(Logbook.id == duty.logbook_id).first()
+    if not logbook:
+        raise HTTPException(status_code=404, detail="Logbook not found")
+    vessel = db.query(Vessel).filter(Vessel.id == logbook.vessel_id).first()
+    if not vessel or str(vessel.owner_id) != str(current_user.id):
+        raise HTTPException(status_code=403, detail="Not authorized")
+
     db.delete(duty)
     db.commit()
     return

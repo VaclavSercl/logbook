@@ -103,6 +103,10 @@ async def delete_watch_group(
     if not vessel or str(vessel.owner_id) != str(current_user.id):
         raise HTTPException(status_code=403, detail="Not authorized")
 
+    # First delete any watch schedules using this group
+    db.execute(delete(WatchSchedule).where(WatchSchedule.watch_group_id == str(group_id)))
+    # Clear group members association
+    group.members = []
     db.delete(group)
     db.commit()
     return

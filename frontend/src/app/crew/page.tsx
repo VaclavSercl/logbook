@@ -419,12 +419,14 @@ export default function CrewPage() {
   };
 
   const handleDeleteGroup = async (id: string) => {
-    if (!token || !confirm('Opravdu smazat tuto hlídkovou skupinu?')) return;
+    const activeToken = token || localStorage.getItem('token');
+    if (!activeToken) return;
+    if (!confirm('Opravdu smazat tuto hlídkovou skupinu?')) return;
     try {
-      await watchesApi.deleteGroup(id, token);
+      await watchesApi.deleteGroup(id, activeToken);
       fetchData(selectedVesselId);
-    } catch (err) {
-      alert('Chyba při mazání hlídky.');
+    } catch (err: any) {
+      alert(`Chyba při mazání hlídkové skupiny: ${err.message || err}`);
     }
   };
 
@@ -449,7 +451,8 @@ export default function CrewPage() {
 
   const handleSaveSchedule = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!token || !activeLogbookId || !selectedGroupId || !startTime || !endTime) return;
+    const activeToken = token || localStorage.getItem('token');
+    if (!activeToken || !activeLogbookId || !selectedGroupId || !startTime || !endTime) return;
     try {
       if (editingSchedule) {
         await watchesApi.updateSchedule(editingSchedule.id, {
@@ -457,7 +460,7 @@ export default function CrewPage() {
           start_time: new Date(startTime).toISOString(),
           end_time: new Date(endTime).toISOString(),
           notes: scheduleNotes,
-        }, token);
+        }, activeToken);
       } else {
         await watchesApi.createSchedule({
           logbook_id: activeLogbookId,
@@ -465,7 +468,7 @@ export default function CrewPage() {
           start_time: new Date(startTime).toISOString(),
           end_time: new Date(endTime).toISOString(),
           notes: scheduleNotes,
-        }, token);
+        }, activeToken);
       }
       setIsScheduleModalOpen(false);
       setEditingSchedule(null);
@@ -480,12 +483,14 @@ export default function CrewPage() {
   };
 
   const handleDeleteSchedule = async (id: string) => {
-    if (!token || !confirm('Opravdu smazat položku z rozvrhu?')) return;
+    const activeToken = token || localStorage.getItem('token');
+    if (!activeToken) return;
+    if (!confirm('Opravdu smazat položku z rozvrhu?')) return;
     try {
-      await watchesApi.deleteSchedule(id, token);
+      await watchesApi.deleteSchedule(id, activeToken);
       fetchData(selectedVesselId);
-    } catch (err) {
-      alert('Chyba při mazání.');
+    } catch (err: any) {
+      alert(`Chyba při mazání z rozvrhu: ${err.message || err}`);
     }
   };
 
@@ -510,7 +515,8 @@ export default function CrewPage() {
 
   const handleSaveGalley = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!token || !activeLogbookId || !galleyDate || !cookId || !cleanerId) return;
+    const activeToken = token || localStorage.getItem('token');
+    if (!activeToken || !activeLogbookId || !galleyDate || !cookId || !cleanerId) return;
     try {
       if (editingGalley) {
         await galleyApi.updateDuty(editingGalley.id, {
@@ -518,7 +524,7 @@ export default function CrewPage() {
           cook_id: cookId,
           cleaner_id: cleanerId,
           notes: galleyNotes,
-        }, token);
+        }, activeToken);
       } else {
         await galleyApi.createDuty({
           logbook_id: activeLogbookId,
@@ -526,7 +532,7 @@ export default function CrewPage() {
           cook_id: cookId,
           cleaner_id: cleanerId,
           notes: galleyNotes,
-        }, token);
+        }, activeToken);
       }
       setIsGalleyModalOpen(false);
       setEditingGalley(null);
@@ -541,12 +547,14 @@ export default function CrewPage() {
   };
 
   const handleDeleteGalley = async (id: string) => {
-    if (!token || !confirm('Opravdu smazat tuto službu v kuchyni?')) return;
+    const activeToken = token || localStorage.getItem('token');
+    if (!activeToken) return;
+    if (!confirm('Opravdu smazat tuto službu v kuchyni?')) return;
     try {
-      await galleyApi.deleteDuty(id, token);
+      await galleyApi.deleteDuty(id, activeToken);
       fetchData(selectedVesselId);
-    } catch (err) {
-      alert('Chyba při odstraňování.');
+    } catch (err: any) {
+      alert(`Chyba při odstraňování služby v kuchyni: ${err.message || err}`);
     }
   };
 
