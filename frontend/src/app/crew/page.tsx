@@ -609,13 +609,42 @@ export default function CrewPage() {
     }
   };
 
+  const parseLocalDateTime = (dateStr: string) => {
+    if (!dateStr) return new Date();
+    const clean = dateStr.replace(/Z$/, '').replace(/([+-]\d{2}:\d{2})$/, '');
+    const [dPart, tPart] = clean.split(/[T ]/);
+    if (dPart) {
+      const [year, month, day] = dPart.split('-').map(Number);
+      const [hour, minute, second] = (tPart || '00:00:00').split(':').map(Number);
+      return new Date(year, month - 1, day, hour || 0, minute || 0, Math.floor(second || 0));
+    }
+    return new Date(dateStr);
+  };
+
   const formatMemberDisplayName = (m?: any) => {
     if (!m) return '—';
     const full = `${m.first_name || ''} ${m.last_name || ''}`.trim() || m.name || '';
     return m.nickname ? `${full} „${m.nickname}“` : full;
   };
 
-  const formatCzechDate = (d: Date) => {
+  const formatTimeDisplay = (dateStr: string) => {
+    const d = parseLocalDateTime(dateStr);
+    const h = String(d.getHours()).padStart(2, '0');
+    const m = String(d.getMinutes()).padStart(2, '0');
+    return `${h}:${m}`;
+  };
+
+  const formatDateTimeDisplay = (dateStr: string) => {
+    const d = parseLocalDateTime(dateStr);
+    const day = String(d.getDate()).padStart(2, '0');
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const h = String(d.getHours()).padStart(2, '0');
+    const m = String(d.getMinutes()).padStart(2, '0');
+    return `${day}.${month}. ${h}:${m}`;
+  };
+
+  const formatCzechDateStr = (dateStr: string) => {
+    const d = parseLocalDateTime(dateStr);
     const days = ['neděle', 'pondělí', 'úterý', 'středa', 'čtvrtek', 'pátek', 'sobota'];
     const dayName = days[d.getDay()];
     const dayNum = String(d.getDate()).padStart(2, '0');
@@ -636,13 +665,17 @@ export default function CrewPage() {
     } = {};
 
     galleyDuties.forEach((g) => {
-      const d = new Date(g.date);
-      const dateKey = d.toISOString().slice(0, 10);
+      const d = parseLocalDateTime(g.date);
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      const dateKey = `${year}-${month}-${day}`;
+
       if (!map[dateKey]) {
         map[dateKey] = {
           date: d,
           dateStr: dateKey,
-          czechDateStr: formatCzechDate(d),
+          czechDateStr: formatCzechDateStr(g.date),
           galley: g,
           watches: [],
         };
@@ -652,13 +685,17 @@ export default function CrewPage() {
     });
 
     watchSchedules.forEach((w) => {
-      const d = new Date(w.start_time);
-      const dateKey = d.toISOString().slice(0, 10);
+      const d = parseLocalDateTime(w.start_time);
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      const dateKey = `${year}-${month}-${day}`;
+
       if (!map[dateKey]) {
         map[dateKey] = {
           date: d,
           dateStr: dateKey,
-          czechDateStr: formatCzechDate(d),
+          czechDateStr: formatCzechDateStr(w.start_time),
           galley: null,
           watches: [w],
         };
@@ -671,7 +708,9 @@ export default function CrewPage() {
     return keys.map((k) => {
       const entry = map[k];
       entry.watches.sort(
-        (a, b) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime()
+        (a, b) =>
+          parseLocalDateTime(a.start_time).getTime() -
+          parseLocalDateTime(b.start_time).getTime()
       );
       return entry;
     });
@@ -991,9 +1030,9 @@ export default function CrewPage() {
                                   {sched.watch_group.name}
                                 </span>
                                 <span className="text-slate-400 text-xs">
-                                  {new Date(sched.start_time).toLocaleString('cs-CZ', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit' })}
+                                  {formatDateTimeDisplay(sched.start_time)}
                                   {' — '}
-                                  {new Date(sched.end_time).toLocaleString('cs-CZ', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit' })}
+                                  {formatTimeDisplay(sched.end_time)}
                                 </span>
                               </div>
                               {sched.notes && <p className="text-slate-400 text-xs italic">{sched.notes}</p>}
@@ -1517,14 +1556,8 @@ export default function CrewPage() {
                   </thead>
                   <tbody>
                     {day.watches.map((w, wIdx) => {
-                      const startTimeStr = new Date(w.start_time).toLocaleTimeString('cs-CZ', {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                      });
-                      const endTimeStr = new Date(w.end_time).toLocaleTimeString('cs-CZ', {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                      });
+                      const startTimeStr = formatTimeDisplay(w.start_time);
+                      const endTimeStr = formatTimeDisplay(w.end_time);
                       const membersStr = w.watch_group?.members
                         ? w.watch_group.members.map((m) => formatMemberDisplayName(m)).join(', ')
                         : '';
