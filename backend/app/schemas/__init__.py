@@ -212,6 +212,18 @@ class CrewMemberCreate(BaseModel):
     nationality: Optional[str] = None
     passport_number: Optional[str] = None
     date_of_birth: Optional[datetime] = None
+    include_in_watches: bool = True
+    include_in_galley: bool = True
+
+
+class CrewMemberUpdate(BaseModel):
+    name: Optional[str] = None
+    role: Optional[str] = None
+    nationality: Optional[str] = None
+    passport_number: Optional[str] = None
+    date_of_birth: Optional[datetime] = None
+    include_in_watches: Optional[bool] = None
+    include_in_galley: Optional[bool] = None
 
 
 class CrewMemberResponse(BaseModel):
@@ -222,6 +234,8 @@ class CrewMemberResponse(BaseModel):
     nationality: Optional[str]
     passport_number: Optional[str]
     date_of_birth: Optional[datetime]
+    include_in_watches: bool = True
+    include_in_galley: bool = True
     joined_at: datetime
 
     class Config:

@@ -12,6 +12,8 @@ interface CrewMember {
   nationality: string;
   passport_number: string;
   date_of_birth?: string;
+  include_in_watches?: boolean;
+  include_in_galley?: boolean;
   joined_at: string;
 }
 
@@ -73,10 +75,12 @@ export default function CrewPage() {
 
   // Crew Form
   const [name, setName] = useState('');
-  const [role, setRole] = useState('Velitel lodi');
+  const [role, setRole] = useState('Skipper (Kapitán)');
   const [nationality, setNationality] = useState('CZ');
   const [passportNumber, setPassportNumber] = useState('');
   const [dob, setDob] = useState('');
+  const [includeInWatches, setIncludeInWatches] = useState(false);
+  const [includeInGalley, setIncludeInGalley] = useState(false);
 
   // Watch Group Form
   const [groupName, setGroupName] = useState('');
@@ -173,9 +177,17 @@ export default function CrewPage() {
   }, [selectedVesselId]);
 
   // ─── CREW OPERATIONS ───
+  const handleRoleSelectChange = (newRole: string) => {
+    setRole(newRole);
+    const isCrewRole = newRole === 'Crew (Posádka)';
+    setIncludeInWatches(isCrewRole);
+    setIncludeInGalley(isCrewRole);
+  };
+
   const handleAddCrew = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!token || !selectedVesselId || !name) return;
+    const activeToken = token || localStorage.getItem('token');
+    if (!activeToken || !selectedVesselId || !name) return;
     try {
       await crewApi.create({
         vessel_id: selectedVesselId,
@@ -184,21 +196,41 @@ export default function CrewPage() {
         nationality,
         passport_number: passportNumber,
         date_of_birth: dob ? new Date(dob).toISOString() : undefined,
-      }, token);
+        include_in_watches: includeInWatches,
+        include_in_galley: includeInGalley,
+      }, activeToken);
       setIsCrewModalOpen(false);
       setName('');
       setPassportNumber('');
       setDob('');
+      setRole('Skipper (Kapitán)');
+      setIncludeInWatches(false);
+      setIncludeInGalley(false);
       fetchData(selectedVesselId);
     } catch (err) {
       alert('Chyba při ukládání.');
     }
   };
 
-  const handleDeleteCrew = async (id: string) => {
-    if (!token || !confirm('Opravdu odebrat člena posádky?')) return;
+  const handleToggleDuty = async (member: CrewMember, dutyType: 'watches' | 'galley', currentVal: boolean) => {
+    const activeToken = token || localStorage.getItem('token');
+    if (!activeToken) return;
     try {
-      await crewApi.delete(id, token);
+      const updateData = dutyType === 'watches'
+        ? { include_in_watches: !currentVal }
+        : { include_in_galley: !currentVal };
+      await crewApi.update(member.id, updateData, activeToken);
+      fetchData(selectedVesselId);
+    } catch (err) {
+      alert('Chyba při aktualizaci zařazení do služeb.');
+    }
+  };
+
+  const handleDeleteCrew = async (id: string) => {
+    const activeToken = token || localStorage.getItem('token');
+    if (!activeToken || !confirm('Opravdu odebrat člena posádky?')) return;
+    try {
+      await crewApi.delete(id, activeToken);
       fetchData(selectedVesselId);
     } catch (err) {
       alert('Chyba při mazání.');
@@ -438,30 +470,65 @@ export default function CrewPage() {
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {crew.map((member) => (
-                    <div
-                      key={member.id}
-                      className="bg-slate-800 rounded-xl p-5 border border-slate-700/60 shadow flex items-center justify-between hover:border-slate-600 transition"
-                    >
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <span className="text-slate-100 font-semibold">{member.name}</span>
-                          <span className="px-2 py-0.5 bg-blue-900/30 text-blue-400 text-[10px] font-bold rounded-full border border-blue-800/40">
-                            {member.role}
-                          </span>
-                        </div>
-                        <p className="text-slate-400 text-xs mt-2">
-                          Příslušnost: <span className="text-slate-300 font-medium">{member.nationality}</span> • Pas: <span className="text-slate-300 font-medium">{member.passport_number || 'Neuvedeno'}</span>
-                        </p>
-                      </div>
-                      <button
-                        onClick={() => handleDeleteCrew(member.id)}
-                        className="p-2 text-slate-500 hover:text-red-400 transition"
+                  {crew.map((member) => {
+                    const inWatches = member.include_in_watches !== false;
+                    const inGalley = member.include_in_galley !== false;
+                    return (
+                      <div
+                        key={member.id}
+                        className="bg-slate-800 rounded-xl p-5 border border-slate-700/60 shadow flex flex-col justify-between space-y-3 hover:border-slate-600 transition"
                       >
-                        🗑️
-                      </button>
-                    </div>
-                  ))}
+                        <div className="flex items-start justify-between">
+                          <div>
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="text-slate-100 font-semibold">{member.name}</span>
+                              <span className={`px-2 py-0.5 text-[10px] font-bold rounded-full border ${
+                                member.role?.includes('Skipper')
+                                  ? 'bg-amber-950/60 text-amber-300 border-amber-700/50'
+                                  : member.role?.includes('Guest')
+                                  ? 'bg-purple-950/60 text-purple-300 border-purple-700/50'
+                                  : 'bg-blue-900/30 text-blue-400 border-blue-800/40'
+                              }`}>
+                                {member.role || 'Crew (Posádka)'}
+                              </span>
+                            </div>
+                            <p className="text-slate-400 text-xs mt-1">
+                              Příslušnost: <span className="text-slate-300 font-medium">{member.nationality}</span> • Pas: <span className="text-slate-300 font-medium">{member.passport_number || 'Neuvedeno'}</span>
+                            </p>
+                          </div>
+                          <button
+                            onClick={() => handleDeleteCrew(member.id)}
+                            className="p-1.5 text-slate-500 hover:text-red-400 transition"
+                            title="Odebrat člena"
+                          >
+                            🗑️
+                          </button>
+                        </div>
+
+                        {/* Interactive Duty Checkboxes */}
+                        <div className="pt-2 border-t border-slate-700/60 flex items-center justify-between text-xs text-slate-300">
+                          <label className="flex items-center gap-1.5 cursor-pointer hover:text-white">
+                            <input
+                              type="checkbox"
+                              checked={inWatches}
+                              onChange={() => handleToggleDuty(member, 'watches', inWatches)}
+                              className="w-3.5 h-3.5 text-blue-600 rounded bg-slate-900 border-slate-600"
+                            />
+                            <span>⚓ Hlídka</span>
+                          </label>
+                          <label className="flex items-center gap-1.5 cursor-pointer hover:text-white">
+                            <input
+                              type="checkbox"
+                              checked={inGalley}
+                              onChange={() => handleToggleDuty(member, 'galley', inGalley)}
+                              className="w-3.5 h-3.5 text-blue-600 rounded bg-slate-900 border-slate-600"
+                            />
+                            <span>🍳 Kuchyně</span>
+                          </label>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               )
             )}
@@ -603,8 +670,8 @@ export default function CrewPage() {
       {/* 1. Add Crew Modal */}
       {isCrewModalOpen && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-slate-800 border border-slate-700 rounded-xl max-w-md w-full p-6 shadow-2xl">
-            <h2 className="text-lg font-bold text-slate-100 mb-4">Nový člen posádky</h2>
+          <div className="bg-slate-800 border border-slate-700 rounded-xl max-w-md w-full p-6 shadow-2xl space-y-4">
+            <h2 className="text-lg font-bold text-slate-100 border-b border-slate-700 pb-2">Nový člen posádky</h2>
             <form onSubmit={handleAddCrew} className="space-y-4">
               <div>
                 <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">Jméno a příjmení</label>
@@ -617,12 +684,10 @@ export default function CrewPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">Role / Funkce</label>
-                  <select value={role} onChange={(e) => setRole(e.target.value)} className="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-slate-100 focus:outline-none">
-                    <option value="Velitel lodi">Velitel lodi</option>
-                    <option value="První důstojník">První důstojník</option>
-                    <option value="Kormidelník">Kormidelník</option>
-                    <option value="Plavčík">Plavčík</option>
-                    <option value="Host">Host</option>
+                  <select value={role} onChange={(e) => handleRoleSelectChange(e.target.value)} className="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-slate-100 focus:outline-none">
+                    <option value="Skipper (Kapitán)">Skipper (Kapitán)</option>
+                    <option value="Crew (Posádka)">Crew (Posádka)</option>
+                    <option value="Guest (Host)">Guest (Host)</option>
                   </select>
                 </div>
                 <div>
@@ -640,6 +705,32 @@ export default function CrewPage() {
                   <input type="date" value={dob} onChange={(e) => setDob(e.target.value)} className="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-slate-100 focus:outline-none" />
                 </div>
               </div>
+
+              {/* Duty Checkboxes */}
+              <div className="pt-3 border-t border-slate-700 space-y-2">
+                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400">Zařazení do služeb</label>
+                <div className="flex flex-col sm:flex-row gap-4">
+                  <label className="flex items-center gap-2 text-xs text-slate-200 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={includeInWatches}
+                      onChange={(e) => setIncludeInWatches(e.target.checked)}
+                      className="w-4 h-4 text-blue-600 rounded bg-slate-700 border-slate-600"
+                    />
+                    <span>⚓ Hlídka za kormidlem</span>
+                  </label>
+                  <label className="flex items-center gap-2 text-xs text-slate-200 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={includeInGalley}
+                      onChange={(e) => setIncludeInGalley(e.target.checked)}
+                      className="w-4 h-4 text-blue-600 rounded bg-slate-700 border-slate-600"
+                    />
+                    <span>🍳 Služba v kuchyni</span>
+                  </label>
+                </div>
+              </div>
+
               <div className="flex justify-end gap-3 pt-4 border-t border-slate-700">
                 <button type="button" onClick={() => setIsCrewModalOpen(false)} className="px-4 py-2 bg-transparent text-slate-300 hover:bg-slate-700 rounded-lg text-sm transition">Zrušit</button>
                 <button type="submit" className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm transition">Uložit</button>
@@ -664,19 +755,23 @@ export default function CrewPage() {
                 />
               </div>
               <div>
-                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Přiřadit členy posádky</label>
+                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Přiřadit členy posádky zařazené do hlídek</label>
                 <div className="space-y-2 max-h-48 overflow-y-auto bg-slate-750 p-3 rounded-lg border border-slate-700">
-                  {crew.map(member => (
-                    <label key={member.id} className="flex items-center gap-3 text-sm text-slate-300 cursor-pointer hover:text-white">
-                      <input
-                        type="checkbox"
-                        checked={selectedCrewIds.includes(member.id)}
-                        onChange={() => toggleCrewSelection(member.id)}
-                        className="w-4 h-4 text-blue-650 bg-slate-700 border-slate-600 rounded focus:ring-blue-500"
-                      />
-                      <span>{member.name} ({member.role})</span>
-                    </label>
-                  ))}
+                  {crew.filter(m => m.include_in_watches !== false).length === 0 ? (
+                    <p className="text-xs text-slate-400 italic">Žádní členové posádky nejsou zařazeni do hlídek za kormidlem.</p>
+                  ) : (
+                    crew.filter(m => m.include_in_watches !== false).map(member => (
+                      <label key={member.id} className="flex items-center gap-3 text-sm text-slate-300 cursor-pointer hover:text-white">
+                        <input
+                          type="checkbox"
+                          checked={selectedCrewIds.includes(member.id)}
+                          onChange={() => toggleCrewSelection(member.id)}
+                          className="w-4 h-4 text-blue-650 bg-slate-700 border-slate-600 rounded focus:ring-blue-500"
+                        />
+                        <span>{member.name} ({member.role})</span>
+                      </label>
+                    ))
+                  )}
                 </div>
               </div>
               <div className="flex justify-end gap-3 pt-4 border-t border-slate-700">
@@ -741,7 +836,7 @@ export default function CrewPage() {
                   <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">Služba: Kuchař (Cook)</label>
                   <select required value={cookId} onChange={(e) => setCookId(e.target.value)} className="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-slate-100 focus:outline-none">
                     <option value="">-- Vyberte --</option>
-                    {crew.map(m => (
+                    {crew.filter(m => m.include_in_galley !== false).map(m => (
                       <option key={m.id} value={m.id}>{m.name}</option>
                     ))}
                   </select>
@@ -750,7 +845,7 @@ export default function CrewPage() {
                   <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">Služba: Úklid (Cleaner)</label>
                   <select required value={cleanerId} onChange={(e) => setCleanerId(e.target.value)} className="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-slate-100 focus:outline-none">
                     <option value="">-- Vyberte --</option>
-                    {crew.map(m => (
+                    {crew.filter(m => m.include_in_galley !== false).map(m => (
                       <option key={m.id} value={m.id}>{m.name}</option>
                     ))}
                   </select>

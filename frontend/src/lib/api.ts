@@ -174,8 +174,10 @@ export const modulesApi = {
 export const crewApi = {
   list: (vesselId: string, token: string) =>
     apiFetch(`/crew/vessel/${vesselId}`, { token }),
-  create: (data: { vessel_id: string; name: string; role?: string; nationality?: string; passport_number?: string; date_of_birth?: string }, token: string) =>
+  create: (data: { vessel_id: string; name: string; role?: string; nationality?: string; passport_number?: string; date_of_birth?: string; include_in_watches?: boolean; include_in_galley?: boolean }, token: string) =>
     apiFetch('/crew', { method: 'POST', body: data, token }),
+  update: (id: string, data: Partial<{ name: string; role: string; nationality: string; passport_number: string; date_of_birth: string; include_in_watches: boolean; include_in_galley: boolean }>, token: string) =>
+    apiFetch(`/crew/${id}`, { method: 'PUT', body: data, token }),
   delete: (id: string, token: string) =>
     apiFetch(`/crew/${id}`, { method: 'DELETE', token }),
 };

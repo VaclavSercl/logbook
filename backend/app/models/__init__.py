@@ -92,6 +92,8 @@ class CrewMember(Base):
     nationality = Column(String(5))
     passport_number = Column(String(50))
     date_of_birth = Column(DateTime)
+    include_in_watches = Column(Boolean, default=True, server_default="1")
+    include_in_galley = Column(Boolean, default=True, server_default="1")
     joined_at = Column(DateTime, default=datetime.utcnow)
 
     vessel = relationship("Vessel", back_populates="crew")

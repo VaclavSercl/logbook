@@ -67,6 +67,7 @@ logbook/
 | 20.7.2026 | Integrace Windy.com Live Widgetu | Vytvořeno propojení s Windy.com v `weather.py` a v rozhraní `/weather`. Dynamicky generuje živou interaktivní větrnou mapu a ECMWF model pro přesné GPS souřadnice lodi. |
 | 20.7.2026 | Unifikovaná navigace (Navbar) | Vytvořena sdílená komponenta `Navbar.tsx` s kompletními odkazy na všechny moduly v systému a integrací i18n přepínače. |
 | 20.7.2026 | Striktní pravidla jednotek | Kompletní přechod na primární anglické/námořní jednotky následované evropskou metriku v závorce napříč celým systémem: Rychlost `kn (km/h)`, Vzdálenost `NM (km)`, Hloubka/Ponor/Rozměry `ft (m)`, Vítr `kn (m/s, Bft)`, Teplota `°F (°C)`, Tlak `inHg (hPa)`. |
+| 20.7.2026 | Názvy rolí posádky & Zařazení do služeb | Přejmenovány role na `Skipper (Kapitán)`, `Crew (Posádka)`, `Guest (Host)`. Přidány samostatné zaškrtávací volby pro zařazení do hlídek a kuchyně u každého člena. Kapitán a Host jsou výchozím stavem ze služeb vyřazeni s možností ručního zaškrtnutí. |
 
 ## Známé problémy / TODO
 

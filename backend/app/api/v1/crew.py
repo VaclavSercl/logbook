@@ -53,8 +53,46 @@ async def create_crew_member(
         nationality=data.nationality,
         passport_number=data.passport_number,
         date_of_birth=data.date_of_birth,
+        include_in_watches=data.include_in_watches,
+        include_in_galley=data.include_in_galley,
     )
     db.add(crew_member)
+    db.flush()
+    return crew_member
+
+
+@router.put("/{crew_member_id}", response_model=CrewMemberResponse)
+async def update_crew_member(
+    crew_member_id: UUID,
+    data: CrewMemberUpdate,
+    current_user=Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    result = db.execute(select(CrewMember).where(CrewMember.id == str(crew_member_id)))
+    crew_member = result.scalar_one_or_none()
+    if not crew_member:
+        raise HTTPException(status_code=404, detail="Crew member not found")
+
+    vessel_result = db.execute(select(Vessel).where(Vessel.id == crew_member.vessel_id))
+    vessel = vessel_result.scalar_one_or_none()
+    if not vessel or str(vessel.owner_id) != str(current_user.id):
+        raise HTTPException(status_code=403, detail="Not authorized to update this crew member")
+
+    if data.name is not None:
+        crew_member.name = data.name
+    if data.role is not None:
+        crew_member.role = data.role
+    if data.nationality is not None:
+        crew_member.nationality = data.nationality
+    if data.passport_number is not None:
+        crew_member.passport_number = data.passport_number
+    if data.date_of_birth is not None:
+        crew_member.date_of_birth = data.date_of_birth
+    if data.include_in_watches is not None:
+        crew_member.include_in_watches = data.include_in_watches
+    if data.include_in_galley is not None:
+        crew_member.include_in_galley = data.include_in_galley
+
     db.flush()
     return crew_member
 
