@@ -128,10 +128,18 @@ export default function CrewPage() {
           setLoading(false);
         }
       })
-      .catch((err) => {
+      .catch((err: any) => {
         console.error('Failed to load vessels:', err);
-        setError('Nepodařilo se načíst lodě.');
-        setLoading(false);
+        if (err?.message?.includes('401') || err?.message?.includes('Unauthorized')) {
+          if (typeof window !== 'undefined') {
+            localStorage.removeItem('token');
+            localStorage.removeItem('refresh_token');
+            window.location.href = '/login';
+          }
+        } else {
+          setError('Nepodařilo se načíst lodě.');
+          setLoading(false);
+        }
       });
   }, [mounted, token]);
 
@@ -168,9 +176,17 @@ export default function CrewPage() {
         setWatchSchedules([]);
         setGalleyDuties([]);
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Failed to fetch crew/duties:', err);
-      setError('Nepodařilo se načíst data.');
+      if (err?.message?.includes('401') || err?.message?.includes('Unauthorized')) {
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('token');
+          localStorage.removeItem('refresh_token');
+          window.location.href = '/login';
+        }
+      } else {
+        setError('Nepodařilo se načíst data.');
+      }
     } finally {
       setLoading(false);
     }
