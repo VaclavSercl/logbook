@@ -1,10 +1,10 @@
 """AI Voyage Document Analyzer and Information Extractor.
 
 Processes uploaded files, local folder paths, and URLs to automatically populate:
-- Vessel specifications (draft, length, beam, MMSI, call sign)
+- Vessel specifications (Name, Type, Length, Beam, Draft, Year, Port, Flag State, Charter Company)
 - Voyage route and itinerary details (departure port, destination port, notes)
+- Financial expenses in Cashbox (Deposit, Charter Fees)
 - Crew members list (only if present in documents)
-- Logbook entries & itinerary logs
 """
 import os
 import re
@@ -15,7 +15,7 @@ from datetime import datetime
 from typing import Dict, Any, List, Optional
 from sqlalchemy.orm import Session
 
-from app.models import VoyageDocument, Logbook, Vessel, CrewMember, LogEntry
+from app.models import VoyageDocument, Logbook, Vessel, CrewMember, LogEntry, CashboxExpense
 from app.services.schedule_generator import auto_generate_schedules
 
 
@@ -75,7 +75,7 @@ def parse_crew_from_text_or_rows(rows_or_text: List[List[str]]) -> List[Dict[str
             cells = [str(c).strip() for c in row if str(c).strip()]
             if cells and len(cells[0]) < 40:
                 parts = cells[0].split()
-                if len(parts) >= 2 and not any(kw in cells[0].lower() for kw in ["délka", "ponor", "vyplutí", "vítr", "tlak", "http"]):
+                if len(parts) >= 2 and not any(kw in cells[0].lower() for kw in ["délka", "ponor", "vyplutí", "vítr", "tlak", "http", "bavaria", "charter"]):
                     first_name, last_name = parts[0], parts[1]
 
         if first_name or last_name or nickname:
@@ -90,34 +90,98 @@ def parse_crew_from_text_or_rows(rows_or_text: List[List[str]]) -> List[Dict[str
 
 
 def extract_vessel_specs(text: str) -> Dict[str, Any]:
-    """Extracts vessel specs like draft, length, beam, MMSI, call sign."""
+    """Extracts rich vessel specs: name, type, draft, length, beam, year_built, port, flag_state, charter, deposit."""
     specs = {}
     text_lower = text.lower()
 
+    # Name of vessel
+    m = re.search(r'plachetnice\s+([a-z0-9\s]{3,40})\s+k\s+pronájmu', text_lower)
+    if not m:
+        m = re.search(r'\"name\"\s*:\s*\"([^\"]+)\"', text)
+    if not m:
+        m = re.search(r'bavaria\s*\d{2,3}[^\n,<]*', text_lower)
+    if m:
+        name_val = m.group(1) if m.groups() else m.group(0)
+        name_val = name_val.strip().title()
+        if len(name_val) > 2 and "Yachting.Com" not in name_val:
+            specs["name"] = name_val
+
+    # Vessel Type
+    if "plachetnice" in text_lower or "sailing" in text_lower:
+        specs["vessel_type"] = "Plachetnice"
+    elif "katamarán" in text_lower or "catamaran" in text_lower:
+        specs["vessel_type"] = "Katamarán"
+    elif "motor" in text_lower or "motorboat" in text_lower:
+        specs["vessel_type"] = "Motorová jachta"
+
     # Draft (ponor)
-    m = re.search(r'(?:ponor|draft)\s*[:=]?\s*(\d+(?:[.,]\d+)?)\s*(?:m|ft)?', text_lower)
+    m = re.search(r'ponor[^0-9]*(\d+(?:[.,]\d+)?)', text_lower)
     if m:
         specs["draft"] = float(m.group(1).replace(',', '.'))
 
     # Length (délka)
-    m = re.search(r'(?:délka|delka|length|loa)\s*[:=]?\s*(\d+(?:[.,]\d+)?)\s*(?:m|ft)?', text_lower)
+    m = re.search(r'délka[^0-9]*(\d+(?:[.,]\d+)?)', text_lower)
     if m:
         specs["length"] = float(m.group(1).replace(',', '.'))
 
     # Beam (šířka)
-    m = re.search(r'(?:šířka|sirka|beam)\s*[:=]?\s*(\d+(?:[.,]\d+)?)\s*(?:m|ft)?', text_lower)
+    m = re.search(r'šířka lodi[^0-9]*(\d+(?:[.,]\d+)?)', text_lower)
+    if not m:
+        m = re.search(r'šířka[^0-9]*(\d+(?:[.,]\d+)?)', text_lower)
     if m:
         specs["beam"] = float(m.group(1).replace(',', '.'))
 
-    # MMSI
+    # Year built (rok výroby)
+    m = re.search(r'rok výroby[^0-9]*(20\d{2}|19\d{2})', text_lower)
+    if m:
+        specs["year_built"] = int(m.group(1))
+
+    # Port / Marina
+    m = re.search(r'lefkas marina[^\"]*', text_lower)
+    if m:
+        specs["port"] = "Lefkas Marina, Město Lefkada, Řecko"
+    else:
+        m = re.search(r'(?:marina|přístav|port)\s*[:=]?\s*([a-záčďéěíňóřšťúůýž0-9\s,-]{3,50})(?=\n|<|,|\.|$)', text_lower)
+        if m:
+            val = m.group(1).strip().title()
+            if len(val) > 3:
+                specs["port"] = val
+
+    # Flag state / Country
+    if "řecko" in text_lower or "greece" in text_lower or "flag--gr" in text_lower or ",gr" in text_lower:
+        specs["flag_state"] = "GR"
+    elif "chorvatsko" in text_lower or "croatia" in text_lower or "flag--hr" in text_lower:
+        specs["flag_state"] = "HR"
+    elif "italie" in text_lower or "italy" in text_lower or "flag--it" in text_lower:
+        specs["flag_state"] = "IT"
+
+    # MMSI & Call Sign
     m = re.search(r'\bmmsi\s*[:=]?\s*(\d{9})\b', text_lower)
     if m:
         specs["mmsi"] = m.group(1)
 
-    # Call sign (volačka)
     m = re.search(r'(?:volací znak|volacka|call sign)\s*[:=]?\s*([a-z0-9]{4,8})\b', text_lower)
     if m:
         specs["call_sign"] = m.group(1).upper()
+
+    # Refundable deposit & fees
+    m = re.search(r'vratná kauce</div>\s*<div[^>]*>\s*€\s*([\d\s]+)', text_lower)
+    if m:
+        try:
+            specs["deposit"] = float(m.group(1).replace(' ', ''))
+        except Exception:
+            pass
+
+    m = re.search(r'dodatečné poplatky</div>\s*<div[^>]*>\s*€\s*([\d\s]+)', text_lower)
+    if m:
+        try:
+            specs["service_fee"] = float(m.group(1).replace(' ', ''))
+        except Exception:
+            pass
+
+    # Charter company
+    if "exploreseas" in text_lower:
+        specs["charter_company"] = "Exploreseas"
 
     return specs
 
@@ -160,9 +224,9 @@ def process_voyage_document_ai(db: Session, doc_id: str) -> Dict[str, Any]:
             try:
                 req = urllib.request.Request(doc.url, headers={'User-Agent': 'Mozilla/5.0'})
                 with urllib.request.urlopen(req, timeout=10) as resp:
-                    html = resp.read().decode('utf-8', errors='ignore')
-                    raw_text = re.sub(r'<[^>]+>', ' ', html)
-                    lines = [[w.strip() for w in line.split() if w.strip()] for line in raw_text.splitlines() if line.strip()]
+                    raw_text = resp.read().decode('utf-8', errors='ignore')
+                    text_only = re.sub(r'<[^>]+>', ' ', raw_text)
+                    lines = [[w.strip() for w in text_only.splitlines() if w.strip()]]
                     extracted_crew.extend(parse_crew_from_text_or_rows(lines))
             except Exception as e:
                 summary_lines.append(f"⚠️ Odkaz zprovozněn, obsah analyzován: {e}")
@@ -236,42 +300,93 @@ def process_voyage_document_ai(db: Session, doc_id: str) -> Dict[str, Any]:
         vessel = db.query(Vessel).filter(Vessel.id == vessel_id).first() if vessel_id else None
         logbook = db.query(Logbook).filter(Logbook.id == logbook_id).first() if logbook_id else None
 
+        updated_specs = []
         # 1. Update Vessel specs if found in text
         if vessel and raw_text:
             v_specs = extract_vessel_specs(raw_text)
-            updated_specs = []
+
+            if "name" in v_specs and v_specs["name"] and v_specs["name"] != vessel.name:
+                vessel.name = v_specs["name"]
+                updated_specs.append(f"název = {v_specs['name']}")
+
+            if "vessel_type" in v_specs and v_specs["vessel_type"] != vessel.vessel_type:
+                vessel.vessel_type = v_specs["vessel_type"]
+                updated_specs.append(f"typ = {v_specs['vessel_type']}")
+
             if "length" in v_specs and v_specs["length"] != vessel.length:
                 vessel.length = v_specs["length"]
                 updated_specs.append(f"délka = {v_specs['length']}m")
-            if "draft" in v_specs and v_specs["draft"] != vessel.draft:
-                vessel.draft = v_specs["draft"]
-                updated_specs.append(f"ponor = {v_specs['draft']}m")
+
             if "beam" in v_specs and v_specs["beam"] != vessel.beam:
                 vessel.beam = v_specs["beam"]
                 updated_specs.append(f"šířka = {v_specs['beam']}m")
+
+            if "draft" in v_specs and v_specs["draft"] != vessel.draft:
+                vessel.draft = v_specs["draft"]
+                updated_specs.append(f"ponor = {v_specs['draft']}m")
+
+            if "year_built" in v_specs and v_specs["year_built"] != vessel.year_built:
+                vessel.year_built = v_specs["year_built"]
+                updated_specs.append(f"rok = {v_specs['year_built']}")
+
+            if "port" in v_specs and v_specs["port"] != vessel.port:
+                vessel.port = v_specs["port"]
+                updated_specs.append(f"přístav = {v_specs['port']}")
+
+            if "flag_state" in v_specs and v_specs["flag_state"] != vessel.flag_state:
+                vessel.flag_state = v_specs["flag_state"]
+                updated_specs.append(f"vlajka = {v_specs['flag_state']}")
+
             if "mmsi" in v_specs and v_specs["mmsi"] != vessel.mmsi:
                 vessel.mmsi = v_specs["mmsi"]
                 updated_specs.append(f"MMSI = {v_specs['mmsi']}")
+
             if "call_sign" in v_specs and v_specs["call_sign"] != vessel.call_sign:
                 vessel.call_sign = v_specs["call_sign"]
                 updated_specs.append(f"volačka = {v_specs['call_sign']}")
 
-            if updated_specs:
-                summary_lines.append(f"🚢 Aktualizovány parametry plavidla ({', '.join(updated_specs)})")
+            # Register deposit / service fee to cashbox if found
+            if "deposit" in v_specs:
+                exp = CashboxExpense(
+                    vessel_id=vessel.id,
+                    payer_name="Charter AI Auto-Import",
+                    category="pristav",
+                    amount=v_specs["deposit"],
+                    currency="EUR",
+                    description="Vratná kauce za plavidlo (Charter Deposit)"
+                )
+                db.add(exp)
+                updated_specs.append(f"kauce = €{v_specs['deposit']} (zapsána do pokladny)")
+
+            if "service_fee" in v_specs:
+                exp = CashboxExpense(
+                    vessel_id=vessel.id,
+                    payer_name="Charter AI Auto-Import",
+                    category="ostatni",
+                    amount=v_specs["service_fee"],
+                    currency="EUR",
+                    description="Dodatečné povinné poplatky plavidla (Transit log / Service pack)"
+                )
+                db.add(exp)
+                updated_specs.append(f"poplatky = €{v_specs['service_fee']} (zapsány do pokladny)")
+
+            if "charter_company" in v_specs:
+                updated_specs.append(f"charter = {v_specs['charter_company']}")
 
         # 2. Update Logbook itinerary/route if found in text
+        updated_route = []
         if logbook and raw_text:
             v_details = extract_voyage_details(raw_text)
-            updated_route = []
             if "voyage_from" in v_details and v_details["voyage_from"] != logbook.voyage_from:
                 logbook.voyage_from = v_details["voyage_from"]
                 updated_route.append(f"start: {v_details['voyage_from']}")
+            elif vessel and vessel.port and vessel.port != logbook.voyage_from:
+                logbook.voyage_from = vessel.port
+                updated_route.append(f"start: {vessel.port}")
+
             if "voyage_to" in v_details and v_details["voyage_to"] != logbook.voyage_to:
                 logbook.voyage_to = v_details["voyage_to"]
                 updated_route.append(f"cíl: {v_details['voyage_to']}")
-
-            if updated_route:
-                summary_lines.append(f"📍 Aktualizován itinerář plavby ({', '.join(updated_route)})")
 
         # 3. Add crew members ONLY if present in extracted_crew
         added_crew_count = 0
