@@ -60,6 +60,7 @@ export default function CrewPage() {
   const [vessels, setVessels] = useState<Vessel[]>([]);
   const [selectedVesselId, setSelectedVesselId] = useState<string>('');
   const [activeLogbookId, setActiveLogbookId] = useState<string>('');
+  const [activeLogbook, setActiveLogbook] = useState<any>(null);
   const [crew, setCrew] = useState<CrewMember[]>([]);
   const [watchGroups, setWatchGroups] = useState<WatchGroup[]>([]);
   const [watchSchedules, setWatchSchedules] = useState<WatchSchedule[]>([]);
@@ -193,6 +194,7 @@ export default function CrewPage() {
         const active = Array.isArray(logbooksData) ? logbooksData.find((l: any) => l.status === 'active') : null;
         if (active) {
           setActiveLogbookId(active.id);
+          setActiveLogbook(active);
           try {
             const schedules = await watchesApi.listSchedules(active.id, activeToken);
             setWatchSchedules(schedules as WatchSchedule[]);
@@ -203,6 +205,7 @@ export default function CrewPage() {
           } catch (e) {}
         } else {
           setActiveLogbookId('');
+          setActiveLogbook(null);
           setWatchSchedules([]);
           setGalleyDuties([]);
         }
@@ -262,8 +265,20 @@ export default function CrewPage() {
     if (!activeLogbookId) return;
     try {
       const now = new Date();
-      const startIso = autoStart ? new Date(autoStart).toISOString() : now.toISOString();
-      const endIso = autoEnd ? new Date(autoEnd).toISOString() : new Date(now.getTime() + 7 * 86400000).toISOString();
+      let startIso = now.toISOString();
+      let endIso = new Date(now.getTime() + 7 * 86400000).toISOString();
+
+      if (autoStart && !isNaN(new Date(autoStart).getTime())) {
+        startIso = new Date(autoStart).toISOString();
+      } else if (activeLogbook?.started_at && !isNaN(new Date(activeLogbook.started_at).getTime())) {
+        startIso = new Date(activeLogbook.started_at).toISOString();
+      }
+
+      if (autoEnd && !isNaN(new Date(autoEnd).getTime())) {
+        endIso = new Date(autoEnd).toISOString();
+      } else if (activeLogbook?.ended_at && !isNaN(new Date(activeLogbook.ended_at).getTime())) {
+        endIso = new Date(activeLogbook.ended_at).toISOString();
+      }
 
       await watchesApi.autoGenerate(
         {
@@ -305,21 +320,19 @@ export default function CrewPage() {
         include_in_galley: includeInGalley,
       };
 
-      let dutyChanged = true;
       if (editingMember) {
-        dutyChanged = editingMember.include_in_watches !== includeInWatches || editingMember.include_in_galley !== includeInGalley;
         await crewApi.update(editingMember.id, payload, activeToken);
       } else {
         await crewApi.create(payload, activeToken);
       }
 
-      if (dutyChanged && activeLogbookId && (watchSchedules.length > 0 || galleyDuties.length > 0)) {
+      if (activeLogbookId) {
         await autoRecalculateSchedulesIfActive(activeToken);
       }
 
       setIsCrewModalOpen(false);
       setEditingMember(null);
-      fetchData(selectedVesselId);
+      await fetchData(selectedVesselId);
     } catch (err: any) {
       alert(`Chyba při ukládání člena posádky: ${err.message || err}`);
     }
@@ -334,11 +347,11 @@ export default function CrewPage() {
         : { include_in_galley: !currentVal };
       await crewApi.update(member.id, updateData, activeToken);
 
-      if (activeLogbookId && (watchSchedules.length > 0 || galleyDuties.length > 0)) {
+      if (activeLogbookId) {
         await autoRecalculateSchedulesIfActive(activeToken);
       }
 
-      fetchData(selectedVesselId);
+      await fetchData(selectedVesselId);
     } catch (err) {
       alert('Chyba při aktualizaci zařazení do služeb.');
     }
@@ -350,11 +363,11 @@ export default function CrewPage() {
     try {
       await crewApi.delete(id, activeToken);
 
-      if (activeLogbookId && (watchSchedules.length > 0 || galleyDuties.length > 0)) {
+      if (activeLogbookId) {
         await autoRecalculateSchedulesIfActive(activeToken);
       }
 
-      fetchData(selectedVesselId);
+      await fetchData(selectedVesselId);
     } catch (err) {
       alert('Chyba při mazání.');
     }
