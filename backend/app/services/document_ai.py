@@ -304,27 +304,39 @@ def process_voyage_document_ai(db: Session, doc_id: str) -> Dict[str, Any]:
                     existing_names.add(full_key)
                     added_crew_count += 1
 
-            if added_crew_count > 0:
-                db.flush()
-                summary_lines.append(f"👥 Registrováno {added_crew_count} nových členů posádky z podkladů.")
+        summary_sections = [f"🔍 Analýza zdroje: {doc.title}"]
 
-                # ONLY re-generate watch/galley schedules IF new crew members were actually added
-                if logbook and logbook.started_at and logbook.ended_at:
-                    auto_generate_schedules(
-                        db=db,
-                        logbook_id=str(logbook.id),
-                        started_at=logbook.started_at,
-                        ended_at=logbook.ended_at,
-                        clear_existing=True
-                    )
-                    summary_lines.append("⚡ Lodní hlídky a služby v kuchyni přepočítány pro novou posádku.")
+        if updated_specs:
+            summary_sections.append(f"🚢 Parametry lodi aktualizovány: {', '.join(updated_specs)}")
+        else:
+            summary_sections.append("🚢 Specifikace plavidla: Zkontrolováno (parametry beze změn).")
+
+        if updated_route:
+            summary_sections.append(f"📍 Itinerář plavby: {', '.join(updated_route)}")
+
+        if added_crew_count > 0:
+            summary_sections.append(f"👥 Registrováno {added_crew_count} nových členů posádky z podkladů.")
+            if logbook and logbook.started_at and logbook.ended_at:
+                auto_generate_schedules(
+                    db=db,
+                    logbook_id=str(logbook.id),
+                    started_at=logbook.started_at,
+                    ended_at=logbook.ended_at,
+                    clear_existing=True
+                )
+                summary_sections.append("⚡ Lodní hlídky a služby v kuchyni přepočítány pro novou posádku.")
+
+        if not updated_specs and not updated_route and added_crew_count == 0:
+            summary_sections.append("✅ Soubor/odkaz byl úspěšně prozkoumán a uložen. Všechna data v deníku a plavidle jsou aktuální.")
 
         doc.ai_status = "completed"
-        doc.ai_summary = "\n".join(summary_lines) or "Odkaz byl zanalyzován. Všechny informace v databázi jsou aktuální."
+        doc.ai_summary = "\n".join(summary_sections)
         doc.extracted_data = {
             "summary": doc.ai_summary,
             "crew_found": len(extracted_crew),
-            "added_crew_count": added_crew_count
+            "added_crew_count": added_crew_count,
+            "updated_specs": updated_specs,
+            "updated_route": updated_route
         }
         db.commit()
 

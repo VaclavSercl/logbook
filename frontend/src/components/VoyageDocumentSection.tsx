@@ -314,8 +314,14 @@ export default function VoyageDocumentSection({ logbookId, vesselId, token, onDa
               </div>
 
               {doc.ai_summary && (
-                <div className="mt-1 p-2.5 bg-slate-950/60 rounded-lg border border-slate-800 text-xs text-slate-300 font-mono whitespace-pre-wrap">
-                  {doc.ai_summary}
+                <div className="mt-2 p-3 bg-slate-950/80 rounded-lg border border-slate-700/60 space-y-1 text-xs text-slate-200">
+                  <div className="flex items-center justify-between text-[11px] font-semibold text-slate-400 border-b border-slate-800 pb-1 mb-1.5">
+                    <span>📊 Zjištěné & Využité informace:</span>
+                    <span className="font-mono">{doc.created_at ? new Date(doc.created_at).toLocaleString('cs-CZ') : ''}</span>
+                  </div>
+                  <div className="font-mono text-slate-300 whitespace-pre-wrap leading-relaxed">
+                    {doc.ai_summary}
+                  </div>
                 </div>
               )}
             </div>
