@@ -99,6 +99,22 @@ async def export_csv(
     )
 
 
+def clean_pdf_text(text: str) -> str:
+    """Sanitize Czech diacritics for standard FPDF fonts."""
+    if not text:
+        return ""
+    replacements = {
+        'á': 'a', 'Á': 'A', 'č': 'c', 'Č': 'C', 'ď': 'd', 'Ď': 'D',
+        'é': 'e', 'É': 'E', 'ě': 'e', 'Ě': 'E', 'í': 'i', 'Í': 'I',
+        'ň': 'n', 'Ň': 'N', 'ó': 'o', 'Ó': 'O', 'ř': 'r', 'Ř': 'R',
+        'š': 's', 'Š': 'S', 'ť': 't', 'Ť': 'T', 'ú': 'u', 'Ú': 'U',
+        'ů': 'u', 'Ů': 'U', 'ý': 'y', 'Ý': 'Y', 'ž': 'z', 'Ž': 'Z'
+    }
+    for bad, good in replacements.items():
+        text = text.replace(bad, good)
+    return text.encode('ascii', errors='ignore').decode('ascii')
+
+
 def _generate_pdf_content(logbook, entries):
     """Generate PDF content using fpdf2."""
     vessel = logbook.vessel  # SQLAlchemy relationship auto-load
@@ -148,7 +164,10 @@ def _generate_pdf_content(logbook, entries):
     # Title
     pdf.set_font("helvetica", "B", 16)
     pdf.set_text_color(44, 62, 80)
-    pdf.cell(0, 10, f"LOGBOOK: {logbook.title}")
+    # Title
+    pdf.set_font("helvetica", "B", 16)
+    pdf.set_text_color(44, 62, 80)
+    pdf.cell(0, 10, clean_pdf_text(f"LOGBOOK: {logbook.title}"))
     pdf.ln()
     pdf.ln(2)
     
@@ -157,13 +176,13 @@ def _generate_pdf_content(logbook, entries):
     pdf.set_text_color(50, 50, 50)
     
     # Gather Vessel details
-    v_name = vessel.name if vessel else "N/A"
-    v_imo = f"IMO {vessel.imo}" if (vessel and vessel.imo) else "N/A"
-    v_mmsi = vessel.mmsi if (vessel and vessel.mmsi) else "N/A"
-    v_call = vessel.call_sign if (vessel and vessel.call_sign) else "N/A"
+    v_name = clean_pdf_text(vessel.name) if vessel else "N/A"
+    v_imo = clean_pdf_text(f"IMO {vessel.imo}") if (vessel and vessel.imo) else "N/A"
+    v_mmsi = clean_pdf_text(vessel.mmsi) if (vessel and vessel.mmsi) else "N/A"
+    v_call = clean_pdf_text(vessel.call_sign) if (vessel and vessel.call_sign) else "N/A"
     
-    voy_from = logbook.voyage_from or "N/A"
-    voy_to = logbook.voyage_to or "N/A"
+    voy_from = clean_pdf_text(logbook.voyage_from or "N/A")
+    voy_to = clean_pdf_text(logbook.voyage_to or "N/A")
     started = logbook.started_at.strftime("%Y-%m-%d %H:%M UTC") if logbook.started_at else "N/A"
     closed = logbook.closed_at.strftime("%Y-%m-%d %H:%M UTC") if logbook.closed_at else "N/A"
     
@@ -210,7 +229,7 @@ def _generate_pdf_content(logbook, entries):
     pdf.set_font("helvetica", "B", 10)
     pdf.cell(30, 6, "Vessel Type:")
     pdf.set_font("helvetica", "", 10)
-    v_type = vessel.vessel_type if vessel else "N/A"
+    v_type = clean_pdf_text(vessel.vessel_type) if vessel else "N/A"
     pdf.cell(100, 6, v_type)
     
     pdf.set_font("helvetica", "B", 10)
@@ -257,51 +276,52 @@ def _generate_pdf_content(logbook, entries):
                 
                 # Column 1: Date/Time
                 dt_str = entry.timestamp.strftime("%Y-%m-%d\n%H:%M UTC")
-                row.cell(dt_str)
+                row.cell(clean_pdf_text(dt_str))
                 
                 # Column 2: Position
                 lat_str = format_coordinate(entry.latitude, is_lat=True)
                 lon_str = format_coordinate(entry.longitude, is_lat=False)
                 pos_str = f"Lat: {lat_str}\nLon: {lon_str}"
-                row.cell(pos_str)
+                row.cell(clean_pdf_text(pos_str))
                 
                 # Column 3: Course/Speed
-                c_val = f"{entry.course:.0f}°" if entry.course is not None else "N/A"
+                c_val = f"{entry.course:.0f} deg" if entry.course is not None else "N/A"
                 s_val = f"{entry.speed:.1f} kn" if entry.speed is not None else "N/A"
                 cs_str = f"Co: {c_val}\nSp: {s_val}"
-                row.cell(cs_str)
+                row.cell(clean_pdf_text(cs_str))
                 
                 # Column 4: Environment
-                w_dir = f"{entry.wind_direction:.0f}°" if entry.wind_direction is not None else "N/A"
+                w_dir = f"{entry.wind_direction:.0f} deg" if entry.wind_direction is not None else "N/A"
                 w_spd = f"{entry.wind_speed:.1f} kn" if entry.wind_speed is not None else "N/A"
                 press_val = f"{entry.pressure:.0f} hPa" if entry.pressure is not None else "N/A"
-                sea_val = entry.sea_state if entry.sea_state else "N/A"
+                sea_val = clean_pdf_text(entry.sea_state) if entry.sea_state else "N/A"
                 env_str = f"Wind: {w_dir} / {w_spd}\nPress: {press_val}\nSea: {sea_val}"
-                row.cell(env_str)
+                row.cell(clean_pdf_text(env_str))
                 
                 # Column 5: Notes & Comments
                 note_parts = []
                 if entry.category:
-                    note_parts.append(f"[{entry.category}]")
+                    note_parts.append(f"[{clean_pdf_text(entry.category)}]")
                 if entry.notes:
-                    note_parts.append(entry.notes)
+                    note_parts.append(clean_pdf_text(entry.notes))
                 if entry.ai_comment:
-                    note_parts.append(f"\nAI Comment: {entry.ai_comment}")
+                    note_parts.append(f"\nAI Comment: {clean_pdf_text(entry.ai_comment)}")
                 notes_str = " ".join(note_parts) if note_parts else "No records."
-                row.cell(notes_str)
+                row.cell(clean_pdf_text(notes_str))
                 
     # Signature Box at the end of the document
     if logbook.signed_hash:
         pdf.ln(8)
         pdf.set_font("helvetica", "B", 9)
         pdf.set_text_color(44, 62, 80)
-        pdf.cell(0, 5, "KRYPTOGRAFICKÝ PODPIS VELITELE PLAVIDLA (DIGITAL SIGNATURE VERIFICATION)", ln=True)
+        pdf.cell(0, 5, clean_pdf_text("KRYPTOGRAFICKÝ PODPIS VELITELE PLAVIDLA (DIGITAL SIGNATURE VERIFICATION)"), ln=True)
         pdf.set_font("helvetica", "", 8)
         pdf.set_text_color(50, 50, 50)
-        pdf.cell(0, 4, f"Odpovědný kapitán: {vessel.owner.full_name if (vessel and vessel.owner) else 'Václav Šercl'}", ln=True)
-        pdf.cell(0, 4, f"SHA-256 Hash: {logbook.signed_hash}", ln=True)
-        pdf.cell(0, 4, f"Datum a čas uzavření deníku: {logbook.closed_at.strftime('%Y-%m-%d %H:%M UTC') if logbook.closed_at else 'N/A'}", ln=True)
-        pdf.cell(0, 4, "Tento dokument byl uzamčen a digitálně podepsán v souladu se zákonem o námořní plavbě č. 61/2000 Sb.", ln=True)
+        captain_name = clean_pdf_text(vessel.owner.full_name) if (vessel and vessel.owner and hasattr(vessel.owner, 'full_name')) else 'Vaclav Sercl'
+        pdf.cell(0, 4, clean_pdf_text(f"Odpovedny kapitan: {captain_name}"), ln=True)
+        pdf.cell(0, 4, clean_pdf_text(f"SHA-256 Hash: {logbook.signed_hash}"), ln=True)
+        pdf.cell(0, 4, clean_pdf_text(f"Datum a cas uzavreni deniku: {logbook.closed_at.strftime('%Y-%m-%d %H:%M UTC') if logbook.closed_at else 'N/A'}"), ln=True)
+        pdf.cell(0, 4, clean_pdf_text("Tento dokument byl uzamcen a digitalne podepsan v souladu se zakonem o namorni plavbe c. 61/2000 Sb."), ln=True)
 
     # Returns bytearray
     return bytes(pdf.output())
