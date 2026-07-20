@@ -666,13 +666,34 @@ export default function CrewPage() {
             {/* ── TAB 3: GALLEY DUTIES ── */}
             {activeTab === 'galley' && (
               <div className="space-y-4">
-                <h2 className="text-lg font-bold text-slate-100 mb-4 flex items-center gap-2">🍳 Rozpis služeb v kuchyni</h2>
+                <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
+                  <h2 className="text-lg font-bold text-slate-100 flex items-center gap-2">🍳 Rozpis služeb v kuchyni</h2>
+                  {activeLogbookId && (
+                    <button
+                      onClick={() => setIsGalleyModalOpen(true)}
+                      className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium text-sm transition shadow flex items-center gap-2"
+                    >
+                      <span>+</span> Naplánovat službu v kuchyni
+                    </button>
+                  )}
+                </div>
+
                 {!activeLogbookId ? (
                   <div className="bg-yellow-950/20 border border-yellow-800/40 rounded-xl p-4 text-yellow-400 text-sm">
                     ⚠️ Pro plánování kuchyňských služeb musíte mít spuštěnou **aktivní plavbu** v lodním deníku.
                   </div>
                 ) : galleyDuties.length === 0 ? (
-                  <p className="text-slate-500 text-sm italic">Zatím nebyly zadány žádné kuchyňské služby.</p>
+                  <div className="text-center py-12 bg-slate-800/60 rounded-xl border border-slate-700/60 max-w-lg mx-auto">
+                    <span className="text-4xl block mb-3">🍳</span>
+                    <p className="text-slate-300 font-medium text-base mb-1">Žádné kuchyňské služby</p>
+                    <p className="text-slate-400 text-xs mb-6">Naplánujte služby kuchaře a pomocníka pro aktivní plavbu.</p>
+                    <button
+                      onClick={() => setIsGalleyModalOpen(true)}
+                      className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium text-sm transition"
+                    >
+                      + Naplánovat službu v kuchyni
+                    </button>
+                  </div>
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {galleyDuties.map((duty) => (
