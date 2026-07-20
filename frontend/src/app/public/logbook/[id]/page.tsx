@@ -148,14 +148,14 @@ export default function PublicLogbookViewPage() {
         setLogbook(logData);
         
         const entriesData = await publicApi.listEntries(logbookId);
-        setEntries(entriesData);
+        setEntries(entriesData as unknown as LogEntry[]);
         
         // Fetch track for the vessel
         const gpsData = await publicApi.getGpsTrack(logData.vessel_id);
         const sortedGps = [...gpsData].sort(
           (a, b) => parseDateSafely(a.timestamp).getTime() - parseDateSafely(b.timestamp).getTime()
         );
-        setTrack(sortedGps);
+        setTrack(sortedGps as unknown as GpsPoint[]);
       } catch (err) {
         console.error('Failed to load public logbook:', err);
       } finally {

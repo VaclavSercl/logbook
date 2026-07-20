@@ -8,7 +8,7 @@ import { useTranslation } from '@/lib/i18n';
 export default function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
-  const { lang, setLang, t } = useTranslation();
+  const { lang, changeLanguage, t } = useTranslation();
   const [token, setToken] = useState<string | null>(null);
 
   useEffect(() => {
@@ -69,7 +69,7 @@ export default function Navbar() {
           {/* Language Selector */}
           <div className="flex items-center bg-slate-800 rounded-lg p-0.5 border border-slate-700">
             <button
-              onClick={() => setLang('cs')}
+              onClick={() => changeLanguage('cs')}
               className={`px-2 py-0.5 text-xs font-semibold rounded ${
                 lang === 'cs' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-slate-200'
               }`}
@@ -77,7 +77,7 @@ export default function Navbar() {
               CS
             </button>
             <button
-              onClick={() => setLang('en')}
+              onClick={() => changeLanguage('en')}
               className={`px-2 py-0.5 text-xs font-semibold rounded ${
                 lang === 'en' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-slate-200'
               }`}

@@ -15,6 +15,7 @@ interface WindBarbInfo {
   half_barbs: number;
   text_description: string;
   symbol: string;
+  notation_code?: string;
 }
 
 interface ForecastItem {
