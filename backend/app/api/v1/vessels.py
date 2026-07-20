@@ -18,7 +18,7 @@ async def list_vessels(
     db: Session = Depends(get_db),
 ):
     result = db.execute(
-        select(Vessel).where(Vessel.owner_id == current_user.id)
+        select(Vessel).where(Vessel.owner_id == str(current_user.id))
     )
     return result.scalars().all()
 
@@ -29,7 +29,7 @@ async def create_vessel(
     current_user=Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    vessel = Vessel(**data.model_dump(), owner_id=current_user.id)
+    vessel = Vessel(**data.model_dump(), owner_id=str(current_user.id))
     db.add(vessel)
     db.flush()
     return vessel

@@ -18,7 +18,7 @@ async def list_logbooks(
     current_user=Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    query = select(Logbook).join(Vessel).where(Vessel.owner_id == current_user.id)
+    query = select(Logbook).join(Vessel).where(Vessel.owner_id == str(current_user.id))
     if vessel_id:
         query = query.where(Logbook.vessel_id == str(vessel_id))
     result = db.execute(query)

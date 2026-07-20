@@ -16,8 +16,10 @@ async def get_dashboard_stats(
     current_user=Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
+    user_id_str = str(current_user.id)
+
     # Count vessels
-    v_query = select(func.count()).select_from(Vessel).where(Vessel.owner_id == current_user.id)
+    v_query = select(func.count()).select_from(Vessel).where(Vessel.owner_id == user_id_str)
     vessels_count = db.execute(v_query).scalar() or 0
 
     # Count logbooks
@@ -25,7 +27,7 @@ async def get_dashboard_stats(
         select(func.count())
         .select_from(Logbook)
         .join(Vessel)
-        .where(Vessel.owner_id == current_user.id)
+        .where(Vessel.owner_id == user_id_str)
     )
     logbooks_count = db.execute(l_query).scalar() or 0
 
@@ -35,7 +37,7 @@ async def get_dashboard_stats(
         .select_from(LogEntry)
         .join(Logbook)
         .join(Vessel)
-        .where(Vessel.owner_id == current_user.id)
+        .where(Vessel.owner_id == user_id_str)
     )
     entries_count = db.execute(e_query).scalar() or 0
 
