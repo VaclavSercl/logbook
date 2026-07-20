@@ -46,9 +46,10 @@ def auto_generate_schedules(
     galley_crew = [c for c in crew_list if c.include_in_galley is not False]
 
     if clear_existing:
-        # Clear existing schedules for this logbook
+        # Clear existing schedules and watch groups for this logbook & vessel
         db.execute(delete(WatchSchedule).where(WatchSchedule.logbook_id == str(logbook_id)))
         db.execute(delete(GalleyDuty).where(GalleyDuty.logbook_id == str(logbook_id)))
+        db.execute(delete(WatchGroup).where(WatchGroup.vessel_id == str(vessel_id)))
         db.flush()
 
     created_groups_count = 0
@@ -63,32 +64,24 @@ def auto_generate_schedules(
         for i in range(0, len(watch_crew), n_per_watch):
             chunk = watch_crew[i:i + n_per_watch]
             if len(chunk) < n_per_watch and groups_members:
-                # Add remaining to existing group or keep as separate group
+                # Add remaining to existing group
                 groups_members[-1].extend(chunk)
             else:
                 groups_members.append(chunk)
 
-        # Ensure WatchGroup records exist
+        # Create fresh WatchGroup records
         group_names = ["Hlídka Alfa", "Hlídka Beta", "Hlídka Gama", "Hlídka Delta", "Hlídka Éta"]
         db_watch_groups: List[WatchGroup] = []
-
-        # Find or create watch groups
-        existing_groups = db.query(WatchGroup).filter(WatchGroup.vessel_id == str(vessel_id)).all()
-        existing_map = {g.name: g for g in existing_groups}
 
         for idx, members in enumerate(groups_members):
             name = group_names[idx] if idx < len(group_names) else f"Hlídka {idx + 1}"
             member_names = [m.first_name or m.name for m in members]
             name_with_members = f"{name} ({', '.join(member_names)})"
 
-            if name in existing_map:
-                wg = existing_map[name]
-                wg.name = name_with_members
-            else:
-                wg = WatchGroup(vessel_id=str(vessel_id), name=name_with_members)
-                db.add(wg)
-                db.flush()
-                created_groups_count += 1
+            wg = WatchGroup(vessel_id=str(vessel_id), name=name_with_members)
+            db.add(wg)
+            db.flush()
+            created_groups_count += 1
             db_watch_groups.append(wg)
 
         # Calculate watch start time on Day 1
