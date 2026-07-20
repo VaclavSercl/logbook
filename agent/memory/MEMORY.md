@@ -61,6 +61,11 @@ logbook/
 | 19.7.2026 | Úprava hodinového cronu | Změna spouštěče hodinového zápisu v crontabu ze spouštění agenta `agy` na přímé volání Python skriptu `auto_logbook.py` ve venv. Tím se předešlo vyčerpání kvót Antigravity CLI, protože skript nyní volá Gemini API přímo pomocí svého `GOOGLE_API_KEY` bez režie CLI agenta. |
 | 19.7.2026 | Implementace Fáze 3 (Pokročilé) | Přidány modely, schemas a API endpointy pro AIS, výpočty CPA/TCPA, hlasové zápisy (Voice-to-log) přes inline Gemini Audio a Geofencing s podporou kruhových i polygonálních zón. Všechna data jsou ukládána do SQLite a synchronizována. |
 | 20.7.2026 | Synoptické značení větru (Wind Barb) | Analýza standardu WMO/synoptického značení větru (šipky, čárky, vlaječky podle článku z Lodních novin). Vytvořen modul `app/services/wind_barb.py`, přidány testy, aktualizován `AGENTS.md`, `auto_logbook.py` a LLM prompt pro námořní styl zápisu Njorora. |
+| 20.7.2026 | Oprava registrace posádky & hlídek | Vyřešení 403 Forbidden chyby v `crew.py`, `watches.py` a `galley.py` způsobené nekompatibilitou UUID objektu a stringu v SQLite. |
+| 20.7.2026 | Modul Kotvení & Kotevní Alarm | Přidán backend modul `anchoring.py`, model `AnchorLog` a frontend stránka `/anchoring` pro evidenci spuštění kotvy, hloubky, délky řetězu, Scope Ratio a aktivního geofence alarmu driftu. |
+| 20.7.2026 | Modul Lodní Pokladna (Finance) | Přidán backend modul `cashbox.py`, model `CashboxExpense` a frontend stránka `/cashbox` pro přehled výdajů posádky (proviant, palivo, přístavy, opravy) s více měnami. |
+| 20.7.2026 | Integrace Windy.com Live Widgetu | Vytvořeno propojení s Windy.com v `weather.py` a v rozhraní `/weather`. Dynamicky generuje živou interaktivní větrnou mapu a ECMWF model pro přesné GPS souřadnice lodi. |
+| 20.7.2026 | Unifikovaná navigace (Navbar) | Vytvořena sdílená komponenta `Navbar.tsx` s kompletními odkazy na všechny moduly v systému a integrací i18n přepínače. |
 
 ## Známé problémy / TODO
 
