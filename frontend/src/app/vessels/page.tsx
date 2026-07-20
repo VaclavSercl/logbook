@@ -153,7 +153,7 @@ export default function VesselsPage() {
   }
 
   async function handleDelete(vesselId: string, vesselName: string) {
-    if (!confirm(`Opravdu chcete smazat plavidlo "${vesselName}"? Smazáním plavidla dojde k odstranění všech přidružených deníků, záznamů i GPS pozic.`)) {
+    if (!confirm(`Opravdu chcete smazat plavidlo "${vesselName}"? Všechny lodní deníky a jejich záznamy zůstanou trvale zachovány v archivu.`)) {
       return;
     }
 

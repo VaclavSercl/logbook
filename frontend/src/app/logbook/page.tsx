@@ -84,14 +84,14 @@ export default function LogbookPage({ searchParams }: { searchParams?: { showFor
         const vesselsList = await vesselsApi.list(token!);
         setVessels(vesselsList);
         
-        if (vesselsList.length > 0) {
-          // Check localStorage for previously selected vessel
-          const savedVesselId = localStorage.getItem('selectedVesselId');
-          const activeVessel = vesselsList.find((v: Vessel) => v.id === savedVesselId) || vesselsList[0];
-          setSelectedVesselId(activeVessel.id);
-          localStorage.setItem('selectedVesselId', activeVessel.id);
+        const savedVesselId = localStorage.getItem('selectedVesselId');
+        if (savedVesselId && vesselsList.some((v: Vessel) => v.id === savedVesselId)) {
+          setSelectedVesselId(savedVesselId);
+        } else if (vesselsList.length > 0) {
+          setSelectedVesselId(vesselsList[0].id);
+          localStorage.setItem('selectedVesselId', vesselsList[0].id);
         } else {
-          setLoading(false);
+          setSelectedVesselId('');
         }
       } catch (err: unknown) {
         const msg = err instanceof Error ? err.message : 'Chyba při načítání plavidel';
@@ -103,20 +103,15 @@ export default function LogbookPage({ searchParams }: { searchParams?: { showFor
     loadInitialData();
   }, [token]);
 
-  // 2. Load Logbooks when selected vessel changes
+  // 2. Load Logbooks when selected vessel changes (or all logbooks including archived if empty)
   useEffect(() => {
-    if (!token || !selectedVesselId) {
-      setLogbooks([]);
-      setSelectedLogbookId('');
-      setEntries([]);
-      return;
-    }
+    if (!token) return;
 
     async function loadLogbooks() {
       try {
         setLoading(true);
         setError('');
-        const logbooksList = await logbooksApi.list(token!, selectedVesselId);
+        const logbooksList = await logbooksApi.list(token!, selectedVesselId || undefined);
         setLogbooks(logbooksList);
 
         if (logbooksList.length > 0) {
@@ -422,26 +417,26 @@ export default function LogbookPage({ searchParams }: { searchParams?: { showFor
         {/* Quick Vessel/Logbook Selection */}
         <div className="flex flex-wrap items-center gap-3">
           {/* Vessel Dropdown */}
+          {/* Vessel Selector */}
           <div className="flex items-center gap-2 bg-slate-700/50 px-3 py-1.5 rounded-lg border border-slate-600">
             <span className="text-sm text-slate-400">Loď:</span>
-            {vessels.length > 0 ? (
-              <select
-                value={selectedVesselId}
-                onChange={(e) => {
-                  setSelectedVesselId(e.target.value);
-                  localStorage.setItem('selectedVesselId', e.target.value);
-                }}
-                className="bg-transparent text-sm font-semibold outline-none border-none text-slate-200 cursor-pointer"
-              >
-                {vessels.map((v) => (
-                  <option key={v.id} value={v.id} className="bg-slate-800 text-slate-100">
-                    {v.name}
-                  </option>
-                ))}
-              </select>
-            ) : (
-              <span className="text-sm font-semibold text-slate-400">Žádná</span>
-            )}
+            <select
+              value={selectedVesselId}
+              onChange={(e) => {
+                setSelectedVesselId(e.target.value);
+                localStorage.setItem('selectedVesselId', e.target.value);
+              }}
+              className="bg-transparent text-sm font-semibold outline-none border-none text-slate-200 cursor-pointer"
+            >
+              <option value="" className="bg-slate-800 text-slate-100">
+                🌐 Všechna plavidla & Archiv
+              </option>
+              {vessels.map((v) => (
+                <option key={v.id} value={v.id} className="bg-slate-800 text-slate-100">
+                  {v.name}
+                </option>
+              ))}
+            </select>
             <button
               onClick={() => setShowVesselForm(true)}
               className="text-xs text-blue-400 hover:text-blue-300 ml-1 font-medium"
@@ -452,36 +447,34 @@ export default function LogbookPage({ searchParams }: { searchParams?: { showFor
           </div>
 
           {/* Logbook Dropdown */}
-          {selectedVesselId && (
-            <div className="flex items-center gap-2 bg-slate-700/50 px-3 py-1.5 rounded-lg border border-slate-600">
-              <span className="text-sm text-slate-400">Deník:</span>
-              {logbooks.length > 0 ? (
-                <select
-                  value={selectedLogbookId}
-                  onChange={(e) => {
-                    setSelectedLogbookId(e.target.value);
-                    localStorage.setItem('selectedLogbookId', e.target.value);
-                  }}
-                  className="bg-transparent text-sm font-semibold outline-none border-none text-slate-200 cursor-pointer"
-                >
-                  {logbooks.map((l) => (
-                    <option key={l.id} value={l.id} className="bg-slate-800 text-slate-100">
-                      {l.title} ({l.status === 'active' ? 'aktivní' : 'uzavřený'})
-                    </option>
-                  ))}
-                </select>
-              ) : (
-                <span className="text-sm font-semibold text-slate-400">Žádný</span>
-              )}
-              <button
-                onClick={() => setShowLogbookForm(true)}
-                className="text-xs text-blue-400 hover:text-blue-300 ml-1 font-medium"
-                title="Nový deník"
+          <div className="flex items-center gap-2 bg-slate-700/50 px-3 py-1.5 rounded-lg border border-slate-600">
+            <span className="text-sm text-slate-400">Deník:</span>
+            {logbooks.length > 0 ? (
+              <select
+                value={selectedLogbookId}
+                onChange={(e) => {
+                  setSelectedLogbookId(e.target.value);
+                  localStorage.setItem('selectedLogbookId', e.target.value);
+                }}
+                className="bg-transparent text-sm font-semibold outline-none border-none text-slate-200 cursor-pointer"
               >
-                + Nový
-              </button>
-            </div>
-          )}
+                {logbooks.map((l) => (
+                  <option key={l.id} value={l.id} className="bg-slate-800 text-slate-100">
+                    {l.title} ({l.status === 'active' ? 'aktivní' : 'uzavřený'})
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <span className="text-sm font-semibold text-slate-400">Žádný</span>
+            )}
+            <button
+              onClick={() => setShowLogbookForm(true)}
+              className="text-xs text-blue-400 hover:text-blue-300 ml-1 font-medium"
+              title="Nový deník"
+            >
+              + Nový
+            </button>
+          </div>
         </div>
       </header>
 
