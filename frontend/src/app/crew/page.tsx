@@ -716,6 +716,50 @@ export default function CrewPage() {
     });
   };
 
+  const [exportingPdf, setExportingPdf] = useState(false);
+
+  const handleGeneratePDF = async () => {
+    const element = document.getElementById('printable-schedule-area');
+    if (!element) return;
+
+    try {
+      setExportingPdf(true);
+      if (!(window as any).html2pdf) {
+        await new Promise<void>((resolve, reject) => {
+          const script = document.createElement('script');
+          script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
+          script.onload = () => resolve();
+          script.onerror = () => reject(new Error('Failed to load html2pdf script'));
+          document.body.appendChild(script);
+        });
+      }
+
+      element.classList.remove('hidden');
+      element.style.display = 'block';
+
+      const vesselName = vessels.find((v) => v.id === selectedVesselId)?.name || 'Jachta';
+      const fileName = `Rozpis_sluzeb_${vesselName.replace(/\s+/g, '_')}.pdf`;
+
+      const opt = {
+        margin: [10, 10, 10, 10],
+        filename: fileName,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true, logging: false },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+        pagebreak: { mode: ['css', 'legacy'] },
+      };
+
+      await (window as any).html2pdf().set(opt).from(element).save();
+    } catch (err) {
+      console.error('PDF export error:', err);
+      alert('Chyba při generování PDF souboru.');
+    } finally {
+      element.classList.add('hidden');
+      element.style.display = '';
+      setExportingPdf(false);
+    }
+  };
+
   const groupedDailySchedules = getGroupedDailySchedules();
   const selectedVesselName = vessels.find((v) => v.id === selectedVesselId)?.name || 'Jachta';
 
@@ -769,12 +813,13 @@ export default function CrewPage() {
                 <span>Vytisknout</span>
               </button>
               <button
-                onClick={() => window.print()}
-                className="px-3.5 py-2 bg-emerald-700 hover:bg-emerald-600 text-white font-semibold rounded-lg text-sm transition shadow flex items-center gap-1.5"
-                title="Stáhnout rozpis služeb jako PDF soubor"
+                onClick={handleGeneratePDF}
+                disabled={exportingPdf}
+                className="px-3.5 py-2 bg-emerald-700 hover:bg-emerald-600 text-white font-semibold rounded-lg text-sm transition shadow flex items-center gap-1.5 disabled:opacity-50"
+                title="Stáhnout rozpis služeb jako PDF soubor přímo do počítače"
               >
                 <span>📄</span>
-                <span>Generovat PDF</span>
+                <span>{exportingPdf ? 'Generuji PDF...' : 'Generovat PDF'}</span>
               </button>
               <button
                 onClick={handleOpenAutoModal}
