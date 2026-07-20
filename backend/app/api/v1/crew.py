@@ -6,7 +6,7 @@ from sqlalchemy import select, delete
 
 from app.database import get_db
 from app.models import CrewMember, Vessel
-from app.schemas import CrewMemberCreate, CrewMemberResponse
+from app.schemas import CrewMemberCreate, CrewMemberUpdate, CrewMemberResponse
 from app.api.v1.auth import get_current_user
 
 router = APIRouter()
