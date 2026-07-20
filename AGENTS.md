@@ -36,6 +36,11 @@ Kdykoliv obdržíš pokyn: **"Spusť hodinový zápis do lodního deníku"**, pr
 
 ### 6. Sestavení zápisu (Gemini 3.5 Flash)
 * Zformuj profesionální kapitánský zápis v češtině (2 až 4 věty).
+* **STRIKTNÍ PRAVIDLA PRO JEDNOTKY (POVINNÉ VŠUDE):**
+  1. **Rychlost lodi:** Uzle a v závorce km/h -> `kn (km/h)`, např. `6.8 kn (12.6 km/h)`
+  2. **Vzdálenost:** Námořní míle a v závorce km -> `NM (km)`, např. `8.2 NM (15.2 km)`
+  3. **Hloubka:** Stopy a v závorce metry -> `ft (m)`, např. `19.7 ft (6.0 m)`
+  4. **Rychlost větru:** Metry za sekundu a v závorce Beaufortova stupnice -> `m/s (Bft)`, např. `7.5 m/s (4 Bft)`
 * Pokud loď stojí v přístavu/marině/zátoce, popiš toto místo a kotvení.
 * Pokud pluje na moři, popiš stav plavby, chování lodi na vlnách, plachty/motor a vítr.
 * Zápis musí plynule navazovat na předchozí záznamy.

@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Navbar from '@/components/Navbar';
 import { vesselsApi, anchoringApi, gpsApi } from '@/lib/api';
+import { formatDepth } from '@/lib/units';
 
 interface Vessel {
   id: string;
@@ -210,7 +211,7 @@ export default function AnchoringPage() {
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                       <div className="bg-slate-950 p-4 rounded-xl border border-slate-800">
                         <span className="text-xs text-slate-400 font-medium">Hloubka</span>
-                        <div className="text-2xl font-extrabold text-white mt-1">{status.anchor.depth ?? '—'} <span className="text-sm font-normal text-slate-400">m</span></div>
+                        <div className="text-xl font-extrabold text-white mt-1">{status.anchor.depth ? formatDepth(status.anchor.depth) : '—'}</div>
                       </div>
                       <div className="bg-slate-950 p-4 rounded-xl border border-slate-800">
                         <span className="text-xs text-slate-400 font-medium">Řetěz</span>

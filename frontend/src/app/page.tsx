@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { dashboardApi, publicApi } from '@/lib/api';
 import { useTranslation } from '@/lib/i18n';
+import { formatVesselSpeed, formatWindSpeed, formatDistance, formatDepth } from '@/lib/units';
 
 interface DashboardStats {
   vessels: number;
@@ -15,29 +16,29 @@ interface DashboardStats {
 const RANDOM_VOYAGES = [
   {
     vessel: "Sailing Yacht 'Čáslav'",
-    speed: "6.8 kn",
-    weather: "🌤️ NW 12 uzlů",
+    speed: formatVesselSpeed(6.8),
+    weather: `🌤️ NW ${formatWindSpeed(12)}`,
     date: "17. července 2026",
     hash: "sha256:078b2d49a...",
     entries: [
       {
         time: "10:00 UTC",
         category: "Vyplutí",
-        notes: "Vyplutí z mariny Rafina (37°55'N, 23°40'E). Vítr NW 12 uzlů, stav moře mírný, tlak 1013 hPa. Všechny lodní systémy zelené.",
+        notes: `Vyplutí z mariny Rafina (37°55'N, 23°40'E). Vítr NW ${formatWindSpeed(12)}, stav moře mírný, tlak 1013 hPa. Všechny lodní systémy zelené.`,
         locked: true,
       },
       {
         time: "12:00 UTC",
         category: "Plavba",
-        notes: "Plavba na kurz 175°, rychlost 6,8 uzlu. Pozice 37°51'N, 23°43'E. Urazeno 8.2 NM za 2 hodiny.",
+        notes: `Plavba na kurz 175°, rychlost ${formatVesselSpeed(6.8)}. Pozice 37°51'N, 23°43'E. Urazeno ${formatDistance(8.2)} za 2 hodiny.`,
         locked: false,
       }
     ]
   },
   {
     vessel: "Ketch 'Njoror'",
-    speed: "5.4 kn",
-    weather: "🌧️ S 18 uzlů",
+    speed: formatVesselSpeed(5.4),
+    weather: `🌧️ S ${formatWindSpeed(18)}`,
     date: "17. července 2026",
     hash: "sha256:8f4c029a1...",
     entries: [
@@ -50,28 +51,28 @@ const RANDOM_VOYAGES = [
       {
         time: "09:45 UTC",
         category: "Plavba",
-        notes: "Plavba pod bouřkovou kosatkou a refovanou hlavní plachtou. Kurz 210° směr Hvar. Vlny 1.5m, silný boční vítr.",
+        notes: `Plavba pod bouřkovou kosatkou a refovanou hlavní plachtou. Kurz 210° směr Hvar. Vlny 1.5m, silný boční vítr ${formatWindSpeed(18)}.`,
         locked: false,
       }
     ]
   },
   {
     vessel: "Catamaran 'Solitaire'",
-    speed: "8.2 kn",
-    weather: "☀️ ESE 15 uzlů",
+    speed: formatVesselSpeed(8.2),
+    weather: `☀️ ESE ${formatWindSpeed(15)}`,
     date: "17. července 2026",
     hash: "sha256:e3b0c4429...",
     entries: [
       {
         time: "11:00 UTC",
         category: "Kotvení",
-        notes: "Kotevní manévr v zátoce Cane Garden Bay (Tortola). Hloubka 5 metrů, písek. Kotevní řetěz vypuštěn 25 metrů, drží bezpečně.",
+        notes: `Kotevní manévr v zátoce Cane Garden Bay (Tortola). Hloubka ${formatDepth(5.0)}, písek. Kotevní řetěz vypuštěn 25 metrů, drží bezpečně.`,
         locked: true,
       },
       {
         time: "13:30 UTC",
         category: "Přeplavba",
-        notes: "Vyplutí směr Jost Van Dyke. Rychlý zadobční vítr, plavba na plný genaker. Rychlost dosahuje 9 uzlů. Posádka v naprosté pohodě.",
+        notes: `Vyplutí směr Jost Van Dyke. Rychlý zadobční vítr ${formatWindSpeed(15)}, plavba na plný genaker. Rychlost dosahuje ${formatVesselSpeed(9.0)}. Posádka v naprosté pohodě.`,
         locked: false,
       }
     ]

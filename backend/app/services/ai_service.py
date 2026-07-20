@@ -56,6 +56,8 @@ async def call_llm(prompt: str) -> str:
     raise RuntimeError("No LLM API keys configured or call failed.")
 
 
+from app.services.units import format_vessel_speed, format_wind_speed, format_distance, format_depth
+
 async def generate_hourly_log_entry(
     vessel_name: str,
     current_time_str: str,
@@ -77,6 +79,9 @@ async def generate_hourly_log_entry(
             memory_context += f"- [{entry_time}] {entry_notes}\n"
         memory_context += "=======================================\n"
 
+    speed_fmt = format_vessel_speed(avg_speed)
+    wind_fmt = format_wind_speed(weather.get('wind_speed', 0.0))
+
     prompt = f"""
 Jsi Njoror, AI vládce projektu lodního deníku na lodi {vessel_name}.
 Sestav profesionální námořní zápis do lodního deníku pro aktuální hodinu plavby v češtině.
@@ -86,26 +91,32 @@ Telemetrická data a kontext pro tento zápis:
 - Pozice: {lat:.5f}°N, {lng:.5f}°E
 - Lokalita (reverzní geokódování): {location_info.get('display_name', 'otevřené moře')}
 - Typ místa: {location_info.get('place_type', 'open_sea')} {f'({location_info.get("place_name")})' if location_info.get("place_name") else ''}
-- Průměrná rychlost od vyplutí / zahájení pohybu: {avg_speed:.1f} uzlů
-- Aktuální vítr: {weather.get('wind_speed', 0.0):.1f} uzlů, směr {weather.get('wind_direction', 'N')}
+- Průměrná rychlost od vyplutí: {speed_fmt}
+- Aktuální vítr: {wind_fmt}, směr {weather.get('wind_direction', 'N')}
 - Synoptické značení větru (Wind barb): {weather.get('wind_barb', {}).get('text_description', 'N/A')}
 - Tlak vzduchu: {weather.get('pressure', 1013.0):.1f} hPa
 - Teplota vzduchu: {weather.get('temperature', 20.0):.1f} °C
 - Stav moře (Douglasova stupnice): {weather.get('sea_state', '0 — Calm')}
 - Oblačnost: {weather.get('clouds', 0.0)}%
 
+POVINNÉ PRAVIDLO JEDNOTEK VŠUDE:
+- Rychlost lodi udávej VŽDY v uzlech a v závorce km/h: uzle (km/h), např. "{speed_fmt}".
+- Vzdálenost udávej VŽDY v námořních mílích a v závorce km: NM (km), např. "{format_distance(5.4)}".
+- Hloubku udávej VŽDY ve stopách a v závorce metry: ft (m), např. "{format_depth(6.0)}".
+- Rychlost větru udávej VŽDY v m/s a v závorce Beaufortova stupnice: m/s (Bft), např. "{wind_fmt}".
+
 Pokyny pro styl a kontinuitu:
 - Zápis musí znít jako od velmi zkušeného, stručného a věcného kapitána námořní plavby.
 - Navazuj plynule na předchozí zápisy (pokud jsou k dispozici). Zkontroluj, zda loď změnila polohu, zda se mění počasí (např. zesílení větru, pokles tlaku) a napiš to jako plynulé pokračování cesty.
 - Udržuj naprosto stejnou strukturu, terminologii a formát vyjadřování jako v předchozích zápisech pro zachování jednotného stylu celého deníku.
-- Nepoužívej žádný úvodní ani závěrečný doprovodný text (např. "Zde je váš zápis"). Začni ihned samotným textem zápisu.
-- Zápis by měl mít délku 2 až 4 věty. Nepoužívej zbytečné fráze.
+- Nepoužívej žádný úvodní ani závěrečný doprovodný text. Začni ihned samotným textem zápisu.
+- Zápis by měl mít délku 2 až 4 věty.
 """
     try:
         return await call_llm(prompt)
     except Exception as e:
         print(f"Hourly LLM generation failed, using fallback: {e}")
-        return f"Automatický zápis: Pozice {lat:.4f}°N, {lng:.4f}°E. Rychlost {avg_speed:.1f} kn. Vítr {weather.get('wind_speed', 0.0)} kn {weather.get('wind_direction', 'N')}. Tlak {weather.get('pressure', 1013.0)} hPa."
+        return f"Automatický zápis: Pozice {lat:.4f}°N, {lng:.4f}°E. Rychlost {speed_fmt}. Vítr {wind_fmt} {weather.get('wind_direction', 'N')}. Tlak {weather.get('pressure', 1013.0)} hPa."
 
 
 async def generate_narrative_from_gps(

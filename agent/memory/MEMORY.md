@@ -66,6 +66,7 @@ logbook/
 | 20.7.2026 | Modul Lodní Pokladna (Finance) | Přidán backend modul `cashbox.py`, model `CashboxExpense` a frontend stránka `/cashbox` pro přehled výdajů posádky (proviant, palivo, přístavy, opravy) s více měnami. |
 | 20.7.2026 | Integrace Windy.com Live Widgetu | Vytvořeno propojení s Windy.com v `weather.py` a v rozhraní `/weather`. Dynamicky generuje živou interaktivní větrnou mapu a ECMWF model pro přesné GPS souřadnice lodi. |
 | 20.7.2026 | Unifikovaná navigace (Navbar) | Vytvořena sdílená komponenta `Navbar.tsx` s kompletními odkazy na všechny moduly v systému a integrací i18n přepínače. |
+| 20.7.2026 | Striktní pravidla jednotek | Implementována globální pravidla pro formátování jednotek napříč systémem a LLM promptem Njorora: Rychlost `kn (km/h)`, Vzdálenost `NM (km)`, Hloubka `ft (m)`, Vítr `m/s (Bft)`. Vytvořen `units.py` a `units.ts`. |
 
 ## Známé problémy / TODO
 

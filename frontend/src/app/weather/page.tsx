@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Navbar from '@/components/Navbar';
 import { vesselsApi, weatherApi } from '@/lib/api';
+import { formatWindSpeed, formatVesselSpeed, formatDistance } from '@/lib/units';
 
 interface WindBarbInfo {
   speed_knots: number;
@@ -177,7 +178,7 @@ export default function WeatherPage() {
                       Aktuální vítr & Synoptické značení
                     </span>
                     <h2 className="text-3xl font-extrabold text-white mt-2">
-                      {weather.wind_speed} <span className="text-lg font-normal text-slate-400">uzlů (kn)</span>
+                      {formatWindSpeed(weather.wind_speed)}
                     </h2>
                     <p className="text-sm text-slate-300 mt-1">
                       Směr: <span className="font-bold text-white">{weather.wind_direction}</span> ({weather.wind_direction_deg ?? getWindRotation(weather.wind_direction)}°) — {getWindStatusText(weather.wind_speed)}
@@ -244,7 +245,7 @@ export default function WeatherPage() {
                     </div>
                     <div className="flex justify-between items-center py-1.5 text-sm">
                       <span className="text-slate-400">Viditelnost:</span>
-                      <span className="font-semibold text-white">{weather.visibility} NM</span>
+                      <span className="font-semibold text-white">{formatDistance(weather.visibility)}</span>
                     </div>
                   </div>
                 </div>
@@ -266,7 +267,7 @@ export default function WeatherPage() {
                         className="bg-slate-950/80 rounded-xl p-3 border border-slate-800 text-center flex flex-col items-center justify-between space-y-2 hover:border-blue-500/50 transition-all"
                       >
                         <span className="text-xs font-semibold text-slate-400">{timeStr}</span>
-                        <span className="text-xl font-extrabold text-blue-400">{item.wind_speed} <span className="text-[10px] font-normal text-slate-400">kn</span></span>
+                        <span className="text-sm font-extrabold text-blue-400">{formatWindSpeed(item.wind_speed)}</span>
                         <div className="text-lg font-mono text-cyan-300" title={item.wind_barb?.text_description}>
                           {item.wind_barb?.symbol || '○'}
                         </div>
