@@ -1,6 +1,7 @@
 """API Endpoints for Voyage Documents, Attachments, and AI Information Extraction."""
 import os
 import shutil
+from datetime import datetime
 from uuid import UUID
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Form
@@ -34,17 +35,17 @@ class UrlRequest(BaseModel):
 
 class VoyageDocumentResponse(BaseModel):
     id: str
-    logbook_id: Optional[str]
-    vessel_id: Optional[str]
+    logbook_id: Optional[str] = None
+    vessel_id: Optional[str] = None
     doc_type: str
     title: str
-    file_path: Optional[str]
-    url: Optional[str]
-    file_size: Optional[int]
-    file_type: Optional[str]
-    ai_status: str
-    ai_summary: Optional[str]
-    created_at: str
+    file_path: Optional[str] = None
+    url: Optional[str] = None
+    file_size: Optional[int] = None
+    file_type: Optional[str] = None
+    ai_status: str = "pending"
+    ai_summary: Optional[str] = None
+    created_at: Optional[datetime] = None
 
     class Config:
         from_attributes = True
@@ -58,16 +59,20 @@ async def upload_document(
     current_user=Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    if not logbook_id and not vessel_id:
-        raise HTTPException(status_code=400, detail="Must provide logbook_id or vessel_id")
-
+    # Resolve default vessel and active logbook for user if omitted
     v_id = vessel_id
-    if logbook_id:
-        logbook = db.query(Logbook).filter(Logbook.id == str(logbook_id)).first()
-        if logbook:
-            v_id = logbook.vessel_id
+    if not v_id:
+        vessel = db.query(Vessel).filter(Vessel.owner_id == str(current_user.id)).first()
+        if vessel:
+            v_id = vessel.id
 
-    target_dir = os.path.join(UPLOAD_DIR, logbook_id or v_id or "general")
+    l_id = logbook_id
+    if not l_id and v_id:
+        logbook = db.query(Logbook).filter(Logbook.vessel_id == str(v_id), Logbook.status == "active").first()
+        if logbook:
+            l_id = logbook.id
+
+    target_dir = os.path.join(UPLOAD_DIR, str(l_id or v_id or "general"))
     os.makedirs(target_dir, exist_ok=True)
 
     file_path = os.path.join(target_dir, file.filename)
@@ -77,8 +82,8 @@ async def upload_document(
     file_size = os.path.getsize(file_path)
 
     doc = VoyageDocument(
-        logbook_id=logbook_id,
-        vessel_id=v_id,
+        logbook_id=str(l_id) if l_id else None,
+        vessel_id=str(v_id) if v_id else None,
         doc_type="file",
         title=file.filename,
         file_path=file_path,
@@ -90,9 +95,12 @@ async def upload_document(
     db.commit()
     db.refresh(doc)
 
-    # Process AI extraction automatically
-    process_voyage_document_ai(db, doc.id)
-    db.refresh(doc)
+    try:
+        process_voyage_document_ai(db, doc.id)
+        db.refresh(doc)
+    except Exception as err:
+        print("AI extraction background warning:", err)
+
     return doc
 
 
@@ -102,12 +110,24 @@ async def add_path_document(
     current_user=Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
+    v_id = data.vessel_id
+    if not v_id:
+        vessel = db.query(Vessel).filter(Vessel.owner_id == str(current_user.id)).first()
+        if vessel:
+            v_id = vessel.id
+
+    l_id = data.logbook_id
+    if not l_id and v_id:
+        logbook = db.query(Logbook).filter(Logbook.vessel_id == str(v_id), Logbook.status == "active").first()
+        if logbook:
+            l_id = logbook.id
+
     title = data.title or os.path.basename(data.file_path.rstrip("/\\")) or data.file_path
     doc_type = "folder" if os.path.isdir(data.file_path) else "file"
 
     doc = VoyageDocument(
-        logbook_id=data.logbook_id,
-        vessel_id=data.vessel_id,
+        logbook_id=str(l_id) if l_id else None,
+        vessel_id=str(v_id) if v_id else None,
         doc_type=doc_type,
         title=title,
         file_path=data.file_path,
@@ -117,8 +137,12 @@ async def add_path_document(
     db.commit()
     db.refresh(doc)
 
-    process_voyage_document_ai(db, doc.id)
-    db.refresh(doc)
+    try:
+        process_voyage_document_ai(db, doc.id)
+        db.refresh(doc)
+    except Exception as err:
+        print("AI extraction background warning:", err)
+
     return doc
 
 
@@ -128,11 +152,23 @@ async def add_url_document(
     current_user=Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
+    v_id = data.vessel_id
+    if not v_id:
+        vessel = db.query(Vessel).filter(Vessel.owner_id == str(current_user.id)).first()
+        if vessel:
+            v_id = vessel.id
+
+    l_id = data.logbook_id
+    if not l_id and v_id:
+        logbook = db.query(Logbook).filter(Logbook.vessel_id == str(v_id), Logbook.status == "active").first()
+        if logbook:
+            l_id = logbook.id
+
     title = data.title or data.url
 
     doc = VoyageDocument(
-        logbook_id=data.logbook_id,
-        vessel_id=data.vessel_id,
+        logbook_id=str(l_id) if l_id else None,
+        vessel_id=str(v_id) if v_id else None,
         doc_type="url",
         title=title,
         url=data.url,
@@ -142,20 +178,34 @@ async def add_url_document(
     db.commit()
     db.refresh(doc)
 
-    process_voyage_document_ai(db, doc.id)
-    db.refresh(doc)
+    try:
+        process_voyage_document_ai(db, doc.id)
+        db.refresh(doc)
+    except Exception as err:
+        print("AI extraction background warning:", err)
+
     return doc
 
 
-@router.get("/list/{logbook_id}")
+@router.get("/list/{identifier}")
 async def list_voyage_documents(
-    logbook_id: str,
+    identifier: str,
     current_user=Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    docs = db.query(VoyageDocument).filter(
-        (VoyageDocument.logbook_id == str(logbook_id)) | (VoyageDocument.vessel_id == str(logbook_id))
-    ).order_by(VoyageDocument.created_at.desc()).all()
+    vessels = db.query(Vessel).filter(Vessel.owner_id == str(current_user.id)).all()
+    vessel_ids = [v.id for v in vessels]
+
+    if identifier in ["all", "general", "undefined", "null", ""]:
+        docs = db.query(VoyageDocument).filter(
+            (VoyageDocument.vessel_id.in_(vessel_ids)) | (VoyageDocument.vessel_id == None)
+        ).order_by(VoyageDocument.created_at.desc()).all()
+    else:
+        docs = db.query(VoyageDocument).filter(
+            (VoyageDocument.logbook_id == str(identifier)) |
+            (VoyageDocument.vessel_id == str(identifier)) |
+            (VoyageDocument.vessel_id.in_(vessel_ids))
+        ).order_by(VoyageDocument.created_at.desc()).all()
 
     return [
         {

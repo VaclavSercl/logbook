@@ -35,12 +35,12 @@ export default function VoyageDocumentSection({ logbookId, vesselId, token, onDa
   const [showAddUrl, setShowAddUrl] = useState(false);
 
   const fetchDocs = async () => {
-    if (!logbookId && !vesselId) return;
-    const activeToken = token || localStorage.getItem('token') || '';
+    const activeToken = token || (typeof window !== 'undefined' ? localStorage.getItem('token') || '' : '');
     if (!activeToken) return;
     try {
       setLoading(true);
-      const list = await documentsApi.listDocuments(logbookId || vesselId || '', activeToken);
+      const targetId = logbookId || vesselId || 'all';
+      const list = await documentsApi.listDocuments(targetId, activeToken);
       setDocuments(list);
     } catch (err) {
       console.error('Failed to fetch voyage documents:', err);
