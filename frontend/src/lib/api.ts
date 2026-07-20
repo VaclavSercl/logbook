@@ -105,7 +105,7 @@ export const vesselsApi = {
 // Logbooks API
 export const logbooksApi = {
   list: (token: string, vesselId?: string) =>
-    apiFetch(`/logbooks/${vesselId ? `?vessel_id=${vesselId}` : ''}`, { token }),
+    apiFetch(`/logbooks${vesselId ? `?vessel_id=${vesselId}` : ''}`, { token }),
   create: (data: Record<string, unknown>, token: string) =>
     apiFetch('/logbooks', { method: 'POST', body: data, token }),
   get: (id: string, token: string) => apiFetch(`/logbooks/${id}`, { token }),

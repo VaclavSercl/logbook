@@ -177,7 +177,7 @@ export default function CrewPage() {
 
       // 3. Logbooks & duties
       try {
-        const logbooksData: any = await logbooksApi.list(vesselId, activeToken);
+        const logbooksData: any = await logbooksApi.list(activeToken, vesselId);
         const active = Array.isArray(logbooksData) ? logbooksData.find((l: any) => l.status === 'active') : null;
         if (active) {
           setActiveLogbookId(active.id);
