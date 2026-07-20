@@ -65,7 +65,13 @@ async function apiFetch<T = any>(path: string, options: FetchOptions = {}): Prom
   }
 
   if (!res.ok) {
-    const error = await res.json().catch(() => ({ detail: `API error: ${res.status}` }));
+    const text = await res.text();
+    let error: any = {};
+    try {
+      error = text ? JSON.parse(text) : {};
+    } catch {
+      error = { detail: text || `API error: ${res.status}` };
+    }
     let msg = `API error: ${res.status}`;
     if (typeof error.detail === 'string') {
       msg = error.detail;
@@ -77,7 +83,20 @@ async function apiFetch<T = any>(path: string, options: FetchOptions = {}): Prom
     throw new Error(msg);
   }
 
-  return res.json();
+  if (res.status === 204) {
+    return {} as T;
+  }
+
+  const text = await res.text();
+  if (!text) {
+    return {} as T;
+  }
+
+  try {
+    return JSON.parse(text);
+  } catch (err) {
+    return {} as T;
+  }
 }
 
 // Auth API
