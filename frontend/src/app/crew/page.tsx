@@ -906,14 +906,6 @@ export default function CrewPage() {
           >
             🍳 Služby v kuchyni
           </button>
-          <button
-            onClick={() => setActiveTab('documents')}
-            className={`py-3 px-2 font-medium text-sm border-b-2 transition ${
-              activeTab === 'documents' ? 'border-blue-500 text-blue-400' : 'border-transparent text-slate-400 hover:text-slate-200'
-            }`}
-          >
-            📁 Podklady & AI
-          </button>
         </div>
       </div>
 
@@ -1205,15 +1197,6 @@ export default function CrewPage() {
               </div>
             )}
 
-            {/* ── TAB 4: VOYAGE DOCUMENTS & AI ── */}
-            {activeTab === 'documents' && (
-              <VoyageDocumentSection
-                logbookId={activeLogbookId}
-                vesselId={selectedVesselId}
-                token={token || undefined}
-                onDataUpdated={() => fetchData(selectedVesselId)}
-              />
-            )}
           </>
         )}
       </main>

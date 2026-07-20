@@ -2,10 +2,11 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { dashboardApi, publicApi } from '@/lib/api';
+import { dashboardApi, publicApi, vesselsApi, logbooksApi } from '@/lib/api';
 import { useTranslation } from '@/lib/i18n';
 import { formatVesselSpeed, formatWindSpeed, formatDistance, formatDepth, formatPressure } from '@/lib/units';
 import Navbar from '@/components/Navbar';
+import VoyageDocumentSection from '@/components/VoyageDocumentSection';
 
 interface DashboardStats {
   vessels: number;
@@ -121,7 +122,8 @@ export default function DashboardPage() {
   const [mockWeather, setMockWeather] = useState("🌤️ NW 12 uzlů");
   const [mockDate, setMockDate] = useState("17. července 2026");
   const [mockHash, setMockHash] = useState("sha256:078b2d49a...");
-  const [mockEntries, setMockEntries] = useState<any[]>([]);
+  const [selectedVesselId, setSelectedVesselId] = useState<string>('');
+  const [activeLogbookId, setActiveLogbookId] = useState<string>('');
 
   useEffect(() => {
     setMounted(true);
@@ -133,6 +135,22 @@ export default function DashboardPage() {
     dashboardApi.getStats(token)
       .then(setStats)
       .catch(console.error);
+
+    const activeToken = token || localStorage.getItem('token');
+    if (activeToken) {
+      vesselsApi.list(activeToken).then((vList: any) => {
+        if (Array.isArray(vList) && vList.length > 0) {
+          const vId = vList[0].id;
+          setSelectedVesselId(vId);
+          logbooksApi.list(activeToken, vId).then((lList: any) => {
+            if (Array.isArray(lList) && lList.length > 0) {
+              const active = lList.find((l: any) => l.status === 'active') || lList[0];
+              if (active) setActiveLogbookId(active.id);
+            }
+          }).catch(() => {});
+        }
+      }).catch(() => {});
+    }
   }, [token]);
 
   useEffect(() => {
@@ -528,6 +546,15 @@ export default function DashboardPage() {
           <StatCard title="Lodní deníky" value={stats.logbooks} icon="📖" label="Knihy plaveb" />
           <StatCard title="Záznamy plavby" value={stats.entries} icon="📝" label="Zapsané body" />
           <StatCard title="Aktivní moduly" value={stats.activeModules} icon="🧩" label="Systémové Pluginy" />
+        </div>
+
+        {/* Voyage Documents AI Attachment Section on Main Page */}
+        <div className="mb-8">
+          <VoyageDocumentSection
+            logbookId={activeLogbookId || undefined}
+            vesselId={selectedVesselId || undefined}
+            token={token || undefined}
+          />
         </div>
 
         {/* Quick Actions Title */}
