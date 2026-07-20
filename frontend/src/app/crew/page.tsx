@@ -649,14 +649,32 @@ export default function CrewPage() {
           )}
 
           {activeLogbookId && (
-            <button
-              onClick={handleOpenAutoModal}
-              className="px-3.5 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-semibold rounded-lg text-sm transition shadow flex items-center gap-1.5"
-              title="Automaticky naplánuje rotaci hlídek i službu v kuchyni pro celou plavbu"
-            >
-              <span>⚡</span>
-              <span>Generovat rozpis (AI)</span>
-            </button>
+            <div className="flex items-center gap-2 flex-wrap">
+              <button
+                onClick={() => window.print()}
+                className="px-3.5 py-2 bg-slate-700 hover:bg-slate-650 text-slate-100 font-semibold rounded-lg text-sm transition shadow flex items-center gap-1.5"
+                title="Vytisknout denní rozpis služeb a hlídek"
+              >
+                <span>🖨️</span>
+                <span>Vytisknout</span>
+              </button>
+              <button
+                onClick={() => window.print()}
+                className="px-3.5 py-2 bg-emerald-700 hover:bg-emerald-600 text-white font-semibold rounded-lg text-sm transition shadow flex items-center gap-1.5"
+                title="Stáhnout rozpis služeb jako PDF soubor"
+              >
+                <span>📄</span>
+                <span>Generovat PDF</span>
+              </button>
+              <button
+                onClick={handleOpenAutoModal}
+                className="px-3.5 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-semibold rounded-lg text-sm transition shadow flex items-center gap-1.5"
+                title="Automaticky naplánuje rotaci hlídek i službu v kuchyni pro celou plavbu"
+              >
+                <span>⚡</span>
+                <span>Generovat rozpis (AI)</span>
+              </button>
+            </div>
           )}
 
           {activeTab === 'crew' && (
@@ -1347,6 +1365,152 @@ export default function CrewPage() {
           </div>
         </div>
       )}
+
+      {/* 6. Printable Daily Schedule Area (For Print & PDF) */}
+      <div id="printable-schedule-area" className="hidden print:block text-slate-900 bg-white">
+        {groupedDailySchedules.map((day, idx) => (
+          <div
+            key={day.dateStr}
+            className={`p-8 bg-white text-slate-900 border-b border-slate-300 print:border-none ${
+              idx < groupedDailySchedules.length - 1 ? 'page-break print:break-after-page' : ''
+            }`}
+            style={{ minHeight: '100vh', boxSizing: 'border-box' }}
+          >
+            {/* Header */}
+            <div className="border-b-2 border-slate-900 pb-4 mb-6 flex justify-between items-end">
+              <div>
+                <h1 className="text-3xl font-extrabold uppercase tracking-wide text-slate-900 mb-1">
+                  Rozpis služeb
+                </h1>
+                <p className="text-xs font-bold text-slate-600 uppercase tracking-widest">
+                  Loď: {selectedVesselName} • Lodní deník
+                </p>
+              </div>
+              <div className="text-right">
+                <div className="text-xl font-bold text-slate-900 capitalize">
+                  {day.czechDateStr}
+                </div>
+              </div>
+            </div>
+
+            {/* 1. Služba v kuchyni (První) */}
+            <div className="mb-8 bg-slate-50 border border-slate-300 rounded-lg p-5">
+              <h2 className="text-base font-bold uppercase tracking-wider text-slate-900 mb-3 flex items-center gap-2 border-b border-slate-300 pb-2">
+                🍳 Služba v kuchyni (00:00 – 24:00)
+              </h2>
+              {day.galley ? (
+                <div className="grid grid-cols-2 gap-6 text-sm">
+                  <div>
+                    <span className="block text-[10px] uppercase font-bold text-slate-500 tracking-wider mb-1">
+                      Kuchař (Cook)
+                    </span>
+                    <span className="font-bold text-slate-900 text-base">
+                      {formatMemberDisplayName(day.galley.cook)}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="block text-[10px] uppercase font-bold text-slate-500 tracking-wider mb-1">
+                      Pomocník kuchaře (Cleaner)
+                    </span>
+                    <span className="font-bold text-slate-900 text-base">
+                      {formatMemberDisplayName(day.galley.cleaner)}
+                    </span>
+                  </div>
+                  {day.galley.notes && (
+                    <div className="col-span-2 pt-2 border-t border-slate-200 text-xs text-slate-700 italic">
+                      Poznámka / Jídelníček: {day.galley.notes}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <p className="text-xs text-slate-500 italic">Pro tento den není zadána služba v kuchyni.</p>
+              )}
+            </div>
+
+            {/* 2. Rozpis hlídek (Potom) */}
+            <div>
+              <h2 className="text-base font-bold uppercase tracking-wider text-slate-900 mb-3 flex items-center gap-2 border-b border-slate-300 pb-2">
+                ⚓ Rozpis hlídek za kormidlem
+              </h2>
+              {day.watches.length === 0 ? (
+                <p className="text-xs text-slate-500 italic">Pro tento den nejsou naplánovány žádné hlídky.</p>
+              ) : (
+                <table className="w-full border-collapse border border-slate-300 text-xs">
+                  <thead>
+                    <tr className="bg-slate-100 border-b border-slate-300 text-slate-700 uppercase tracking-wider text-[10px]">
+                      <th className="py-2.5 px-3 text-left border-r border-slate-300 w-32">Čas hlídek</th>
+                      <th className="py-2.5 px-3 text-left border-r border-slate-300 w-40">Hlídková skupina</th>
+                      <th className="py-2.5 px-3 text-left border-r border-slate-300">Členové hlídky</th>
+                      <th className="py-2.5 px-3 text-left">Poznámka / Úkoly</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {day.watches.map((w, wIdx) => {
+                      const startTimeStr = new Date(w.start_time).toLocaleTimeString('cs-CZ', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      });
+                      const endTimeStr = new Date(w.end_time).toLocaleTimeString('cs-CZ', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      });
+                      const membersStr = w.watch_group?.members
+                        ? w.watch_group.members.map((m) => formatMemberDisplayName(m)).join(', ')
+                        : '';
+                      return (
+                        <tr key={w.id} className={wIdx % 2 === 0 ? 'bg-white' : 'bg-slate-50/80'}>
+                          <td className="py-2 px-3 font-bold text-slate-900 border-r border-slate-300 border-b border-slate-200 whitespace-nowrap">
+                            {startTimeStr} – {endTimeStr}
+                          </td>
+                          <td className="py-2 px-3 font-semibold text-slate-800 border-r border-slate-300 border-b border-slate-200">
+                            {w.watch_group?.name ? w.watch_group.name.split(' (')[0] : 'Hlídka'}
+                          </td>
+                          <td className="py-2 px-3 text-slate-900 border-r border-slate-300 border-b border-slate-200">
+                            {membersStr || '—'}
+                          </td>
+                          <td className="py-2 px-3 text-slate-600 italic border-b border-slate-200">
+                            {w.notes || '—'}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              )}
+            </div>
+
+            {/* Footer */}
+            <div className="mt-12 pt-4 border-t border-slate-300 flex justify-between text-[10px] text-slate-500">
+              <span>Lodní deník Antigravity • Rozpis služeb</span>
+              <span>List {idx + 1} z {groupedDailySchedules.length}</span>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <style jsx global>{`
+        @media print {
+          body {
+            background-color: white !important;
+            color: black !important;
+          }
+          nav, header, footer, .no-print, button, input, select {
+            display: none !important;
+          }
+          #printable-schedule-area {
+            display: block !important;
+            visibility: visible !important;
+            position: absolute !important;
+            left: 0 !important;
+            top: 0 !important;
+            width: 100% !important;
+          }
+          .page-break {
+            page-break-after: always !important;
+            break-after: page !important;
+          }
+        }
+      `}</style>
     </div>
   );
 }
