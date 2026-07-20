@@ -309,3 +309,50 @@ export const publicApi = {
 
   getGpsTrack: (vesselId: string) => apiFetch<Array<Record<string, any>>>(`/gps/public/vessel/${vesselId}`),
 };
+
+// Documents API (AI Attachments & Folders)
+export const documentsApi = {
+  listDocuments: (logbookId: string, token: string) =>
+    apiFetch<Array<{
+      id: string;
+      logbook_id?: string;
+      vessel_id?: string;
+      doc_type: string;
+      title: string;
+      file_path?: string;
+      url?: string;
+      file_size?: number;
+      file_type?: string;
+      ai_status: string;
+      ai_summary?: string;
+      created_at?: string;
+    }>>(`/documents/list/${logbookId}`, { token }),
+
+  uploadFile: async (formData: FormData, token: string) => {
+    const activeToken = token || (typeof window !== 'undefined' ? localStorage.getItem('token') || '' : '');
+    const res = await fetch('/api/v1/documents/upload', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${activeToken}`,
+      },
+      body: formData,
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ detail: 'Upload failed' }));
+      throw new Error(err.detail || 'Upload failed');
+    }
+    return res.json();
+  },
+
+  addPath: (data: { logbook_id?: string; vessel_id?: string; file_path: string; title?: string }, token: string) =>
+    apiFetch('/documents/add-path', { method: 'POST', body: data, token }),
+
+  addUrl: (data: { logbook_id?: string; vessel_id?: string; url: string; title?: string }, token: string) =>
+    apiFetch('/documents/add-url', { method: 'POST', body: data, token }),
+
+  analyzeDoc: (docId: string, token: string) =>
+    apiFetch(`/documents/${docId}/analyze`, { method: 'POST', token }),
+
+  deleteDoc: (docId: string, token: string) =>
+    apiFetch(`/documents/${docId}`, { method: 'DELETE', token }),
+};

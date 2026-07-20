@@ -343,5 +343,28 @@ class AnchorLog(Base):
     logbook = relationship("Logbook")
 
 
+class VoyageDocument(Base):
+    __tablename__ = "voyage_documents"
+
+    id = Column(String(36), primary_key=True, default=gen_uuid)
+    logbook_id = Column(String(36), ForeignKey("logbooks.id"), nullable=True, index=True)
+    vessel_id = Column(String(36), ForeignKey("vessels.id"), nullable=True, index=True)
+    doc_type = Column(String(20), default="file") # file, folder, url
+    title = Column(String(255), nullable=False)
+    file_path = Column(Text, nullable=True)
+    url = Column(Text, nullable=True)
+    file_size = Column(BigInteger, nullable=True)
+    file_type = Column(String(100), nullable=True)
+    ai_status = Column(String(20), default="pending") # pending, processing, completed, error
+    ai_summary = Column(Text, nullable=True)
+    extracted_data = Column(JSON, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    logbook = relationship("Logbook")
+    vessel = relationship("Vessel")
+
+
+
 
 

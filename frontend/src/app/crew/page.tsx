@@ -56,6 +56,8 @@ interface GalleyDuty {
   created_at: string;
 }
 
+import VoyageDocumentSection from '@/components/VoyageDocumentSection';
+
 export default function CrewPage() {
   const [vessels, setVessels] = useState<Vessel[]>([]);
   const [selectedVesselId, setSelectedVesselId] = useState<string>('');
@@ -69,7 +71,7 @@ export default function CrewPage() {
   const [error, setError] = useState<string | null>(null);
 
   // Navigation tab
-  const [activeTab, setActiveTab] = useState<'crew' | 'watches' | 'galley'>('crew');
+  const [activeTab, setActiveTab] = useState<'crew' | 'watches' | 'galley' | 'documents'>('crew');
 
   // Modals / forms states
   const [isCrewModalOpen, setIsCrewModalOpen] = useState(false);
@@ -904,6 +906,14 @@ export default function CrewPage() {
           >
             🍳 Služby v kuchyni
           </button>
+          <button
+            onClick={() => setActiveTab('documents')}
+            className={`py-3 px-2 font-medium text-sm border-b-2 transition ${
+              activeTab === 'documents' ? 'border-blue-500 text-blue-400' : 'border-transparent text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            📁 Podklady & AI
+          </button>
         </div>
       </div>
 
@@ -1193,6 +1203,16 @@ export default function CrewPage() {
                   </div>
                 )}
               </div>
+            )}
+
+            {/* ── TAB 4: VOYAGE DOCUMENTS & AI ── */}
+            {activeTab === 'documents' && (
+              <VoyageDocumentSection
+                logbookId={activeLogbookId}
+                vesselId={selectedVesselId}
+                token={token || undefined}
+                onDataUpdated={() => fetchData(selectedVesselId)}
+              />
             )}
           </>
         )}
