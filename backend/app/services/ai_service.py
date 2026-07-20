@@ -88,6 +88,7 @@ Telemetrická data a kontext pro tento zápis:
 - Typ místa: {location_info.get('place_type', 'open_sea')} {f'({location_info.get("place_name")})' if location_info.get("place_name") else ''}
 - Průměrná rychlost od vyplutí / zahájení pohybu: {avg_speed:.1f} uzlů
 - Aktuální vítr: {weather.get('wind_speed', 0.0):.1f} uzlů, směr {weather.get('wind_direction', 'N')}
+- Synoptické značení větru (Wind barb): {weather.get('wind_barb', {}).get('text_description', 'N/A')}
 - Tlak vzduchu: {weather.get('pressure', 1013.0):.1f} hPa
 - Teplota vzduchu: {weather.get('temperature', 20.0):.1f} °C
 - Stav moře (Douglasova stupnice): {weather.get('sea_state', '0 — Calm')}

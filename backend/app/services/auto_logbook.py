@@ -100,6 +100,8 @@ def get_sea_state_douglas(wind_speed_knots: float) -> str:
     else:
         return "6 — Very rough"
 
+from app.services.wind_barb import calculate_wind_barb
+
 async def fetch_weather(lat, lng):
     try:
         url = f"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lng}&current=temperature_2m,relative_humidity_2m,surface_pressure,wind_speed_10m,wind_direction_10m,cloud_cover"
@@ -116,6 +118,7 @@ async def fetch_weather(lat, lng):
                 wind_dir_str = get_wind_direction_cardinal(wind_dir_deg)
                 clouds = current.get("cloud_cover", 0.0)
                 sea_state = get_sea_state_douglas(wind_speed_kn)
+                barb_info = calculate_wind_barb(wind_speed_kn, wind_dir_deg)
 
                 return {
                     "temperature": temp,
@@ -124,10 +127,12 @@ async def fetch_weather(lat, lng):
                     "wind_direction": wind_dir_str,
                     "wind_direction_deg": wind_dir_deg,
                     "sea_state": sea_state,
-                    "clouds": clouds
+                    "clouds": clouds,
+                    "wind_barb": barb_info
                 }
     except Exception as e:
         print(f"Weather API error: {e}")
+    default_barb = calculate_wind_barb(8.0, 315.0)
     return {
         "temperature": 22.0,
         "pressure": 1015.0,
@@ -135,7 +140,8 @@ async def fetch_weather(lat, lng):
         "wind_direction": "NW",
         "wind_direction_deg": 315.0,
         "sea_state": "2 — Smooth",
-        "clouds": 20.0
+        "clouds": 20.0,
+        "wind_barb": default_barb
     }
 
 async def get_location_details(lat, lng):

@@ -20,12 +20,13 @@ Kdykoliv obdržíš pokyn: **"Spusť hodinový zápis do lodního deníku"**, pr
 * Analyzuj jejich text (`notes`), abys pochopil dosavadní průběh plavby a mohl na něj **plynule navázat** (např. změny kurzu, změny plachet, vývoj počasí).
 * **Kritické:** Převezmi a striktně dodržuj formát, strukturu a styl vyjadřování z těchto předchozích zápisů (jako by je psal stejný kapitán).
 
-### 4. Stažení aktuálního počasí (Open-Meteo API)
+### 4. Stažení aktuálního počasí (Open-Meteo API) & Synoptické značení
 * Pro nejnovější GPS souřadnice stáhni aktuální počasí z:
   `https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lng}&current=temperature_2m,surface_pressure,wind_speed_10m,wind_direction_10m,cloud_cover`
 * Rychlost větru převeď z km/h na uzly (vynásob * 0.539957).
 * Stupně směru větru převeď na světové strany (N, NE, E, atd.).
 * Podle rychlosti větru odhadni stav moře podle Douglasovy stupnice.
+* **Synoptické značení větru (Wind Barb):** Pomocí `app/services/wind_barb.py` spočítej opeření (vlaječka 50 kn, celá čárka 10 kn, půl čárky 5 kn, staniční kroužek při <3 kn) pro námořní synoptickou interpretaci.
 
 ### 5. Reverzní geokódování (Nominatim API)
 * Zjisti název lokality z:
