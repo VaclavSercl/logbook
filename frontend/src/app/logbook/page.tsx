@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { vesselsApi, logbooksApi, entriesApi } from '@/lib/api';
+import Navbar from '@/components/Navbar';
 
 interface Vessel {
   id: string;
@@ -405,6 +406,7 @@ export default function LogbookPage({ searchParams }: { searchParams?: { showFor
 
   return (
     <div className="min-h-screen bg-slate-900 text-slate-100 flex flex-col">
+      <Navbar />
       {/* Header */}
       <header className="bg-slate-800 border-b border-slate-700 px-6 py-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-center gap-4">

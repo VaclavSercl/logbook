@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { modulesApi, authApi } from '@/lib/api';
 import { useTranslation, Language } from '@/lib/i18n';
+import Navbar from '@/components/Navbar';
 
 interface Module {
   id: string;
@@ -111,6 +112,7 @@ export default function SettingsPage() {
 
   return (
     <div className="min-h-screen bg-slate-900 text-slate-100 font-sans">
+      <Navbar />
       <header className="bg-slate-800 border-b border-slate-700 px-6 py-4 flex items-center gap-4">
         <Link href="/" className="px-3 py-1.5 bg-slate-700 hover:bg-slate-650 text-slate-100 rounded-lg text-sm font-medium transition flex items-center gap-1.5">
           {t('common.home')}

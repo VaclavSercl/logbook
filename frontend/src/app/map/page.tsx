@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { vesselsApi, gpsApi, logbooksApi, entriesApi } from '@/lib/api';
 import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
+import Navbar from '@/components/Navbar';
 
 interface GpsPoint {
   id: number;
@@ -660,6 +661,7 @@ export default function MapPage() {
 
   return (
     <div className="min-h-screen bg-slate-900 flex flex-col h-screen">
+      <Navbar />
       {/* Header with Navigation */}
       <header className="bg-slate-800 border-b border-slate-700 px-6 py-4 flex-shrink-0 flex flex-col gap-4">
         <div className="flex items-center justify-between flex-wrap gap-4">

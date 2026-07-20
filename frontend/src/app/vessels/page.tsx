@@ -179,6 +179,7 @@ export default function VesselsPage() {
 
   return (
     <div className="min-h-screen bg-slate-900 text-slate-100 flex flex-col">
+      <Navbar />
       <header className="bg-slate-800 border-b border-slate-700 px-6 py-4 flex items-center justify-between">
         <div className="flex items-center gap-4">
           <Link href="/" className="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-slate-100 rounded-lg text-sm font-medium transition flex items-center gap-1.5">

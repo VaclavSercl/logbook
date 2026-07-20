@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { dashboardApi, publicApi } from '@/lib/api';
 import { useTranslation } from '@/lib/i18n';
 import { formatVesselSpeed, formatWindSpeed, formatDistance, formatDepth, formatPressure } from '@/lib/units';
+import Navbar from '@/components/Navbar';
 
 interface DashboardStats {
   vessels: number;
@@ -442,6 +443,7 @@ export default function DashboardPage() {
   // ─── LOGGED IN DASHBOARD (AUTHENTICATED) ───
   return (
     <div className="min-h-screen bg-[#08090a] text-[#f7f8f8] font-sans selection:bg-[#5e6ad2]/30 selection:text-white">
+      <Navbar />
       {/* Google Fonts Link styled with Inter & JetBrains Mono */}
       <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;510;590;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
       

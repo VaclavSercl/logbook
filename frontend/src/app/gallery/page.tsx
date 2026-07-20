@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Navbar from '@/components/Navbar';
 
 export default function GalleryPage() {
   const [photos, setPhotos] = useState<string[]>([]);
@@ -23,6 +24,7 @@ export default function GalleryPage() {
 
   return (
     <div className="min-h-screen bg-slate-900">
+      <Navbar />
       <header className="bg-slate-800 border-b border-slate-700 px-6 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">

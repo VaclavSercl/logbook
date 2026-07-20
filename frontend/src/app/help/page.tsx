@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import Navbar from '@/components/Navbar';
 
 export default function HelpPage() {
   const [mounted, setMounted] = useState(false);
@@ -18,6 +19,7 @@ export default function HelpPage() {
 
   return (
     <div className="min-h-screen bg-[#08090a] text-[#f7f8f8] font-sans selection:bg-[#5e6ad2]/30 selection:text-white">
+      <Navbar />
       {/* Google Fonts Link */}
       <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
       
