@@ -7,31 +7,6 @@ from sqlalchemy import select
 from app.database import get_db
 from app.models import GalleyDuty, Logbook
 from app.schemas import GalleyDutyCreate, GalleyDutyResponse, GalleyDutyUpdate
-
-
-@router.put("/duty/{duty_id}", response_model=GalleyDutyResponse)
-async def update_galley_duty(
-    duty_id: UUID,
-    data: GalleyDutyUpdate,
-    current_user=Depends(get_current_user),
-    db: Session = Depends(get_db),
-):
-    duty = db.query(GalleyDuty).filter(GalleyDuty.id == str(duty_id)).first()
-    if not duty:
-        raise HTTPException(status_code=404, detail="Galley duty not found")
-
-    if data.date is not None:
-        duty.date = data.date
-    if data.cook_id is not None:
-        duty.cook_id = str(data.cook_id)
-    if data.cleaner_id is not None:
-        duty.cleaner_id = str(data.cleaner_id)
-    if data.notes is not None:
-        duty.notes = data.notes
-
-    db.commit()
-    db.refresh(duty)
-    return duty
 from app.api.v1.auth import get_current_user
 
 router = APIRouter()
@@ -73,6 +48,31 @@ async def create_galley_duty(
         notes=data.notes
     )
     db.add(duty)
+    db.commit()
+    db.refresh(duty)
+    return duty
+
+
+@router.put("/duty/{duty_id}", response_model=GalleyDutyResponse)
+async def update_galley_duty(
+    duty_id: UUID,
+    data: GalleyDutyUpdate,
+    current_user=Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    duty = db.query(GalleyDuty).filter(GalleyDuty.id == str(duty_id)).first()
+    if not duty:
+        raise HTTPException(status_code=404, detail="Galley duty not found")
+
+    if data.date is not None:
+        duty.date = data.date
+    if data.cook_id is not None:
+        duty.cook_id = str(data.cook_id)
+    if data.cleaner_id is not None:
+        duty.cleaner_id = str(data.cleaner_id)
+    if data.notes is not None:
+        duty.notes = data.notes
+
     db.commit()
     db.refresh(duty)
     return duty
