@@ -245,7 +245,7 @@ class CrewMemberResponse(BaseModel):
     date_of_birth: Optional[datetime]
     include_in_watches: bool = True
     include_in_galley: bool = True
-    joined_at: datetime
+    joined_at: Optional[datetime] = None
 
     class Config:
         from_attributes = True
