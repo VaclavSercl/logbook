@@ -28,6 +28,12 @@ def auto_generate_schedules(
 
     vessel_id = logbook.vessel_id
 
+    # Ensure timezone naive datetimes for SQLite comparison
+    if started_at and started_at.tzinfo is not None:
+        started_at = started_at.replace(tzinfo=None)
+    if ended_at and ended_at.tzinfo is not None:
+        ended_at = ended_at.replace(tzinfo=None)
+
     # Update logbook started_at and ended_at
     logbook.started_at = started_at
     logbook.ended_at = ended_at

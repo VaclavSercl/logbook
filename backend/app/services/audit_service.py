@@ -3,6 +3,7 @@ import datetime
 import hashlib
 from sqlalchemy import event, inspect, text
 from sqlalchemy.orm import Session
+from sqlalchemy.orm.attributes import get_history
 from app.models import Logbook, LogEntry, AuditLog
 
 def get_clean_val(val):
@@ -43,7 +44,7 @@ def audit_session_changes(session, flush_context, instances):
             new_val = {}
             for attr in state.mapper.column_attrs:
                 # Check history of changes
-                history = state.get_history(attr.key, passthrough=False)
+                history = get_history(obj, attr.key)
                 if history.has_changes():
                     if history.deleted:
                         old_val[attr.key] = get_clean_val(history.deleted[0])

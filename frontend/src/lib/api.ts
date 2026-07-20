@@ -65,8 +65,16 @@ async function apiFetch<T = any>(path: string, options: FetchOptions = {}): Prom
   }
 
   if (!res.ok) {
-    const error = await res.json().catch(() => ({ detail: 'Unknown error' }));
-    throw new Error(error.detail || `API error: ${res.status}`);
+    const error = await res.json().catch(() => ({ detail: `API error: ${res.status}` }));
+    let msg = `API error: ${res.status}`;
+    if (typeof error.detail === 'string') {
+      msg = error.detail;
+    } else if (Array.isArray(error.detail)) {
+      msg = error.detail.map((e: any) => e.msg || JSON.stringify(e)).join(', ');
+    } else if (error.detail) {
+      msg = JSON.stringify(error.detail);
+    }
+    throw new Error(msg);
   }
 
   return res.json();

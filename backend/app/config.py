@@ -7,7 +7,7 @@ class Settings(BaseSettings):
     APP_NAME: str = "Logbook"
     APP_VERSION: str = "1.0.0"
     DEBUG: bool = True
-    DATABASE_URL: str = "sqlite:///./logbook.db"
+    DATABASE_URL: str = "sqlite:////home/wwwenda/workspace/logbook/backend/logbook.db"
     REDIS_URL: str = "redis://localhost:6379/0"
     SECRET_KEY: str = "change-me-in-production-secret-key-32chars"
     ALGORITHM: str = "HS256"
