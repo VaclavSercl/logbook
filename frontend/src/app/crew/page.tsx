@@ -7,6 +7,9 @@ import { vesselsApi, crewApi, watchesApi, galleyApi, logbooksApi } from '@/lib/a
 
 interface CrewMember {
   id: string;
+  first_name?: string;
+  last_name?: string;
+  nickname?: string;
   name: string;
   role: string;
   nationality: string;
@@ -74,6 +77,9 @@ export default function CrewPage() {
   const [isGalleyModalOpen, setIsGalleyModalOpen] = useState(false);
 
   // Crew Form
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [nickname, setNickname] = useState('');
   const [name, setName] = useState('');
   const [role, setRole] = useState('Skipper (Kapitán)');
   const [nationality, setNationality] = useState('CZ');
@@ -187,11 +193,16 @@ export default function CrewPage() {
   const handleAddCrew = async (e: React.FormEvent) => {
     e.preventDefault();
     const activeToken = token || localStorage.getItem('token');
-    if (!activeToken || !selectedVesselId || !name) return;
+    if (!activeToken || !selectedVesselId) return;
+    const computedName = `${firstName} ${lastName}`.trim() || nickname || name;
+    if (!computedName) return;
     try {
       await crewApi.create({
         vessel_id: selectedVesselId,
-        name,
+        first_name: firstName,
+        last_name: lastName,
+        nickname: nickname,
+        name: computedName,
         role,
         nationality,
         passport_number: passportNumber,
@@ -200,6 +211,9 @@ export default function CrewPage() {
         include_in_galley: includeInGalley,
       }, activeToken);
       setIsCrewModalOpen(false);
+      setFirstName('');
+      setLastName('');
+      setNickname('');
       setName('');
       setPassportNumber('');
       setDob('');
@@ -481,7 +495,16 @@ export default function CrewPage() {
                         <div className="flex items-start justify-between">
                           <div>
                             <div className="flex items-center gap-2 flex-wrap">
-                              <span className="text-slate-100 font-semibold">{member.name}</span>
+                              <span className="text-slate-100 font-semibold">
+                                {member.first_name || member.last_name
+                                  ? `${member.first_name || ''} ${member.last_name || ''}`.trim()
+                                  : member.name}
+                              </span>
+                              {member.nickname && (
+                                <span className="px-2 py-0.5 bg-emerald-950/60 text-emerald-300 text-[10px] font-bold rounded-full border border-emerald-700/50">
+                                  „{member.nickname}“
+                                </span>
+                              )}
                               <span className={`px-2 py-0.5 text-[10px] font-bold rounded-full border ${
                                 member.role?.includes('Skipper')
                                   ? 'bg-amber-950/60 text-amber-300 border-amber-700/50'
@@ -673,15 +696,33 @@ export default function CrewPage() {
           <div className="bg-slate-800 border border-slate-700 rounded-xl max-w-md w-full p-6 shadow-2xl space-y-4">
             <h2 className="text-lg font-bold text-slate-100 border-b border-slate-700 pb-2">Nový člen posádky</h2>
             <form onSubmit={handleAddCrew} className="space-y-4">
-              <div>
-                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">Jméno a příjmení</label>
-                <input
-                  type="text" required value={name} onChange={(e) => setName(e.target.value)}
-                  className="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-slate-100 focus:outline-none"
-                  placeholder="Např. Jan Novák"
-                />
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">Jméno *</label>
+                  <input
+                    type="text" required value={firstName} onChange={(e) => setFirstName(e.target.value)}
+                    className="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-slate-100 focus:outline-none"
+                    placeholder="Např. Jan"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">Příjmení *</label>
+                  <input
+                    type="text" required value={lastName} onChange={(e) => setLastName(e.target.value)}
+                    className="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-slate-100 focus:outline-none"
+                    placeholder="Např. Novák"
+                  />
+                </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">Přezdívka (Nepovinná)</label>
+                  <input
+                    type="text" value={nickname} onChange={(e) => setNickname(e.target.value)}
+                    className="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-slate-100 focus:outline-none"
+                    placeholder="Např. Hony"
+                  />
+                </div>
                 <div>
                   <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">Role / Funkce</label>
                   <select value={role} onChange={(e) => handleRoleSelectChange(e.target.value)} className="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-slate-100 focus:outline-none">
@@ -690,18 +731,18 @@ export default function CrewPage() {
                     <option value="Guest (Host)">Guest (Host)</option>
                   </select>
                 </div>
+              </div>
+              <div className="grid grid-cols-3 gap-3">
                 <div>
                   <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">Národnost</label>
                   <input type="text" required value={nationality} onChange={(e) => setNationality(e.target.value)} className="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-slate-100 focus:outline-none" />
                 </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">Číslo pasu</label>
                   <input type="text" value={passportNumber} onChange={(e) => setPassportNumber(e.target.value)} className="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-slate-100 focus:outline-none" />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">Datum narození</label>
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">Datum nar.</label>
                   <input type="date" value={dob} onChange={(e) => setDob(e.target.value)} className="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-slate-100 focus:outline-none" />
                 </div>
               </div>

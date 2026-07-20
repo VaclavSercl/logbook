@@ -46,9 +46,26 @@ async def create_crew_member(
     if str(vessel.owner_id) != str(current_user.id):
         raise HTTPException(status_code=403, detail="Not authorized to add crew to this vessel")
 
+    # Compute display name if first_name / last_name provided
+    display_name = data.name
+    if data.first_name or data.last_name:
+        parts = []
+        if data.first_name:
+            parts.append(data.first_name)
+        if data.nickname:
+            parts.append(f"'{data.nickname}'")
+        if data.last_name:
+            parts.append(data.last_name)
+        display_name = " ".join(parts)
+    elif not display_name:
+        display_name = data.nickname or "Člen posádky"
+
     crew_member = CrewMember(
         vessel_id=str(data.vessel_id),
-        name=data.name,
+        first_name=data.first_name,
+        last_name=data.last_name,
+        nickname=data.nickname,
+        name=display_name,
         role=data.role,
         nationality=data.nationality,
         passport_number=data.passport_number,
@@ -78,8 +95,20 @@ async def update_crew_member(
     if not vessel or str(vessel.owner_id) != str(current_user.id):
         raise HTTPException(status_code=403, detail="Not authorized to update this crew member")
 
+    if data.first_name is not None:
+        crew_member.first_name = data.first_name
+    if data.last_name is not None:
+        crew_member.last_name = data.last_name
+    if data.nickname is not None:
+        crew_member.nickname = data.nickname
     if data.name is not None:
         crew_member.name = data.name
+    elif data.first_name is not None or data.last_name is not None or data.nickname is not None:
+        fn = crew_member.first_name or ""
+        ln = crew_member.last_name or ""
+        nn = f"'{crew_member.nickname}' " if crew_member.nickname else ""
+        crew_member.name = f"{fn} {nn}{ln}".strip() or "Člen posádky"
+
     if data.role is not None:
         crew_member.role = data.role
     if data.nationality is not None:

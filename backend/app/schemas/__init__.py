@@ -207,7 +207,10 @@ class DashboardStatsResponse(BaseModel):
 
 class CrewMemberCreate(BaseModel):
     vessel_id: UUID
-    name: str = Field(..., max_length=255)
+    first_name: Optional[str] = Field(None, max_length=100)
+    last_name: Optional[str] = Field(None, max_length=100)
+    nickname: Optional[str] = Field(None, max_length=100)
+    name: Optional[str] = Field(None, max_length=255)
     role: Optional[str] = None
     nationality: Optional[str] = None
     passport_number: Optional[str] = None
@@ -217,6 +220,9 @@ class CrewMemberCreate(BaseModel):
 
 
 class CrewMemberUpdate(BaseModel):
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
+    nickname: Optional[str] = None
     name: Optional[str] = None
     role: Optional[str] = None
     nationality: Optional[str] = None
@@ -229,6 +235,9 @@ class CrewMemberUpdate(BaseModel):
 class CrewMemberResponse(BaseModel):
     id: UUID
     vessel_id: UUID
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
+    nickname: Optional[str] = None
     name: str
     role: Optional[str]
     nationality: Optional[str]
