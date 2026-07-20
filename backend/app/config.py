@@ -29,6 +29,7 @@ class Settings(BaseSettings):
     OLLAMA_URL: str = "http://localhost:11434"
     GOOGLE_API_KEY: Optional[str] = None
     OPENROUTER_API_KEY: Optional[str] = None
+    WINDY_API_KEY: Optional[str] = None
     TELEGRAM_BOT_TOKEN: Optional[str] = None
     TELEGRAM_CHAT_ID: Optional[int] = None
 

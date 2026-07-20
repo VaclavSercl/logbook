@@ -41,6 +41,7 @@ interface WeatherData {
   clouds: number;
   location?: { lat: number; lng: number };
   wind_barb?: WindBarbInfo;
+  windy_embed_url?: string;
   forecast?: ForecastItem[];
 }
 
@@ -254,7 +255,7 @@ export default function WeatherPage() {
             {weather.forecast && weather.forecast.length > 0 && (
               <div className="bg-slate-900/80 rounded-2xl p-6 border border-slate-800 shadow-xl space-y-4">
                 <h3 className="text-lg font-bold text-white flex items-center gap-2">
-                  <span>📈</span> Předpověď pro oblast na 24 hodin
+                  <span>📈</span> Hodinová Předpověď (24 Hodin)
                 </h3>
                 <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3">
                   {weather.forecast.map((item, idx) => {
@@ -277,6 +278,32 @@ export default function WeatherPage() {
                 </div>
               </div>
             )}
+
+            {/* Windy.com Interactive Live Map & Forecast Widget */}
+            <div className="bg-slate-900/80 rounded-2xl p-6 border border-slate-800 shadow-xl space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                  <span className="text-red-500">🚩</span> Windy.com — Živá Větrná Mapa a Předpovědní Model (ECMWF)
+                </h3>
+                <span className="text-xs text-slate-400 font-medium">
+                  Souradnice: {weather.location?.lat.toFixed(4)}°N, {weather.location?.lng.toFixed(4)}°E
+                </span>
+              </div>
+              <p className="text-xs text-slate-400">
+                Interaktivní globální model ECMWF / ICON přímo pro aktuální pozici plavidla s částicovou animací větru a vln.
+              </p>
+
+              <div className="w-full h-[500px] rounded-xl overflow-hidden border border-slate-800 shadow-inner bg-slate-950">
+                <iframe
+                  title="Windy Weather Map"
+                  width="100%"
+                  height="100%"
+                  src={weather.windy_embed_url || `https://embed.windy.com/embed.html?type=map&location=coordinates&metricRain=mm&metricTemp=%C2%B0C&metricWind=kt&zoom=9&overlay=wind&product=ecmwf&level=surface&lat=${weather.location?.lat || 43.5081}&lon=${weather.location?.lng || 16.4402}&detailLat=${weather.location?.lat || 43.5081}&detailLon=${weather.location?.lng || 16.4402}&metricGust=kt&detail=true`}
+                  frameBorder="0"
+                  className="w-full h-full"
+                ></iframe>
+              </div>
+            </div>
           </div>
         ) : null}
       </main>

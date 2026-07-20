@@ -116,6 +116,8 @@ async def get_weather(
                         "wind_barb": calculate_wind_barb(w_kn, w_deg)
                     })
 
+                windy_embed_url = f"https://embed.windy.com/embed.html?type=map&location=coordinates&metricRain=mm&metricTemp=%C2%B0C&metricWind=kt&zoom=9&overlay=wind&product=ecmwf&level=surface&lat={lat}&lon={lng}&detailLat={lat}&detailLon={lng}&metricGust=kt&detail=true"
+
                 return {
                     "temperature": temp,
                     "humidity": humidity,
@@ -128,13 +130,15 @@ async def get_weather(
                     "clouds": clouds,
                     "location": {"lat": lat, "lng": lng},
                     "wind_barb": barb_info,
+                    "windy_embed_url": windy_embed_url,
                     "forecast": forecast
                 }
     except Exception as e:
-        print(f"Open-Meteo API error: {e}")
+        print(f"Open-Meteo / Windy API error: {e}")
 
     # Fallback/Dummy data if API is down
     default_barb = calculate_wind_barb(8.5, 315.0)
+    windy_embed_url = f"https://embed.windy.com/embed.html?type=map&location=coordinates&metricRain=mm&metricTemp=%C2%B0C&metricWind=kt&zoom=9&overlay=wind&product=ecmwf&level=surface&lat={lat}&lon={lng}&detailLat={lat}&detailLon={lng}&metricGust=kt&detail=true"
     return {
         "temperature": 22.5,
         "humidity": 55.0,
@@ -147,5 +151,6 @@ async def get_weather(
         "clouds": 20.0,
         "location": {"lat": lat, "lng": lng},
         "wind_barb": default_barb,
+        "windy_embed_url": windy_embed_url,
         "forecast": []
     }
