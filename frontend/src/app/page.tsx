@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { dashboardApi, publicApi } from '@/lib/api';
 import { useTranslation } from '@/lib/i18n';
-import { formatVesselSpeed, formatWindSpeed, formatDistance, formatDepth } from '@/lib/units';
+import { formatVesselSpeed, formatWindSpeed, formatDistance, formatDepth, formatPressure } from '@/lib/units';
 
 interface DashboardStats {
   vessels: number;
