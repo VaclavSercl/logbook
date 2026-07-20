@@ -77,7 +77,7 @@ class Vessel(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
 
     owner = relationship("User", back_populates="vessels")
-    logbooks = relationship("Logbook", back_populates="vessel", cascade="all, delete-orphan")
+    logbooks = relationship("Logbook", back_populates="vessel")
     crew = relationship("CrewMember", back_populates="vessel", cascade="all, delete-orphan")
 
 
@@ -107,7 +107,8 @@ class Logbook(Base):
     __tablename__ = "logbooks"
 
     id = Column(String(36), primary_key=True, default=gen_uuid)
-    vessel_id = Column(String(36), ForeignKey("vessels.id"))
+    vessel_id = Column(String(36), ForeignKey("vessels.id", ondelete="SET NULL"), nullable=True)
+    vessel_name = Column(String(255), nullable=True)
     title = Column(String(255), nullable=False)
     voyage_from = Column(String(255))
     voyage_to = Column(String(255))

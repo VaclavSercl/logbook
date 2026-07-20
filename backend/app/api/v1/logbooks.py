@@ -18,9 +18,14 @@ async def list_logbooks(
     current_user=Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    query = select(Logbook).join(Vessel).where(Vessel.owner_id == str(current_user.id))
+    user_vessel_ids = [v.id for v in db.query(Vessel).filter(Vessel.owner_id == str(current_user.id)).all()]
+
     if vessel_id:
-        query = query.where(Logbook.vessel_id == str(vessel_id))
+        query = select(Logbook).where(Logbook.vessel_id == str(vessel_id))
+    else:
+        query = select(Logbook).where(
+            (Logbook.vessel_id.in_(user_vessel_ids)) | (Logbook.vessel_id == None)
+        )
     result = db.execute(query)
     return result.scalars().all()
 

@@ -82,7 +82,15 @@ async def delete_vessel(
     if vessel.owner_id != current_user.id:
         raise HTTPException(status_code=403, detail="Not authorized to delete this vessel")
     
-    # Smazat GPS body lodi
+    # Preserve all historical logbooks permanently by unlinking vessel_id and saving vessel_name
+    from app.models import Logbook
+    logbooks = db.query(Logbook).filter(Logbook.vessel_id == str(vessel_id)).all()
+    for lb in logbooks:
+        if not lb.vessel_name:
+            lb.vessel_name = vessel.name
+        lb.vessel_id = None
+
+    # Delete GPS points associated with vessel
     db.execute(delete(GpsPoint).where(GpsPoint.vessel_id == str(vessel_id)))
     
     db.delete(vessel)

@@ -90,15 +90,16 @@ class LogbookCreate(BaseModel):
 
 class LogbookResponse(BaseModel):
     id: UUID
-    vessel_id: UUID
+    vessel_id: Optional[UUID] = None
+    vessel_name: Optional[str] = None
     title: str
-    voyage_from: Optional[str]
-    voyage_to: Optional[str]
+    voyage_from: Optional[str] = None
+    voyage_to: Optional[str] = None
     status: str
     is_public: bool
-    started_at: Optional[datetime]
-    ended_at: Optional[datetime]
-    closed_at: Optional[datetime]
+    started_at: Optional[datetime] = None
+    ended_at: Optional[datetime] = None
+    closed_at: Optional[datetime] = None
     created_at: datetime
 
     class Config:
