@@ -145,7 +145,7 @@ def auto_generate_schedules(
             created_galley_count += 1
 
             current_date += timedelta(days=1)
-            cook_idx += 1
+            cook_idx += 2
 
     db.commit()
 
