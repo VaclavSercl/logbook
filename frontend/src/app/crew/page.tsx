@@ -609,6 +609,77 @@ export default function CrewPage() {
     }
   };
 
+  const formatMemberDisplayName = (m?: any) => {
+    if (!m) return '—';
+    const full = `${m.first_name || ''} ${m.last_name || ''}`.trim() || m.name || '';
+    return m.nickname ? `${full} „${m.nickname}“` : full;
+  };
+
+  const formatCzechDate = (d: Date) => {
+    const days = ['neděle', 'pondělí', 'úterý', 'středa', 'čtvrtek', 'pátek', 'sobota'];
+    const dayName = days[d.getDay()];
+    const dayNum = String(d.getDate()).padStart(2, '0');
+    const monthNum = String(d.getMonth() + 1).padStart(2, '0');
+    const yearNum = d.getFullYear();
+    return `${dayName} ${dayNum}.${monthNum}.${yearNum}`;
+  };
+
+  const getGroupedDailySchedules = () => {
+    const map: {
+      [dateKey: string]: {
+        date: Date;
+        dateStr: string;
+        czechDateStr: string;
+        galley: GalleyDuty | null;
+        watches: WatchSchedule[];
+      };
+    } = {};
+
+    galleyDuties.forEach((g) => {
+      const d = new Date(g.date);
+      const dateKey = d.toISOString().slice(0, 10);
+      if (!map[dateKey]) {
+        map[dateKey] = {
+          date: d,
+          dateStr: dateKey,
+          czechDateStr: formatCzechDate(d),
+          galley: g,
+          watches: [],
+        };
+      } else {
+        map[dateKey].galley = g;
+      }
+    });
+
+    watchSchedules.forEach((w) => {
+      const d = new Date(w.start_time);
+      const dateKey = d.toISOString().slice(0, 10);
+      if (!map[dateKey]) {
+        map[dateKey] = {
+          date: d,
+          dateStr: dateKey,
+          czechDateStr: formatCzechDate(d),
+          galley: null,
+          watches: [w],
+        };
+      } else {
+        map[dateKey].watches.push(w);
+      }
+    });
+
+    const keys = Object.keys(map).sort();
+    return keys.map((k) => {
+      const entry = map[k];
+      entry.watches.sort(
+        (a, b) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime()
+      );
+      return entry;
+    });
+  };
+
+  const groupedDailySchedules = getGroupedDailySchedules();
+  const selectedVesselName = vessels.find((v) => v.id === selectedVesselId)?.name || 'Jachta';
+
   // Hydration state
   if (!mounted) {
     return (
