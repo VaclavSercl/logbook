@@ -369,3 +369,59 @@ class GeofenceZoneResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+# ── Cashbox Expenses ─────────────────────────────────
+
+class CashboxExpenseCreate(BaseModel):
+    vessel_id: UUID
+    payer_name: Optional[str] = "Kapitán"
+    category: str = "proviant"
+    amount: float
+    currency: str = "EUR"
+    description: str
+
+
+class CashboxExpenseResponse(BaseModel):
+    id: UUID
+    vessel_id: UUID
+    payer_name: Optional[str]
+    category: str
+    amount: float
+    currency: str
+    description: str
+    date: datetime
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+# ── Anchor Log & Alarm ────────────────────────────────
+
+class AnchorLogCreate(BaseModel):
+    vessel_id: UUID
+    latitude: float
+    longitude: float
+    depth: Optional[float] = None
+    chain_length: Optional[float] = None
+    alarm_radius: Optional[float] = 30.0
+    notes: Optional[str] = None
+
+
+class AnchorLogResponse(BaseModel):
+    id: UUID
+    vessel_id: UUID
+    status: str
+    latitude: float
+    longitude: float
+    depth: Optional[float]
+    chain_length: Optional[float]
+    alarm_radius: Optional[float]
+    notes: Optional[str]
+    dropped_at: datetime
+    raised_at: Optional[datetime]
+
+    class Config:
+        from_attributes = True
+

@@ -8,7 +8,7 @@ from app.config import settings
 from app.database import engine, Base, SessionLocal
 from app.services.seed_modules import seed_default_modules
 from app.services.audit_service import register_audit_listeners
-from app.api.v1 import auth, vessels, logbooks, entries, gps, ai, export, modules, dashboard, sparrow, crew, weather, watches, galley, ais, geofences
+from app.api.v1 import auth, vessels, logbooks, entries, gps, ai, export, modules, dashboard, sparrow, crew, weather, watches, galley, ais, geofences, cashbox, anchoring
 
 # Register SQLAlchemy audit listeners
 register_audit_listeners()
@@ -62,6 +62,8 @@ app.include_router(watches.router, prefix=f"{api_prefix}/watches", tags=["watche
 app.include_router(galley.router, prefix=f"{api_prefix}/galley", tags=["galley"])
 app.include_router(ais.router, prefix=f"{api_prefix}/ais", tags=["ais"])
 app.include_router(geofences.router, prefix=f"{api_prefix}/geofences", tags=["geofences"])
+app.include_router(cashbox.router, prefix=f"{api_prefix}/cashbox", tags=["cashbox"])
+app.include_router(anchoring.router, prefix=f"{api_prefix}/anchoring", tags=["anchoring"])
 
 
 @app.get("/health")

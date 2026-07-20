@@ -23,7 +23,7 @@ async def list_crew(
     vessel = vessel_result.scalar_one_or_none()
     if not vessel:
         raise HTTPException(status_code=404, detail="Vessel not found")
-    if vessel.owner_id != current_user.id:
+    if str(vessel.owner_id) != str(current_user.id):
         raise HTTPException(status_code=403, detail="Not authorized to access this vessel's crew")
 
     result = db.execute(
@@ -43,7 +43,7 @@ async def create_crew_member(
     vessel = vessel_result.scalar_one_or_none()
     if not vessel:
         raise HTTPException(status_code=404, detail="Vessel not found")
-    if vessel.owner_id != current_user.id:
+    if str(vessel.owner_id) != str(current_user.id):
         raise HTTPException(status_code=403, detail="Not authorized to add crew to this vessel")
 
     crew_member = CrewMember(
@@ -73,7 +73,7 @@ async def delete_crew_member(
     # Check if vessel owner matches current user
     vessel_result = db.execute(select(Vessel).where(Vessel.id == crew_member.vessel_id))
     vessel = vessel_result.scalar_one_or_none()
-    if not vessel or vessel.owner_id != current_user.id:
+    if not vessel or str(vessel.owner_id) != str(current_user.id):
         raise HTTPException(status_code=403, detail="Not authorized to delete this crew member")
 
     db.delete(crew_member)

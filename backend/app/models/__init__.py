@@ -301,4 +301,41 @@ class GeofenceZone(Base):
     logbook = relationship("Logbook")
 
 
+class CashboxExpense(Base):
+    __tablename__ = "cashbox_expenses"
+
+    id = Column(String(36), primary_key=True, default=gen_uuid)
+    vessel_id = Column(String(36), ForeignKey("vessels.id"), index=True)
+    payer_name = Column(String(255), nullable=True)
+    category = Column(String(50), default="proviant") # proviant, palivo, pristav, oprava, ostatni
+    amount = Column(Float, nullable=False)
+    currency = Column(String(10), default="EUR")
+    description = Column(String(255), nullable=False)
+    date = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    vessel = relationship("Vessel")
+
+
+class AnchorLog(Base):
+    __tablename__ = "anchor_logs"
+
+    id = Column(String(36), primary_key=True, default=gen_uuid)
+    vessel_id = Column(String(36), ForeignKey("vessels.id"), index=True)
+    logbook_id = Column(String(36), ForeignKey("logbooks.id"), nullable=True)
+    status = Column(String(20), default="dropped") # dropped, raised
+    latitude = Column(Float, nullable=False)
+    longitude = Column(Float, nullable=False)
+    depth = Column(Float, nullable=True)
+    chain_length = Column(Float, nullable=True)
+    alarm_radius = Column(Float, default=30.0)
+    notes = Column(Text, nullable=True)
+    dropped_at = Column(DateTime, default=datetime.utcnow)
+    raised_at = Column(DateTime, nullable=True)
+
+    vessel = relationship("Vessel")
+    logbook = relationship("Logbook")
+
+
+
 

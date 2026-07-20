@@ -26,7 +26,7 @@ async def list_watch_groups(
     vessel = vessel_result.scalar_one_or_none()
     if not vessel:
         raise HTTPException(status_code=404, detail="Vessel not found")
-    if vessel.owner_id != current_user.id:
+    if str(vessel.owner_id) != str(current_user.id):
         raise HTTPException(status_code=403, detail="Not authorized to access this vessel's watch groups")
 
     result = db.execute(
@@ -45,7 +45,7 @@ async def create_watch_group(
     vessel = vessel_result.scalar_one_or_none()
     if not vessel:
         raise HTTPException(status_code=404, detail="Vessel not found")
-    if vessel.owner_id != current_user.id:
+    if str(vessel.owner_id) != str(current_user.id):
         raise HTTPException(status_code=403, detail="Not authorized")
 
     group = WatchGroup(
@@ -77,7 +77,7 @@ async def delete_watch_group(
         raise HTTPException(status_code=404, detail="Watch group not found")
         
     vessel = db.query(Vessel).filter(Vessel.id == group.vessel_id).first()
-    if not vessel or vessel.owner_id != current_user.id:
+    if not vessel or str(vessel.owner_id) != str(current_user.id):
         raise HTTPException(status_code=403, detail="Not authorized")
 
     db.delete(group)

@@ -463,15 +463,17 @@ export default function DashboardPage() {
             <div className="w-6 h-6 bg-gradient-to-br from-[#5e6ad2] to-[#7170ff] rounded-md flex items-center justify-center text-xs font-semibold text-white shadow-md shadow-[#5e6ad2]/10 group-hover:scale-105 transition">⚓</div>
             <h1 className="text-sm font-semibold tracking-tight text-[#f7f8f8]">LOGBOOK</h1>
           </Link>
-          <nav className="flex items-center gap-1">
-            <Link href="/logbook" className="text-xs font-medium text-[#8a8f98] hover:text-[#f7f8f8] px-3 py-2 rounded-md hover:bg-white/[0.04] transition">{t('common.logbook')}</Link>
-            <Link href="/map" className="text-xs font-medium text-[#8a8f98] hover:text-[#f7f8f8] px-3 py-2 rounded-md hover:bg-white/[0.04] transition">{t('common.map')}</Link>
-            <Link href="/weather" className="text-xs font-medium text-[#8a8f98] hover:text-[#f7f8f8] px-3 py-2 rounded-md hover:bg-white/[0.04] transition">{t('common.weather')}</Link>
-            <Link href="/vessels" className="text-xs font-medium text-[#8a8f98] hover:text-[#f7f8f8] px-3 py-2 rounded-md hover:bg-white/[0.04] transition">{t('common.vessels')}</Link>
-            <Link href="/crew" className="text-xs font-medium text-[#8a8f98] hover:text-[#f7f8f8] px-3 py-2 rounded-md hover:bg-white/[0.04] transition">{t('common.crew')}</Link>
-            <Link href="/settings" className="text-xs font-medium text-[#8a8f98] hover:text-[#f7f8f8] px-3 py-2 rounded-md hover:bg-white/[0.04] transition">{t('common.settings')}</Link>
-            <Link href="/help" className="text-xs font-medium text-[#8a8f98] hover:text-[#f7f8f8] px-3 py-2 rounded-md hover:bg-white/[0.04] transition">{t('common.help')}</Link>
-            
+          <nav className="flex items-center gap-1 flex-wrap">
+            <Link href="/logbook" className="text-xs font-medium text-[#8a8f98] hover:text-[#f7f8f8] px-2.5 py-1.5 rounded-md hover:bg-white/[0.04] transition">📖 Logbook</Link>
+            <Link href="/vessels" className="text-xs font-medium text-[#8a8f98] hover:text-[#f7f8f8] px-2.5 py-1.5 rounded-md hover:bg-white/[0.04] transition">⛵ Lodě</Link>
+            <Link href="/crew" className="text-xs font-medium text-[#8a8f98] hover:text-[#f7f8f8] px-2.5 py-1.5 rounded-md hover:bg-white/[0.04] transition">👥 Posádka</Link>
+            <Link href="/weather" className="text-xs font-medium text-[#8a8f98] hover:text-[#f7f8f8] px-2.5 py-1.5 rounded-md hover:bg-white/[0.04] transition">🌤️ Meteo</Link>
+            <Link href="/anchoring" className="text-xs font-medium text-[#8a8f98] hover:text-[#f7f8f8] px-2.5 py-1.5 rounded-md hover:bg-white/[0.04] transition">⚓ Kotvení</Link>
+            <Link href="/cashbox" className="text-xs font-medium text-[#8a8f98] hover:text-[#f7f8f8] px-2.5 py-1.5 rounded-md hover:bg-white/[0.04] transition">💰 Pokladna</Link>
+            <Link href="/map" className="text-xs font-medium text-[#8a8f98] hover:text-[#f7f8f8] px-2.5 py-1.5 rounded-md hover:bg-white/[0.04] transition">🗺️ Mapa</Link>
+            <Link href="/settings" className="text-xs font-medium text-[#8a8f98] hover:text-[#f7f8f8] px-2.5 py-1.5 rounded-md hover:bg-white/[0.04] transition">⚙️ Nastavení</Link>
+            <Link href="/help" className="text-xs font-medium text-[#8a8f98] hover:text-[#f7f8f8] px-2.5 py-1.5 rounded-md hover:bg-white/[0.04] transition">❓ Nápověda</Link>
+
             <div className="flex items-center gap-0.5 bg-white/[0.02] border border-white/[0.05] rounded-md p-0.5 ml-2">
               <button
                 onClick={() => changeLanguage('cs')}
@@ -526,15 +528,18 @@ export default function DashboardPage() {
         </div>
 
         {/* Quick Actions Title */}
-        <h3 className="text-xs font-semibold text-[#62666d] uppercase tracking-wider mb-4">Rychlé akce</h3>
+        <h3 className="text-xs font-semibold text-[#62666d] uppercase tracking-wider mb-4 font-mono-custom">Rychlé akce a moduly</h3>
 
         {/* Quick Actions Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-          <QuickAction title="Nový deník" description="Založit novou knihu plavby" href="/logbook?showForm=true" icon="📖" />
-          <QuickAction title="Nový záznam" description="Přidat zápis do deníku" href="/logbook/new" icon="📝" />
-          <QuickAction title="Zobrazit mapu" description="GPS trasa a OpenSeaMap" href="/map" icon="🗺️" />
-          <QuickAction title="Správa plavidel" description="Seznam lodí a rozměry" href="/vessels" icon="🚢" />
-          <QuickAction title="Konfigurace modulů" description="Nastavení pluginů a PWA" href="/settings" icon="⚙️" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <QuickAction title="Lodní Deníky" description="Zprávy z plavby, autopilot a historie" href="/logbook" icon="📖" />
+          <QuickAction title="Posádka & Služby" description="Členové, kormidlo a hlídky v kuchyni" href="/crew" icon="👥" />
+          <QuickAction title="Meteo & Synoptika" description="Open-Meteo, předpověď a WMO barbs" href="/weather" icon="🌤️" />
+          <QuickAction title="Kotvení & Alarm" description="Kotevní geofence, depth & řetěz" href="/anchoring" icon="⚓" />
+          <QuickAction title="Lodní Pokladna" description="Rozpočet, proviant, palivo & poplatky" href="/cashbox" icon="💰" />
+          <QuickAction title="Mapa & AIS" description="Zobrazení trasy, GPS & AIS terče" href="/map" icon="🗺️" />
+          <QuickAction title="Správa Plavidel" description="Seznam lodí, rozměry a specifikace" href="/vessels" icon="🚢" />
+          <QuickAction title="Nastavení Systemu" description="Moduly, Telegram bot a PWA" href="/settings" icon="⚙️" />
         </div>
       </main>
     </div>

@@ -178,6 +178,27 @@ export const galleyApi = {
   deleteDuty: (dutyId: string, token: string) =>
     apiFetch(`/galley/duty/${dutyId}`, { method: 'DELETE', token }),
 };
+
+// Cashbox API
+export const cashboxApi = {
+  listExpenses: (vesselId: string, token: string) =>
+    apiFetch(`/cashbox/vessel/${vesselId}`, { token }),
+  createExpense: (data: { vessel_id: string; payer_name?: string; category: string; amount: number; currency: string; description: string }, token: string) =>
+    apiFetch('/cashbox', { method: 'POST', body: data, token }),
+  deleteExpense: (id: string, token: string) =>
+    apiFetch(`/cashbox/${id}`, { method: 'DELETE', token }),
+};
+
+// Anchoring API
+export const anchoringApi = {
+  getStatus: (vesselId: string, token: string) =>
+    apiFetch(`/anchoring/vessel/${vesselId}/status`, { token }),
+  dropAnchor: (data: { vessel_id: string; latitude: number; longitude: number; depth?: number; chain_length?: number; alarm_radius?: number; notes?: string }, token: string) =>
+    apiFetch('/anchoring/drop', { method: 'POST', body: data, token }),
+  raiseAnchor: (anchorId: string, token: string) =>
+    apiFetch(`/anchoring/raise/${anchorId}`, { method: 'POST', token }),
+};
+
 // Public API (No tokens required)
 export const publicApi = {
   listLogbooks: () => apiFetch<Array<{
