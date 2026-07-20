@@ -232,16 +232,17 @@ export default function LogbookPage({ searchParams }: { searchParams?: { showFor
     e.preventDefault();
     if (!logbookTitle.trim() || !token) return;
 
-    if (!selectedVesselId) {
-      alert('⚠️ Nelze vytvořit lodní deník bez vybraného plavidla. Nejprve prosím vytvořte loď.');
-      return;
+    // Determine target vessel id
+    let targetVesselId = selectedVesselId;
+    if (!targetVesselId && vessels.length > 0) {
+      targetVesselId = vessels[0].id;
     }
 
     try {
       setLogbookLoading(true);
       setError('');
       const newLogbook = await logbooksApi.create({
-        vessel_id: selectedVesselId,
+        vessel_id: targetVesselId || undefined,
         title: logbookTitle,
         voyage_from: voyageFrom || undefined,
         voyage_to: voyageTo || undefined,

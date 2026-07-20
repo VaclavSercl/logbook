@@ -36,9 +36,29 @@ async def create_logbook(
     current_user=Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    logbook = Logbook(**data.model_dump())
+    dump = data.model_dump()
+    vessel_id = dump.get("vessel_id")
+
+    if vessel_id:
+        v_id_str = str(vessel_id)
+        dump["vessel_id"] = v_id_str
+        vessel = db.query(Vessel).filter(Vessel.id == v_id_str).first()
+        if vessel:
+            dump["vessel_name"] = vessel.name
+    else:
+        # Check if user has an active vessel
+        first_vessel = db.query(Vessel).filter(Vessel.owner_id == str(current_user.id)).first()
+        if first_vessel:
+            dump["vessel_id"] = first_vessel.id
+            dump["vessel_name"] = first_vessel.name
+        else:
+            dump["vessel_id"] = None
+            dump["vessel_name"] = "Archivní plavba"
+
+    logbook = Logbook(**dump)
     db.add(logbook)
-    db.flush()
+    db.commit()
+    db.refresh(logbook)
     return logbook
 
 

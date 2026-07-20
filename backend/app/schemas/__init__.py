@@ -79,7 +79,7 @@ class VesselResponse(BaseModel):
 # ── Logbook ───────────────────────────────────────────
 
 class LogbookCreate(BaseModel):
-    vessel_id: UUID
+    vessel_id: Optional[UUID] = None
     title: str = Field(..., max_length=255)
     voyage_from: Optional[str] = None
     voyage_to: Optional[str] = None
