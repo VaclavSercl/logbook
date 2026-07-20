@@ -24,7 +24,7 @@ const RANDOM_VOYAGES = [
       {
         time: "10:00 UTC",
         category: "Vyplutí",
-        notes: `Vyplutí z mariny Rafina (37°55'N, 23°40'E). Vítr NW ${formatWindSpeed(12)}, stav moře mírný, tlak 1013 hPa. Všechny lodní systémy zelené.`,
+        notes: `Vyplutí z mariny Rafina (37°55'N, 23°40'E). Vítr NW ${formatWindSpeed(12)}, stav moře mírný, tlak ${formatPressure(1013)}. Všechny lodní systémy zelené.`,
         locked: true,
       },
       {
@@ -45,7 +45,7 @@ const RANDOM_VOYAGES = [
       {
         time: "08:15 UTC",
         category: "Příprava",
-        notes: "Kontrola lanoví a motoru v marině ACI Split. Tlak vzduchu klesá na 1009 hPa, hlášen déšť. Posádka obléká nepromokavé obleky.",
+        notes: `Kontrola lanoví a motoru v marině ACI Split. Tlak vzduchu klesá na ${formatPressure(1009)}, hlášen déšť. Posádka obléká nepromokavé obleky.`,
         locked: true,
       },
       {

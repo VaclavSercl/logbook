@@ -36,11 +36,13 @@ Kdykoliv obdržíš pokyn: **"Spusť hodinový zápis do lodního deníku"**, pr
 
 ### 6. Sestavení zápisu (Gemini 3.5 Flash)
 * Zformuj profesionální kapitánský zápis v češtině (2 až 4 věty).
-* **STRIKTNÍ PRAVIDLA PRO JEDNOTKY (POVINNÉ VŠUDE):**
+* **STRIKTNÍ PRAVIDLA PRO JEDNOTKY (KLASICKÉ ANGLICKÉ / NÁMOŘNÍ MÍRY PRVNÍ + METRICKÉ V ZÁVORCE):**
   1. **Rychlost lodi:** Uzle a v závorce km/h -> `kn (km/h)`, např. `6.8 kn (12.6 km/h)`
   2. **Vzdálenost:** Námořní míle a v závorce km -> `NM (km)`, např. `8.2 NM (15.2 km)`
-  3. **Hloubka:** Stopy a v závorce metry -> `ft (m)`, např. `19.7 ft (6.0 m)`
-  4. **Rychlost větru:** Metry za sekundu a v závorce Beaufortova stupnice -> `m/s (Bft)`, např. `7.5 m/s (4 Bft)`
+  3. **Hloubka, ponor & rozměry lodi:** Stopy a v závorce metry -> `ft (m)`, např. `19.7 ft (6.0 m)`
+  4. **Rychlost větru:** Uzle a v závorce m/s + Beaufortova stupnice -> `kn (m/s, Bft)`, např. `12.0 kn (6.2 m/s, 4 Bft)`
+  5. **Teplota:** Stupně Fahrenheita a v závorce stupně Celsia -> `°F (°C)`, např. `72.5 °F (22.5 °C)`
+  6. **Tlak vzduchu:** Palce rtuti a v závorce hPa -> `inHg (hPa)`, např. `29.91 inHg (1013 hPa)`
 * Pokud loď stojí v přístavu/marině/zátoce, popiš toto místo a kotvení.
 * Pokud pluje na moři, popiš stav plavby, chování lodi na vlnách, plachty/motor a vítr.
 * Zápis musí plynule navazovat na předchozí záznamy.

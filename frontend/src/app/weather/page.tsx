@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Navbar from '@/components/Navbar';
 import { vesselsApi, weatherApi } from '@/lib/api';
-import { formatWindSpeed, formatVesselSpeed, formatDistance } from '@/lib/units';
+import { formatWindSpeed, formatVesselSpeed, formatDistance, formatTemperature, formatPressure } from '@/lib/units';
 
 interface WindBarbInfo {
   speed_knots: number;
@@ -229,11 +229,11 @@ export default function WeatherPage() {
                     </div>
                     <div className="flex justify-between items-center py-1.5 border-b border-slate-800 text-sm">
                       <span className="text-slate-400">Teplota vzduchu:</span>
-                      <span className="font-semibold text-white">{weather.temperature} °C</span>
+                      <span className="font-semibold text-white">{formatTemperature(weather.temperature)}</span>
                     </div>
                     <div className="flex justify-between items-center py-1.5 border-b border-slate-800 text-sm">
                       <span className="text-slate-400">Tlak vzduchu:</span>
-                      <span className="font-semibold text-white">{weather.pressure} hPa</span>
+                      <span className="font-semibold text-white">{formatPressure(weather.pressure)}</span>
                     </div>
                     <div className="flex justify-between items-center py-1.5 border-b border-slate-800 text-sm">
                       <span className="text-slate-400">Vlhkost:</span>
@@ -272,7 +272,7 @@ export default function WeatherPage() {
                           {item.wind_barb?.symbol || '○'}
                         </div>
                         <span className="text-[11px] text-slate-300 font-medium">{item.wind_direction}</span>
-                        <span className="text-xs text-slate-400">{item.temperature}°C</span>
+                        <span className="text-[11px] text-slate-400">{formatTemperature(item.temperature)}</span>
                       </div>
                     );
                   })}

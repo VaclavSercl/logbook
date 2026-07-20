@@ -1,9 +1,9 @@
-'use client';
-
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import Navbar from '@/components/Navbar';
 import { vesselsApi } from '@/lib/api';
+import { formatLengthOrDepth } from '@/lib/units';
 
 interface Vessel {
   id: string;
@@ -262,15 +262,15 @@ export default function VesselsPage() {
                   <div className="grid grid-cols-3 gap-2 py-2 border-y border-slate-700/50">
                     <div className="text-center">
                       <p className="text-slate-500 text-xs uppercase font-semibold">Délka (L)</p>
-                      <p className="text-slate-200 font-bold mt-0.5">{v.length ? `${v.length} m` : 'N/A'}</p>
+                      <p className="text-slate-200 font-bold mt-0.5 text-xs">{v.length ? formatLengthOrDepth(v.length) : 'N/A'}</p>
                     </div>
                     <div className="text-center">
                       <p className="text-slate-500 text-xs uppercase font-semibold">Šířka (B)</p>
-                      <p className="text-slate-200 font-bold mt-0.5">{v.beam ? `${v.beam} m` : 'N/A'}</p>
+                      <p className="text-slate-200 font-bold mt-0.5 text-xs">{v.beam ? formatLengthOrDepth(v.beam) : 'N/A'}</p>
                     </div>
                     <div className="text-center">
                       <p className="text-slate-500 text-xs uppercase font-semibold">Ponor (T)</p>
-                      <p className="text-slate-200 font-bold mt-0.5">{v.draft ? `${v.draft} m` : 'N/A'}</p>
+                      <p className="text-slate-200 font-bold mt-0.5 text-xs">{v.draft ? formatLengthOrDepth(v.draft) : 'N/A'}</p>
                     </div>
                   </div>
 

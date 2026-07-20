@@ -56,7 +56,7 @@ async def call_llm(prompt: str) -> str:
     raise RuntimeError("No LLM API keys configured or call failed.")
 
 
-from app.services.units import format_vessel_speed, format_wind_speed, format_distance, format_depth
+from app.services.units import format_vessel_speed, format_wind_speed, format_distance, format_depth, format_temperature, format_pressure
 
 async def generate_hourly_log_entry(
     vessel_name: str,
@@ -81,6 +81,8 @@ async def generate_hourly_log_entry(
 
     speed_fmt = format_vessel_speed(avg_speed)
     wind_fmt = format_wind_speed(weather.get('wind_speed', 0.0))
+    temp_fmt = format_temperature(weather.get('temperature', 20.0))
+    press_fmt = format_pressure(weather.get('pressure', 1013.0))
 
     prompt = f"""
 Jsi Njoror, AI vládce projektu lodního deníku na lodi {vessel_name}.
@@ -94,21 +96,22 @@ Telemetrická data a kontext pro tento zápis:
 - Průměrná rychlost od vyplutí: {speed_fmt}
 - Aktuální vítr: {wind_fmt}, směr {weather.get('wind_direction', 'N')}
 - Synoptické značení větru (Wind barb): {weather.get('wind_barb', {}).get('text_description', 'N/A')}
-- Tlak vzduchu: {weather.get('pressure', 1013.0):.1f} hPa
-- Teplota vzduchu: {weather.get('temperature', 20.0):.1f} °C
+- Tlak vzduchu: {press_fmt}
+- Teplota vzduchu: {temp_fmt}
 - Stav moře (Douglasova stupnice): {weather.get('sea_state', '0 — Calm')}
 - Oblačnost: {weather.get('clouds', 0.0)}%
 
-POVINNÉ PRAVIDLO JEDNOTEK VŠUDE:
-- Rychlost lodi udávej VŽDY v uzlech a v závorce km/h: uzle (km/h), např. "{speed_fmt}".
-- Vzdálenost udávej VŽDY v námořních mílích a v závorce km: NM (km), např. "{format_distance(5.4)}".
-- Hloubku udávej VŽDY ve stopách a v závorce metry: ft (m), např. "{format_depth(6.0)}".
-- Rychlost větru udávej VŽDY v m/s a v závorce Beaufortova stupnice: m/s (Bft), např. "{wind_fmt}".
+STRIKTNÍ PRAVIDLA JEDNOTEK (KLASICKÉ ANGLICKÉ / NÁMOŘNÍ MÍRY PRVNÍ + METRICKÉ V ZÁVORCE):
+- Rychlost lodi: uzle a v závorce km/h -> {speed_fmt}
+- Vzdálenost: NM a v závorce km -> {format_distance(5.4)}
+- Hloubka, ponor a rozměry lodi: ft a v závorce metry -> {format_depth(6.0)}
+- Rychlost větru: kn a v závorce m/s + Beaufort -> {wind_fmt}
+- Teplota: °F a v závorce °C -> {temp_fmt}
+- Tlak vzduchu: inHg a v závorce hPa -> {press_fmt}
 
 Pokyny pro styl a kontinuitu:
 - Zápis musí znít jako od velmi zkušeného, stručného a věcného kapitána námořní plavby.
-- Navazuj plynule na předchozí zápisy (pokud jsou k dispozici). Zkontroluj, zda loď změnila polohu, zda se mění počasí (např. zesílení větru, pokles tlaku) a napiš to jako plynulé pokračování cesty.
-- Udržuj naprosto stejnou strukturu, terminologii a formát vyjadřování jako v předchozích zápisech pro zachování jednotného stylu celého deníku.
+- Navazuj plynule na předchozí zápisy (pokud jsou k dispozici).
 - Nepoužívej žádný úvodní ani závěrečný doprovodný text. Začni ihned samotným textem zápisu.
 - Zápis by měl mít délku 2 až 4 věty.
 """
