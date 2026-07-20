@@ -258,6 +258,31 @@ export default function CrewPage() {
     setIncludeInGalley(isCrewRole);
   };
 
+  const autoRecalculateSchedulesIfActive = async (activeToken: string) => {
+    if (!activeLogbookId) return;
+    try {
+      const now = new Date();
+      const startIso = autoStart ? new Date(autoStart).toISOString() : now.toISOString();
+      const endIso = autoEnd ? new Date(autoEnd).toISOString() : new Date(now.getTime() + 7 * 86400000).toISOString();
+
+      await watchesApi.autoGenerate(
+        {
+          logbook_id: activeLogbookId,
+          started_at: startIso,
+          ended_at: endIso,
+          watch_duration_hours: parseFloat(autoWatchDuration) || 2.0,
+          persons_per_watch: parseInt(autoPersonsPerWatch, 10) || 2,
+          watch_start_hour: 20,
+          watch_start_minute: 0,
+          clear_existing: true,
+        },
+        activeToken
+      );
+    } catch (err) {
+      console.warn('Auto recalculate error:', err);
+    }
+  };
+
   const handleSaveCrew = async (e: React.FormEvent) => {
     e.preventDefault();
     const activeToken = token || localStorage.getItem('token');
@@ -280,10 +305,16 @@ export default function CrewPage() {
         include_in_galley: includeInGalley,
       };
 
+      let dutyChanged = true;
       if (editingMember) {
+        dutyChanged = editingMember.include_in_watches !== includeInWatches || editingMember.include_in_galley !== includeInGalley;
         await crewApi.update(editingMember.id, payload, activeToken);
       } else {
         await crewApi.create(payload, activeToken);
+      }
+
+      if (dutyChanged && activeLogbookId && (watchSchedules.length > 0 || galleyDuties.length > 0)) {
+        await autoRecalculateSchedulesIfActive(activeToken);
       }
 
       setIsCrewModalOpen(false);
@@ -302,6 +333,11 @@ export default function CrewPage() {
         ? { include_in_watches: !currentVal }
         : { include_in_galley: !currentVal };
       await crewApi.update(member.id, updateData, activeToken);
+
+      if (activeLogbookId && (watchSchedules.length > 0 || galleyDuties.length > 0)) {
+        await autoRecalculateSchedulesIfActive(activeToken);
+      }
+
       fetchData(selectedVesselId);
     } catch (err) {
       alert('Chyba při aktualizaci zařazení do služeb.');
@@ -313,6 +349,11 @@ export default function CrewPage() {
     if (!activeToken || !confirm('Opravdu odebrat člena posádky?')) return;
     try {
       await crewApi.delete(id, activeToken);
+
+      if (activeLogbookId && (watchSchedules.length > 0 || galleyDuties.length > 0)) {
+        await autoRecalculateSchedulesIfActive(activeToken);
+      }
+
       fetchData(selectedVesselId);
     } catch (err) {
       alert('Chyba při mazání.');
