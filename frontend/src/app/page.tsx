@@ -122,6 +122,7 @@ export default function DashboardPage() {
   const [mockWeather, setMockWeather] = useState("🌤️ NW 12 uzlů");
   const [mockDate, setMockDate] = useState("17. července 2026");
   const [mockHash, setMockHash] = useState("sha256:078b2d49a...");
+  const [mockEntries, setMockEntries] = useState<any[]>([]);
   const [selectedVesselId, setSelectedVesselId] = useState<string>('');
   const [activeLogbookId, setActiveLogbookId] = useState<string>('');
 
