@@ -53,7 +53,7 @@ def seed():
         default_modules = [
             ("logbook", "Lodní deník (Core)", "1.0.0", "Hlavní jádro lodního deníku splňující legislativní standardy IMO.", "📖", 1, 1),
             ("gps", "GPS Tracker", "1.0.0", "Automatické logování a zpracování GPS souřadnic plavidla.", "🗺️", 1, 1),
-            ("ai-copilot", "AI Copilot (Gemini)", "1.0.0", "Hlasové logování a automatická analýza zápisů přes Gemini 3.5.", "🤖", 1, 1),
+            ("ai-copilot", "AI Copilot (Gemini)", "1.0.0", "Hlasové logování a automatická analýza zápisů přes Gemini 3.6.", "🤖", 1, 1),
             ("weather", "Meteostanice (Weather)", "1.0.0", "Proxy modul pro stahování počasí z modelů Open-Meteo.", "🌤️", 1, 1),
             ("export", "Exporty & Podpis", "1.0.0", "Export lodního deníku do podepsaného PDF a GPX trasy.", "📤", 1, 1),
         ]

@@ -1,0 +1,514 @@
+I am going to check the current workspace directory and check the permissions. Let's list the permissions first.
+I am going to check the current working directory and find the files in `/home/wwwenda/workspace/pirana` to see where the project 'Caslav' is located.
+I will inspect the `/home/wwwenda/.gemini/antigravity-cli/memory` directory to see if `MEMORY.md` or other memory files exist there.
+I am going to check if there are any files named `MEMORY.md` or similar in `/home/wwwenda/workspace/pirana`.
+I will check the contents of `/home/wwwenda/workspace/pirana/ai-orchestration/memory` to understand its structure.
+I will search for any file named `MEMORY.md` across `/home/wwwenda/workspace` or nearby folders.
+I will view the content of `/home/wwwenda/workspace/logbook/agent/memory/MEMORY.md` to restore context.
+I will run a command to list the directory structure under `/home/wwwenda/workspace/logbook` to locate the files and see what "hourly entry / write into the ship's log" script or task is present, or if we need to create one.
+I will view `/home/wwwenda/workspace/logbook/agent/workflows/WORKFLOW.md` to see what workflows are documented there.
+I will view `/home/wwwenda/workspace/logbook/agent/AGENT.md` to see what is documented about the agent's tasks, specifically if there is something about the hourly log entry.
+I will view `/home/wwwenda/workspace/logbook/agent/soul/SOUL.md` to see what is documented about the agent's soul and behavior.
+I will view `/home/wwwenda/workspace/logbook/agent/tools/TOOLS.md` to see if there are custom tools or commands defined for log entries.
+I will view `/home/wwwenda/workspace/logbook/auto_logbook.log` to see what output has been produced there.
+I will list all files in the backend application to see if there is an existing service or script for generating or recording log entries.
+I will view the content of `/home/wwwenda/workspace/logbook/backend/app/services/auto_logbook.py` to see what this service does and how it's executed or configured.
+I will execute the `auto_logbook.py` script using the project's virtual environment python to check if we can write a log entry now.
+I will wait for the task to finish running.
+I will search the repository for mentions of `auto_logbook` to see how it is supposed to be scheduled or run periodically.
+I will read `/home/wwwenda/workspace/logbook/auto_logbook_guide.md` to understand how the hourly logbook entry automation is designed to be set up.
+I will check if there is already an active cron job set up in the system crontab.
+I will view `/home/wwwenda/workspace/logbook/AGENTS.md` to see what instructions are stored there for the agent.
+I will query the SQLite database to verify that the newly generated log entry has been correctly saved.
+✅ **Hodinový zápis do lodního deníku byl úspěšně spuštěn a zaznamenán.**
+
+### Výsledek zápisu (Njoror)
+* **Plavidlo:** Jamajka-pokus
+* **Pozice:** 50.04612°N, 14.33374°E (Zázvorkova, Lužiny, Praha)
+* **Průměrná rychlost:** 0.0 uzlů
+* **Počasí:** 18.4 °C, vítr NW 6.7 kn, tlak 978.4 hPa, stav moře 1 (Calm), oblačnost 100 %
+
+> **Zapsaný text do deníku:**
+> *Plavidlo se přesunulo na novou pozici jihozápadním směrem, dopředná rychlost však nadále vykazuje hodnotu 0,0 uzlů. Barometrický tlak zaznamenal prudký pokles na 978,4 hPa při setrvalé stoprocentní oblačnosti a mírném zklidnění hladiny na stupeň 1. Palubní systémy pracují v nominálním režimu a posádka nadále udržuje zvýšenou bdělost vzhledem k indikovanému zhoršení povětrnostních podmínek.*
+
+---
+
+### Ověření automatického plánování
+Prověřil jsem systémový crontab a automatický spouštěč je aktivní a správně nastaven na každou celou hodinu:
+```cron
+0 * * * * cd /home/wwwenda/workspace/logbook && /home/wwwenda/.local/bin/agy --model "Gemini 3.5 Flash (Medium)" --dangerously-skip-permissions --print "Spusť hodinový zápis do lodního deníku" >> /home/wwwenda/workspace/logbook/auto_logbook.log 2>&1
+```
+
+### Související soubory
+* Skript generátoru: [auto_logbook.py](file:///home/wwwenda/workspace/logbook/backend/app/services/auto_logbook.py)
+* Návod k automatizaci: [auto_logbook_guide.md](file:///home/wwwenda/workspace/logbook/auto_logbook_guide.md)
+* Instrukce agenta: [AGENTS.md](file:///home/wwwenda/workspace/logbook/AGENTS.md)
+Zahájil jsem spuštění hodinové kontroly a zápisu do lodního deníku pomocí skriptu [auto_logbook.py](file:///home/wwwenda/workspace/logbook/backend/app/services/auto_logbook.py).
+
+Prosím o schválení spuštění příkazu. Po jeho provedení uvidíme výsledek a vygenerovaný zápis.
+Hodinový zápis do lodního deníku byl úspěšně spuštěn a zaznamenán.
+
+### ⚓ Shrnutí provedené kontroly a zápisu:
+1. **Vyhledání skriptu**: Našel jsem a spustil skript [auto_logbook.py](file:///home/wwwenda/workspace/logbook/backend/app/services/auto_logbook.py) v prostředí virtuální knihovny Pythonu.
+2. **Načtení telemetrie**:
+   - **Loď**: `Jamajka-pokus`
+   - **Pozice**: `50.04614°N, 14.33391°E` (Zázvorkova, Praha 13)
+   - **Průměrná rychlost**: `0.0 uzlů`
+   - **Počasí**: Teplota `19.4 °C`, vítr `7.3 uzlů NW`, tlak `978.7 hPa`, oblačnost `100 %`, stav moře `2 (Smooth)`.
+3. **Zápis do databáze**: Nový záznam byl úspěšně vložen do SQLite databáze [logbook.db](file:///home/wwwenda/workspace/logbook/backend/logbook.db).
+
+---
+
+### 📝 Vygenerovaný text zápisu:
+> **Datum/Čas:** 19. 07. 2026 15:00
+> **Pozice:** 50.04614° N, 14.33391° E (Zázvorkova)
+> **Stav:** Vítr NW 7.3 kt, tlak 978.7 hPa, teplota vzduchu 19.4 °C, stav moře 2 (Smooth), oblačnost 100%
+>
+> Plavidlo zaznamenalo pouze minimální posun severovýchodním směrem, přičemž dopředná rychlost zůstává nulová. Barometrický tlak se mírně stabilizoval na hodnotě 978,7 hPa při současném nárůstu síly větru na 7,3 uzlů a zvednutí hladiny na stupeň 2. Všechny lodní systémy vykazují nominální hodnoty a posádka nadále udržuje standardní režim bdělosti pod trvalou zataženou oblohou.
+Error: Individual quota reached. Please upgrade your subscription to increase your limits. Resets in 2h9m47s.
+Error: Individual quota reached. Please upgrade your subscription to increase your limits. Resets in 1h9m46s.
+Error: Individual quota reached. Please upgrade your subscription to increase your limits. Resets in 9m48s.
+
+=== SUCCESS: Automated Logbook Entry Created ===
+Vessel: Jamajka-pokus
+Position: 50.04613°N, 14.33413°E (Zázvorkova, Malá Ohrada, Velká Ohrada, Praha 13, obvod Praha 5, Praha, 155 00, Česko)
+Speed (avg): 0.9 knots
+Weather: 22.0°C, 8.0 kn NW, 1015.0 hPa
+Narrative:
+**Datum/Čas:** 19. 07. 2026 19:00
+**Pozice:** 50.04613° N, 14.33413° E (Zázvorkova)
+**Stav:** Vítr NW 8.0 kt, tlak 1015.0 hPa, teplota vzduchu 22.0 °C, stav moře 2 (Smooth), oblačnost 20%
+
+Plavidlo nadále setrvává bez aktivního dopředného pohybu, vykazujíc pouze nepatrný drift jihovýchodním směrem. Byl zaznamenán výrazný nárůst atmosférického tlaku na 1015,0 hPa doprovázený vyjasněním a poklesem oblačnosti na 20 %. Severozápadní vítr mírně zesílil na 8,0 uzlů, přičemž stav moře zůstává na stupni 2 a veškeré palubní systémy pracují v nominálním režimu.
+================================================
+
+
+=== SUCCESS: Automated Logbook Entry Created ===
+Vessel: Jamajka-pokus
+Position: 50.06997°N, 14.40951°E (Vltavská, Smíchov, Praha 5, obvod Praha 5, Praha, 150 21, Česko)
+Speed (avg): 9.4 knots
+Weather: 22.0°C, 8.0 kn NW, 1015.0 hPa
+Narrative:
+**Datum/Čas:** 19. 07. 2026 20:00
+**Pozice:** 50.06997° N, 14.40951° E (Smíchov)
+**Stav:** Vítr NW 8.0 kt, tlak 1015.0 hPa, teplota vzduchu 22.0 °C, stav moře 2 (Smooth), oblačnost 20%
+
+Plavidlo ukončilo předchozí setrvalý stav a zahájilo dopředný pohyb severovýchodním směrem s průměrnou rychlostí plavby 9,4 uzlů. Meteorologické podmínky zůstávají stabilní s tlakem 1015,0 hPa, jasnou oblohou a mírným severozápadním větrem o síle 8,0 uzlů. Pohonné systémy a kormidelní zařízení pracují v nominálním režimu bez závad.
+================================================
+
+
+=== SUCCESS: Automated Logbook Entry Created ===
+Vessel: Jamajka-pokus
+Position: 50.04611°N, 14.33421°E (Zázvorkova, Malá Ohrada, Velká Ohrada, Praha 13, obvod Praha 5, Praha, 155 00, Česko)
+Speed (avg): 0.0 knots
+Weather: 22.0°C, 8.0 kn NW, 1015.0 hPa
+Narrative:
+**Datum/Čas:** 19. 07. 2026 21:00
+**Pozice:** 50.04611° N, 14.33421° E (Zázvorkova)
+**Stav:** Vítr NW 8.0 kt, tlak 1015.0 hPa, teplota vzduchu 22.0 °C, stav moře 2 (Smooth), oblačnost 20%
+
+Plavidlo ukončilo dopředný pohyb, změnilo kurz k jihozápadu a navrátilo se na pozici předchozího setrvání, kde opět vykazuje nulovou rychlost plavby. Hydrometeorologické podmínky zůstávají zcela stabilní, s konstantním atmosférickým tlakem 1015,0 hPa a mírným severozápadním větrem. Veškeré lodní systémy pracují v nominálním režimu bez hlášených závad.
+================================================
+
+
+=== SUCCESS: Automated Logbook Entry Created ===
+Vessel: Jamajka-pokus
+Position: 50.04618°N, 14.33443°E (Zázvorkova, Malá Ohrada, Velká Ohrada, Praha 13, obvod Praha 5, Praha, 155 00, Česko)
+Speed (avg): 0.6 knots
+Weather: 22.0°C, 8.0 kn NW, 1015.0 hPa
+Narrative:
+**Datum/Čas:** 19. 07. 2026 22:00
+**Pozice:** 50.04618° N, 14.33443° E (Zázvorkova)
+**Stav:** Vítr NW 8.0 kt, tlak 1015.0 hPa, teplota vzduchu 22.0 °C, stav moře 2 (Smooth), oblačnost 20%
+
+Plavidlo nadále setrvává na předchozí pozici s minimálním přirozeným snosem a vykazuje nulovou dopřednou rychlost plavby. Hydrometeorologické podmínky v oblasti zůstávají zcela beze změny, s konstantním atmosférickým tlakem 1015,0 hPa a mírným severozápadním větrem. Veškeré lodní systémy, pohonné jednotky i kormidelní zařízení pracují v nominálním režimu bez hlášených závad.
+================================================
+
+
+=== SUCCESS: Automated Logbook Entry Created ===
+Vessel: Jamajka-pokus
+Position: 50.04624°N, 14.33422°E (Zázvorkova, Malá Ohrada, Lužiny, Praha 13, obvod Praha 5, Praha, 155 00, Česko)
+Speed (avg): 0.5 knots
+Weather: 22.0°C, 8.0 kn NW, 1015.0 hPa
+Narrative:
+**Datum/Čas:** 19. 07. 2026 23:00
+**Pozice:** 50.04624° N, 14.33422° E (Zázvorkova)
+**Stav:** Vítr NW 8.0 kt, tlak 1015.0 hPa, teplota vzduchu 22.0 °C, stav moře 2 (Smooth), oblačnost 20%
+
+Plavidlo nadále setrvává na pozici s minimálním přirozeným snosem k severozápadu a vykazuje nulovou dopřednou rychlost plavby. Hydrometeorologické podmínky v oblasti jsou i nadále zcela stabilní, s konstantním atmosférickým tlakem 1015,0 hPa a mírným severozápadním větrem. Veškeré lodní systémy, pohonné jednotky i kormidelní zařízení pracují v nominálním režimu bez hlášených závad.
+================================================
+
+
+=== SUCCESS: Automated Logbook Entry Created ===
+Vessel: Jamajka-pokus
+Position: 50.04617°N, 14.33431°E (Zázvorkova, Malá Ohrada, Velká Ohrada, Praha 13, obvod Praha 5, Praha, 155 00, Česko)
+Speed (avg): 0.0 knots
+Weather: 22.0°C, 8.0 kn NW, 1015.0 hPa
+Narrative:
+**Datum/Čas:** 20. 07. 2026 00:00
+**Pozice:** 50.04617° N, 14.33431° E (Zázvorkova)
+**Stav:** Vítr NW 8.0 kt, tlak 1015.0 hPa, teplota vzduchu 22.0 °C, stav moře 2 (Smooth), oblačnost 20%
+
+Plavidlo nadále setrvává na pozici s minimálním přirozeným kolísáním vlivem snosu a vykazuje nulovou dopřednou rychlost plavby. Hydrometeorologická situace zůstává i po půlnoci zcela stabilní, bez jakýchkoliv změn v tlaku vzduchu či síle a směru větru. Veškeré lodní systémy, pohonné jednotky i kormidelní zařízení pracují v nominálním režimu bez hlášených závad.
+================================================
+
+
+=== SUCCESS: Automated Logbook Entry Created ===
+Vessel: Jamajka-pokus
+Position: 50.04618°N, 14.33423°E (Zázvorkova, Malá Ohrada, Velká Ohrada, Praha 13, obvod Praha 5, Praha, 155 00, Česko)
+Speed (avg): 0.0 knots
+Weather: 14.2°C, 2.3 kn W, 981.8 hPa
+Narrative:
+**Datum/Čas:** 20. 07. 2026 01:00
+**Pozice:** 50.04618° N, 14.33423° E (Zázvorkova)
+**Stav:** Vítr W 2.3 kt, tlak 981.8 hPa, teplota vzduchu 14.2 °C, stav moře 0 (Calm), oblačnost 57%
+
+Plavidlo nadále setrvává na pozici s nulovou dopřednou rychlostí a vykazuje pouze zanedbatelný drift. V uplynulé hodině byl zaznamenán prudký pokles atmosférického tlaku na 981,8 hPa doprovázený výrazným ochlazením a nárůstem oblačnosti, zatímco vítr zeslábl a stočil se na západní směr při zcela klidné vodní hladině. Veškeré lodní systémy, pohonné jednotky i kormidelní zařízení pracují v nominálním režimu bez hlášených závad.
+================================================
+
+
+=== SUCCESS: Automated Logbook Entry Created ===
+Vessel: Jamajka-pokus
+Position: 50.04608°N, 14.33408°E (Zázvorkova, Malá Ohrada, Velká Ohrada, Praha 13, obvod Praha 5, Praha, 155 00, Česko)
+Speed (avg): 0.0 knots
+Weather: 22.0°C, 8.0 kn NW, 1015.0 hPa
+Narrative:
+**Datum/Čas:** 20. 07. 2026 02:00
+**Pozice:** 50.04608° N, 14.33408° E (Zázvorkova)
+**Stav:** Vítr NW 8.0 kt, tlak 1015.0 hPa, teplota vzduchu 22.0 °C, stav moře 2 (Smooth), oblačnost 20%
+
+Plavidlo nadále setrvává na pozici s nulovou dopřednou rychlostí a vykazuje pouze zanedbatelný drift. V uplynulé hodině došlo k opětovné rychlé stabilizaci atmosférického tlaku na hodnotu 1015,0 hPa, což doprovází výrazné oteplení, rozpad oblačnosti a mírné zesílení větru ze severozápadního směru. Veškeré lodní systémy, pohonné jednotky i kormidelní zařízení pracují v nominálním režimu bez hlášených závad.
+================================================
+
+
+=== SUCCESS: Automated Logbook Entry Created ===
+Vessel: Jamajka-pokus
+Position: 50.04608°N, 14.33408°E (Zázvorkova, Malá Ohrada, Velká Ohrada, Praha 13, obvod Praha 5, Praha, 155 00, Česko)
+Speed (avg): 0.0 knots
+Weather: 13.0°C, 2.9 kn WSW, 981.5 hPa
+Narrative:
+**Datum/Čas:** 20. 07. 2026 03:00
+**Pozice:** 50.04608° N, 14.33408° E (Zázvorkova)
+**Stav:** Vítr WSW 2.9 kt, tlak 981.5 hPa, teplota vzduchu 13.0 °C, stav moře 0 (Calm), oblačnost 59%
+
+Plavidlo nadále setrvává na pozici s nulovou dopřednou rychlostí a nevykazuje žádný patrný drift. V uplynulé hodině byl zaznamenán opětovný prudký pokles atmosférického tlaku na 981,5 hPa, doprovázený výrazným ochlazením, nárůstem oblačnosti a stočením slabého větru na západo-jihozápadní směr při zcela klidné vodní hladině. Veškeré lodní systémy, pohonné jednotky i kormidelní zařízení pracují v nominálním režimu bez hlášených závad.
+================================================
+
+
+=== SUCCESS: Automated Logbook Entry Created ===
+Vessel: Jamajka-pokus
+Position: 50.04608°N, 14.33408°E (Zázvorkova, Malá Ohrada, Velká Ohrada, Praha 13, obvod Praha 5, Praha, 155 00, Česko)
+Speed (avg): 0.0 knots
+Weather: 13.1°C, 3.8 kn WSW, 981.3 hPa
+Narrative:
+**Datum/Čas:** 20. 07. 2026 04:00
+**Pozice:** 50.04608° N, 14.33408° E (Zázvorkova)
+**Stav:** Vítr WSW 3.8 kt, tlak 981.3 hPa, teplota vzduchu 13.1 °C, stav moře 1 (Calm - rippled), oblačnost 79%
+
+Plavidlo nadále setrvává na pozici s nulovou dopřednou rychlostí a nevykazuje žádný patrný drift. V uplynulé hodině pokračoval mírný pokles tlaku na 981,3 hPa při stabilní teplotě vzduchu, což doprovázel nárůst oblačnosti a mírné zesílení západo-jihozápadního větru s následným drobným zvlněním vodní hladiny. Veškeré lodní systémy, pohonné jednotky i kormidelní zařízení pracují v nominálním režimu bez hlášených závad.
+================================================
+
+
+=== SUCCESS: Automated Logbook Entry Created ===
+Vessel: Jamajka-pokus
+Position: 50.04608°N, 14.33408°E (Zázvorkova, Malá Ohrada, Velká Ohrada, Praha 13, obvod Praha 5, Praha, 155 00, Česko)
+Speed (avg): 0.0 knots
+Weather: 22.0°C, 8.0 kn NW, 1015.0 hPa
+Narrative:
+**Datum/Čas:** 20. 07. 2026 05:00
+**Pozice:** 50.04608° N, 14.33408° E (Zázvorkova)
+**Stav:** Vítr NW 8.0 kt, tlak 1015.0 hPa, teplota vzduchu 22.0 °C, stav moře 2 (Smooth), oblačnost 20%
+
+Plavidlo nadále setrvává na pozici s nulovou dopřednou rychlostí a nevykazuje žádný patrný drift. V uplynulé hodině došlo k náhlému a výraznému nárůstu atmosférického tlaku na 1015,0 hPa, doprovázenému prudkým oteplením, rychlým rozpadem oblačnosti a stočením větru na severozápadní směr při jeho zesílení na 8,0 uzlů. Vodní hladina přešla v mírné zvlnění, přičemž veškeré lodní systémy, pohonné jednotky i kormidelní zařízení nadále pracují v nominálním režimu bez hlášených závad.
+================================================
+
+
+=== SUCCESS: Automated Logbook Entry Created ===
+Vessel: Jamajka-pokus
+Position: 50.04608°N, 14.33408°E (Zázvorkova, Malá Ohrada, Velká Ohrada, Praha 13, obvod Praha 5, Praha, 155 00, Česko)
+Speed (avg): 0.0 knots
+Weather: 22.0°C, 8.0 kn NW, 1015.0 hPa
+Narrative:
+**Datum/Čas:** 20. 07. 2026 06:00
+**Pozice:** 50.04608° N, 14.33408° E (Zázvorkova)
+**Stav:** Vítr NW 8.0 kt, tlak 1015.0 hPa, teplota vzduchu 22.0 °C, stav moře 2 (Smooth), oblačnost 20%
+
+Plavidlo nadále setrvává na pozici s nulovou dopřednou rychlostí a nevykazuje žádný patrný drift. V uplynulé hodině došlo ke stabilizaci meteorologických podmínek, přičemž atmosférický tlak, teplota vzduchu i nízká oblačnost setrvaly na předchozích hodnotách za stálého severozápadního větru o síle 8,0 uzlů. Vodní hladina vykazuje stabilní mírné zvlnění a veškeré lodní systémy, pohonné jednotky i kormidelní zařízení nadále pracují v nominálním režimu bez hlášených závad.
+================================================
+
+
+=== SUCCESS: Automated Logbook Entry Created ===
+Vessel: Jamajka-pokus
+Position: 50.04608°N, 14.33408°E (Zázvorkova, Malá Ohrada, Velká Ohrada, Praha 13, obvod Praha 5, Praha, 155 00, Česko)
+Speed (avg): 0.0 knots
+Weather: 22.0°C, 8.0 kn NW, 1015.0 hPa
+Narrative:
+**Datum/Čas:** 20. 07. 2026 07:00
+**Pozice:** 50.04608° N, 14.33408° E (Zázvorkova)
+**Stav:** Vítr NW 8.0 kt, tlak 1015.0 hPa, teplota vzduchu 22.0 °C, stav moře 2 (Smooth), oblačnost 20%
+
+Plavidlo nadále setrvává na pozici s nulovou dopřednou rychlostí a nevykazuje žádný patrný drift. V uplynulé hodině nedošlo k žádným změnám meteorologických podmínek, přičemž atmosférický tlak, teplota vzduchu, nízká oblačnost i severozápadní vítr o síle 8,0 uzlů setrvávají na konstantních hodnotách. Vodní hladina vykazuje stabilní mírné zvlnění a veškeré lodní systémy, pohonné jednotky i kormidelní zařízení nadále pracují v nominálním režimu bez hlášených závad.
+================================================
+
+
+=== SUCCESS: Automated Logbook Entry Created ===
+Vessel: Jamajka-pokus
+Position: 50.04608°N, 14.33381°E (Zázvorkova, Malá Ohrada, Lužiny, Praha 13, obvod Praha 5, Praha, 155 00, Česko)
+Speed (avg): 0.0 knots
+Weather: 22.0°C, 8.0 kn NW, 1015.0 hPa
+Narrative:
+**Datum/Čas:** 20. 07. 2026 08:00
+**Pozice:** 50.04608° N, 14.33381° E (Zázvorkova)
+**Stav:** Vítr NW 8.0 kn (4.1 m/s, 3 Bft), tlak 29.97 inHg (1015 hPa), teplota vzduchu 71.6 °F (22.0 °C), stav moře 2 (Smooth), oblačnost 20%
+
+Plavidlo v uplynulé hodině zaznamenalo pouze nepatrný drift západním směrem na aktuální souřadnice při setrvání nulové dopředné rychlosti 0.0 kn (0.0 km/h). Meteorologické podmínky zůstávají stabilní se stálým severozápadním větrem o síle 8.0 kn (4.1 m/s, 3 Bft), konstantním atmosférickým tlakem 29.97 inHg (1015 hPa) a teplotou vzduchu 71.6 °F (22.0 °C). Vodní hladina vykazuje mírné zvlnění odpovídající stupni 2 (Smooth) a veškeré lodní systémy i pohonné jednotky pracují v nominálním režimu.
+================================================
+
+
+=== SUCCESS: Automated Logbook Entry Created ===
+Vessel: Jamajka-pokus
+Position: 50.04609°N, 14.33361°E (Zázvorkova, Malá Ohrada, Lužiny, Praha 13, obvod Praha 5, Praha, 155 00, Česko)
+Speed (avg): 0.0 knots
+Weather: 22.0°C, 8.0 kn NW, 1015.0 hPa
+Narrative:
+**Datum/Čas:** 20. 07. 2026 09:00
+**Pozice:** 50.04609° N, 14.33361° E (Zázvorkova)
+**Stav:** Vítr NW 8.0 kn (4.1 m/s, 3 Bft), tlak 29.97 inHg (1015 hPa), teplota vzduchu 71.6 °F (22.0 °C), stav moře 2 (Smooth), oblačnost 20.0%
+
+Plavidlo v uplynulé hodině pokračovalo v nepatrném driftu západo-severozápadním směrem na aktuální souřadnice při setrvání nulové dopředné rychlosti 0.0 kn (0.0 km/h). Veškeré meteorologické parametry zůstávají zcela konstantní, včetně severozápadního větru o síle 8.0 kn (4.1 m/s, 3 Bft), atmosférického tlaku 29.97 inHg (1015 hPa) a teploty vzduchu 71.6 °F (22.0 °C). Vodní hladina vykazuje stabilní mírné zvlnění stupně 2 (Smooth) a všechny lodní systémy i pohonné jednotky nadále pracují v nominálním režimu.
+================================================
+
+
+=== SUCCESS: Automated Logbook Entry Created ===
+Vessel: Jamajka-pokus
+Position: 50.04612°N, 14.33359°E (Zázvorkova, Malá Ohrada, Lužiny, Praha 13, obvod Praha 5, Praha, 155 00, Česko)
+Speed (avg): 0.0 knots
+Weather: 22.0°C, 8.0 kn NW, 1015.0 hPa
+Narrative:
+**Datum/Čas:** 20. 07. 2026 10:00
+**Pozice:** 50.04612° N, 14.33359° E (Zázvorkova)
+**Stav:** Vítr NW 8.0 kn (4.1 m/s, 3 Bft), tlak 29.97 inHg (1015 hPa), teplota vzduchu 71.6 °F (22.0 °C), stav moře 2 (Smooth), oblačnost 20.0%
+
+Plavidlo v uplynulé hodině pokračovalo v nepatrném driftu severo-severozápadním směrem na stávající souřadnice při setrvání nulové dopředné rychlosti 0.0 kn (0.0 km/h). Všechny sledované meteorologické parametry vykazují absolutní stabilitu, včetně severozápadního větru o síle 8.0 kn (4.1 m/s, 3 Bft), atmosférického tlaku 29.97 inHg (1015 hPa) a teploty vzduchu 71.6 °F (22.0 °C). Stav vodní hladiny zůstává na stupni 2 (Smooth) a veškeré palubní systémy nadále pracují bez odchylek v plně nominálním režimu.
+================================================
+
+
+=== SUCCESS: Automated Logbook Entry Created ===
+Vessel: Jamajka-pokus
+Position: 50.04611°N, 14.33362°E (Zázvorkova, Malá Ohrada, Lužiny, Praha 13, obvod Praha 5, Praha, 155 00, Česko)
+Speed (avg): 0.0 knots
+Weather: 22.0°C, 8.0 kn NW, 1015.0 hPa
+Narrative:
+**Datum/Čas:** 20. 07. 2026 11:00
+**Pozice:** 50.04611° N, 14.33362° E (Zázvorkova)
+**Stav:** Vítr NW 8.0 kn (4.1 m/s, 3 Bft), tlak 29.97 inHg (1015 hPa), teplota vzduchu 71.6 °F (22.0 °C), stav moře 2 (Smooth), oblačnost 20.0%
+
+Plavidlo v uplynulé hodině zaznamenalo pouze nepatrný drift jihovýchodním směrem na stávající souřadnice při zachování nulové dopředné rychlosti 0.0 kn (0.0 km/h). Atmosférické podmínky jsou nadále zcela stabilní s konstantním severozápadním větrem o síle 8.0 kn (4.1 m/s, 3 Bft), tlakem 29.97 inHg (1015 hPa) a teplotou vzduchu 71.6 °F (22.0 °C). Stav vodní hladiny setrvává na stupni 2 (Smooth) a veškeré palubní systémy vykazují bezchybný, nominální chod.
+================================================
+
+
+=== SUCCESS: Automated Logbook Entry Created ===
+Vessel: Jamajka-pokus
+Position: 50.04609°N, 14.33373°E (Zázvorkova, Malá Ohrada, Lužiny, Praha 13, obvod Praha 5, Praha, 155 00, Česko)
+Speed (avg): 0.0 knots
+Weather: 19.4°C, 9.1 kn W, 982.0 hPa
+Narrative:
+**Datum/Čas:** 20. 07. 2026 12:00
+**Pozice:** 50.04609° N, 14.33373° E (Zázvorkova)
+**Stav:** Vítr W 9.1 kn (4.7 m/s, 3 Bft), tlak 29.00 inHg (982 hPa), teplota vzduchu 66.9 °F (19.4 °C), stav moře 2 (Smooth), oblačnost 35.0%
+
+Plavidlo v uplynulé hodině setrvalo bez dopředného chodu při nulové rychlosti 0.0 kn (0.0 km/h), přičemž byl zaznamenán pouze nepatrný drift jiho-jihovýchodním směrem na stávající souřadnice. Barometrický tlak vykázal prudký pokles na 29.00 inHg (982 hPa), což provází mírné stočení větru na čistě západní směr o síle 9.1 kn (4.7 m/s, 3 Bft), pokles teploty vzduchu na 66.9 °F (19.4 °C) a nárůst oblačnosti na 35 %. Stav vodní hladiny setrvává na stupni 2 (Smooth) a veškeré sledované palubní systémy pracují bez odchylek v plně nominálním režimu.
+================================================
+
+
+=== SUCCESS: Automated Logbook Entry Created ===
+Vessel: Jamajka-pokus
+Position: 50.04612°N, 14.33374°E (Zázvorkova, Malá Ohrada, Lužiny, Praha 13, obvod Praha 5, Praha, 155 00, Česko)
+Speed (avg): 0.0 knots
+Weather: 20.4°C, 10.7 kn WNW, 981.7 hPa
+Narrative:
+**Datum/Čas:** 20. 07. 2026 13:00
+**Pozice:** 50.04612° N, 14.33374° E (Zázvorkova)
+**Stav:** Vítr WNW 10.7 kn (5.5 m/s, 4 Bft), tlak 28.99 inHg (982 hPa), teplota vzduchu 68.7 °F (20.4 °C), stav moře 2 (Smooth), oblačnost 74.0%
+
+Plavidlo v uplynulé hodině setrvalo bez dopředného chodu při nulové rychlosti 0.0 kn (0.0 km/h), přičemž byl zaznamenán pouze minimální drift severním směrem na stávající souřadnice. Atmosférický tlak se po předchozím prudkém poklesu stabilizoval na hodnotě 28.99 inHg (982 hPa), což provází mírné zesílení západo-severozápadního větru na 10.7 kn (5.5 m/s, 4 Bft) a výrazný nárůst oblačnosti na 74 %. Stav vodní hladiny setrvává na stupni 2 (Smooth), teplota vzduchu dosahuje 68.7 °F (20.4 °C) a veškeré palubní systémy pracují v plně nominálním režimu.
+================================================
+
+
+=== SUCCESS: Automated Logbook Entry Created ===
+Vessel: Jamajka-pokus
+Position: 50.04606°N, 14.33380°E (Zázvorkova, Malá Ohrada, Velká Ohrada, Praha 13, obvod Praha 5, Praha, 155 00, Česko)
+Speed (avg): 0.0 knots
+Weather: 21.3°C, 9.6 kn W, 981.6 hPa
+Narrative:
+**Datum/Čas:** 20. 07. 2026 14:00
+**Pozice:** 50.04606° N, 14.33380° E (Zázvorkova)
+**Stav:** Vítr W 9.6 kn (4.9 m/s, 3 Bft), tlak 28.99 inHg (982 hPa), teplota vzduchu 70.3 °F (21.3 °C), stav moře 2 (Smooth), oblačnost 91.0%
+
+Plavidlo nadále setrvává bez dopředného chodu při nulové rychlosti 0.0 kn (0.0 km/h), přičemž v uplynulé hodině vykázalo pouze nepatrný drift jihovýchodním směrem. Atmosférický tlak zůstává stabilní na hodnotě 28.99 inHg (982 hPa), zatímco vítr se stočil zpět na čistě západní směr o síle 9.6 kn (4.9 m/s, 3 Bft). Doprovodným jevem je další výrazný nárůst oblačnosti na 91 % a mírné zvýšení teploty vzduchu na 70.3 °F (21.3 °C) při zachování plně nominálního stavu všech palubních systémů.
+================================================
+
+
+=== SUCCESS: Automated Logbook Entry Created ===
+Vessel: Jamajka-pokus
+Position: 50.04611°N, 14.33378°E (Zázvorkova, Malá Ohrada, Lužiny, Praha 13, obvod Praha 5, Praha, 155 00, Česko)
+Speed (avg): 0.0 knots
+Weather: 22.0°C, 8.0 kn NW, 1015.0 hPa
+Narrative:
+**Datum/Čas:** 20. 07. 2026 15:00
+**Pozice:** 50.04611° N, 14.33378° E (Zázvorkova)
+**Stav:** Vítr NW 8.0 kn (4.1 m/s, 3 Bft), tlak 29.97 inHg (1015 hPa), teplota vzduchu 71.6 °F (22.0 °C), stav moře 2 (Smooth), oblačnost 20.0%
+
+Plavidlo nadále setrvává bez dopředného chodu při nulové rychlosti 0.0 kn (0.0 km/h), přičemž uplynulá hodina přinesla pouze minimální drift severozápadním směrem. Atmosférický tlak zaznamenal prudký nárůst na 29.97 inHg (1015 hPa), což vedlo k výraznému vyjasnění a poklesu oblačnosti na 20.0 %. Severozápadní vítr mírně zeslábl na 8.0 kn (4.1 m/s, 3 Bft) při teplotě vzduchu 71.6 °F (22.0 °C) a plně nominálním stavu všech palubních systémů.
+================================================
+
+
+=== SUCCESS: Automated Logbook Entry Created ===
+Vessel: Jamajka-pokus
+Position: 49.83555°N, 14.22599°E (Chouzavá, Voznice, okres Příbram, Středočeský kraj, 262 04, Česko)
+Speed (avg): 0.0 knots
+Weather: 22.0°C, 8.0 kn NW, 1015.0 hPa
+Narrative:
+**Datum/Čas:** 20. 07. 2026 16:00
+**Pozice:** 49.83555° N, 14.22599° E (Chouzavá)
+**Stav:** Vítr NW 8.0 kn (4.1 m/s, 3 Bft), tlak 29.97 inHg (1015 hPa), teplota vzduchu 71.6 °F (22.0 °C), stav moře 2 (Smooth), oblačnost 20.0%
+
+Plavidlo zaznamenalo výrazný posun jižním směrem na novou pozici v oblasti Chouzavá, přičemž průměrná rychlost od vyplutí nadále vykazuje nominální hodnotu 0.0 kn (0.0 km/h). Meteorologické podmínky zůstávají stabilní s mírným severozápadním větrem o síle 8.0 kn (4.1 m/s, 3 Bft), konstantním atmosférickým tlakem 29.97 inHg (1015 hPa) a teplotou vzduchu 71.6 °F (22.0 °C). Všechny palubní systémy pracují v plně nominálním režimu za zachování klidného stavu moře o stupni 2 (Smooth).
+================================================
+
+
+=== SUCCESS: Automated Logbook Entry Created ===
+Vessel: Jamajka-pokus
+Position: 49.84143°N, 14.26146°E (Porostliny, Nová Ves pod Pleší, okres Příbram, Středočeský kraj, 262 04, Česko)
+Speed (avg): 1.2 knots
+Weather: 22.0°C, 8.0 kn NW, 1015.0 hPa
+Narrative:
+**Datum/Čas:** 20. 07. 2026 17:00
+**Pozice:** 49.84143° N, 14.26146° E (Porostliny)
+**Stav:** Vítr NW 8.0 kn (4.1 m/s, 3 Bft), tlak 29.97 inHg (1015 hPa), teplota vzduchu 71.6 °F (22.0 °C), stav moře 2 (Smooth), oblačnost 20.0%
+
+Plavidlo po předchozím driftu obnovilo dopředný chod severovýchodním směrem do oblasti Porostliny, přičemž průměrná rychlost od vyplutí vzrostla na 1.2 kn (2.2 km/h). Meteorologická situace zůstává zcela stabilní s mírným severozápadním větrem o síle 8.0 kn (4.1 m/s, 3 Bft), konstantním atmosférickým tlakem 29.97 inHg (1015 hPa) a teplotou vzduchu 71.6 °F (22.0 °C). Stav moře setrvává na stupni 2 (Smooth) za plně nominálního a bezchybného chodu všech palubních systémů.
+================================================
+
+
+=== SUCCESS: Automated Logbook Entry Created ===
+Vessel: Jamajka-pokus
+Position: 50.05307°N, 14.35917°E (Karlštejnská, Vidoule, Praha 5, obvod Praha 5, Praha, 158 00, Česko)
+Speed (avg): 15.7 knots
+Weather: 22.0°C, 8.0 kn NW, 1015.0 hPa
+Narrative:
+**Datum/Čas:** 20. 07. 2026 18:00
+**Pozice:** 50.05307° N, 14.35917° E (Vidoule)
+**Stav:** Vítr NW 8.0 kn (4.1 m/s, 3 Bft), tlak 29.97 inHg (1015 hPa), teplota vzduchu 71.6 °F (22.0 °C), stav moře 2 (Smooth), oblačnost 20.0%
+
+Plavidlo po výrazném zvýšení výkonu dosáhlo průměrné rychlosti 15.7 kn (29.1 km/h) a postoupilo severovýchodním kurzem do oblasti otevřeného moře u Vidoule. Meteorologická situace zůstává stabilní s mírným severozápadním větrem o síle 8.0 kn (4.1 m/s, 3 Bft), atmosférickým tlakem 29.97 inHg (1015 hPa) a stálou teplotou vzduchu 71.6 °F (22.0 °C). Plavba probíhá hladce, stav moře setrvává na stupni 2 (Smooth) při plně nominální funkci všech palubních systémů.
+================================================
+
+
+=== SUCCESS: Automated Logbook Entry Created ===
+Vessel: Jamajka-pokus
+Position: 50.05401°N, 14.28723°E (U Zličína, Metropole Zličín, Sobín, Praha-Zličín, obvod Praha 5, Praha, 155 21, Česko)
+Speed (avg): 0.0 knots
+Weather: 18.4°C, 8.3 kn NW, 973.7 hPa
+Narrative:
+**Datum/Čas:** 20. 07. 2026 19:00
+**Pozice:** 50.05401° N, 14.28723° E (U Zličína)
+**Stav:** Vítr NW 8.3 kn (4.3 m/s, 3 Bft), tlak 28.75 inHg (974 hPa), teplota vzduchu 65.1 °F (18.4 °C), stav moře 2 (Smooth), oblačnost 95%
+
+Plavidlo po dosažení oblasti U Zličína zastavilo dopředný chod, čímž průměrná rychlost od vyplutí klesla na 0.0 kn (0.0 km/h). Dochází k prudké změně meteorologické situace s nárůstem oblačnosti na 95% a výrazným poklesem atmosférického tlaku na 28.75 inHg (974 hPa), což signalizuje přechod frontálního systému. Severozápadní vítr o síle 8.3 kn (4.3 m/s, 3 Bft) doprovází ochlazení na 65.1 °F (18.4 °C), přičemž stav moře setrvává na stupni 2 (Smooth) při stabilním chodu všech palubních systémů.
+================================================
+
+Vessel not found for active logbook. Exiting.
+Vessel not found for active logbook. Exiting.
+Vessel not found for active logbook. Exiting.
+Vessel not found for active logbook. Exiting.
+Vessel not found for active logbook. Exiting.
+Vessel not found for active logbook. Exiting.
+Vessel not found for active logbook. Exiting.
+Vessel not found for active logbook. Exiting.
+Vessel not found for active logbook. Exiting.
+Vessel not found for active logbook. Exiting.
+Vessel not found for active logbook. Exiting.
+Vessel not found for active logbook. Exiting.
+Vessel not found for active logbook. Exiting.
+Vessel not found for active logbook. Exiting.
+Vessel not found for active logbook. Exiting.
+Vessel not found for active logbook. Exiting.
+Vessel not found for active logbook. Exiting.
+Vessel not found for active logbook. Exiting.
+Vessel not found for active logbook. Exiting.
+Vessel not found for active logbook. Exiting.
+Vessel not found for active logbook. Exiting.
+Vessel not found for active logbook. Exiting.
+Vessel not found for active logbook. Exiting.
+Vessel not found for active logbook. Exiting.
+Vessel not found for active logbook. Exiting.
+Vessel not found for active logbook. Exiting.
+Vessel not found for active logbook. Exiting.
+Vessel not found for active logbook. Exiting.
+Vessel not found for active logbook. Exiting.
+Vessel not found for active logbook. Exiting.
+Vessel not found for active logbook. Exiting.
+Vessel not found for active logbook. Exiting.
+Vessel not found for active logbook. Exiting.
+Vessel not found for active logbook. Exiting.
+Vessel not found for active logbook. Exiting.
+Vessel not found for active logbook. Exiting.
+Vessel not found for active logbook. Exiting.
+Vessel not found for active logbook. Exiting.
+Vessel not found for active logbook. Exiting.
+Vessel not found for active logbook. Exiting.
+Vessel not found for active logbook. Exiting.
+Vessel not found for active logbook. Exiting.
+Vessel not found for active logbook. Exiting.
+Vessel not found for active logbook. Exiting.
+Vessel not found for active logbook. Exiting.
+Vessel not found for active logbook. Exiting.
+Vessel not found for active logbook. Exiting.
+Vessel not found for active logbook. Exiting.
+Vessel not found for active logbook. Exiting.
+Vessel not found for active logbook. Exiting.
+Vessel not found for active logbook. Exiting.
+Vessel not found for active logbook. Exiting.
+Vessel not found for active logbook. Exiting.
+Vessel not found for active logbook. Exiting.
+Vessel not found for active logbook. Exiting.
+Vessel not found for active logbook. Exiting.
+Vessel not found for active logbook. Exiting.
+Vessel not found for active logbook. Exiting.
+Vessel not found for active logbook. Exiting.
+Vessel not found for active logbook. Exiting.
+Vessel not found for active logbook. Exiting.
+Vessel not found for active logbook. Exiting.
+Vessel not found for active logbook. Exiting.
+Vessel not found for active logbook. Exiting.
+Vessel not found for active logbook. Exiting.
+Vessel not found for active logbook. Exiting.
+Vessel not found for active logbook. Exiting.
+Vessel not found for active logbook. Exiting.
+Vessel not found for active logbook. Exiting.
+Vessel not found for active logbook. Exiting.
+Vessel not found for active logbook. Exiting.
+Vessel not found for active logbook. Exiting.
+Vessel not found for active logbook. Exiting.
+Vessel not found for active logbook. Exiting.
+Vessel not found for active logbook. Exiting.
+Vessel not found for active logbook. Exiting.
+Vessel not found for active logbook. Exiting.
+Vessel not found for active logbook. Exiting.
+Vessel not found for active logbook. Exiting.
+Vessel not found for active logbook. Exiting.
+Vessel not found for active logbook. Exiting.
+Vessel not found for active logbook. Exiting.
+Vessel not found for active logbook. Exiting.
+Vessel not found for active logbook. Exiting.
+Vessel not found for active logbook. Exiting.
+Vessel not found for active logbook. Exiting.
+Vessel not found for active logbook. Exiting.
+Vessel not found for active logbook. Exiting.
+Vessel not found for active logbook. Exiting.
+Vessel not found for active logbook. Exiting.
+Vessel not found for active logbook. Exiting.
+Vessel not found for active logbook. Exiting.
+Vessel not found for active logbook. Exiting.
+Vessel not found for active logbook. Exiting.

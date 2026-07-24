@@ -53,23 +53,24 @@ export default function VoyageDocumentSection({ logbookId, vesselId, token, onDa
     fetchDocs();
   }, [logbookId, vesselId, token]);
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFolderOrFilesUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || e.target.files.length === 0) return;
-    const file = e.target.files[0];
+    const fileList = Array.from(e.target.files);
     const activeToken = token || localStorage.getItem('token') || '';
-
-    const formData = new FormData();
-    formData.append('file', file);
-    if (logbookId) formData.append('logbook_id', logbookId);
-    if (vesselId) formData.append('vessel_id', vesselId);
 
     try {
       setUploading(true);
-      await documentsApi.uploadFile(formData, activeToken);
+      for (const file of fileList) {
+        const formData = new FormData();
+        formData.append('file', file);
+        if (logbookId) formData.append('logbook_id', logbookId);
+        if (vesselId) formData.append('vessel_id', vesselId);
+        await documentsApi.uploadFile(formData, activeToken);
+      }
       await fetchDocs();
       if (onDataUpdated) onDataUpdated();
     } catch (err: any) {
-      alert(`Chyba při nahrávání souboru: ${err.message || err}`);
+      alert(`Chyba při nahrávání: ${err.message || err}`);
     } finally {
       setUploading(false);
       e.target.value = '';
@@ -156,17 +157,33 @@ export default function VoyageDocumentSection({ logbookId, vesselId, token, onDa
             📁 Podklady a dokumenty k plavbě (AI Analýza)
           </h2>
           <p className="text-xs text-slate-400 mt-0.5">
-            Nahrajte Excel se seznamem posádky, itinerář, složku nebo URL odkaz. AI automaticky prozkoumá podklady a doplní posádku i rozpis hlídek!
+            Nahrajte soubory, celou složku z počítače (PDF, Excel, Word, CSV) nebo odkaz. Gemini 3.6 Flash AI vše automaticky prozkoumá!
           </p>
         </div>
 
         <div className="flex items-center gap-2 flex-wrap">
-          {/* Upload file */}
+          {/* Upload files / ZIP */}
           <label className="px-3.5 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold rounded-lg cursor-pointer transition shadow flex items-center gap-1.5">
-            <span>📤 Nahrát soubor</span>
+            <span>📤 Nahrát soubory / ZIP</span>
             <input
               type="file"
-              onChange={handleFileUpload}
+              multiple
+              onChange={handleFolderOrFilesUpload}
+              className="hidden"
+              disabled={uploading}
+            />
+          </label>
+
+          {/* Upload folder directly via browser */}
+          <label className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold rounded-lg cursor-pointer transition shadow flex items-center gap-1.5">
+            <span>📂 Nahrát celou složku</span>
+            <input
+              type="file"
+              // @ts-ignore
+              webkitdirectory="true"
+              directory="true"
+              multiple
+              onChange={handleFolderOrFilesUpload}
               className="hidden"
               disabled={uploading}
             />
@@ -177,7 +194,7 @@ export default function VoyageDocumentSection({ logbookId, vesselId, token, onDa
             onClick={() => setShowAddPath(!showAddPath)}
             className="px-3.5 py-2 bg-slate-700 hover:bg-slate-650 text-slate-200 text-xs font-semibold rounded-lg transition shadow flex items-center gap-1.5"
           >
-            <span>📁 Složka na disku</span>
+            <span>💻 Cesta na serveru</span>
           </button>
 
           {/* Add URL button */}

@@ -170,7 +170,7 @@ export default function HelpPage() {
                     Cokoliv botovi napíšete, se automaticky zaznamená jako záznam do Vašeho aktivního deníku. Můžete také poslat **hlasovou zprávu**:
                   </p>
                   <p className="text-xs text-[#8a8f98] leading-relaxed">
-                    Díky integraci s <strong>Gemini 3.5 Flash API</strong> bot nahrávku analyzuje, přepíše ji do češtiny a automaticky z ní extrahuje parametry jako je <em>kurz lodi, rychlost plavby, síla a směr větru, barometrický tlak</em> a uloží je do patřičných kolonek v deníku.
+                    Díky integraci s <strong>Gemini 3.6 Flash API</strong> bot nahrávku analyzuje, přepíše ji do češtiny a automaticky z ní extrahuje parametry jako je <em>kurz lodi, rychlost plavby, síla a směr větru, barometrický tlak</em> a uloží je do patřičných kolonek v deníku.
                   </p>
                   <div className="mt-2.5 p-2.5 bg-white/[0.02] border border-white/[0.05] rounded text-[11px] font-mono-custom text-[#7170ff]">
                     Příklad: "Kurz 180, rychlost 7 uzlů, fouká severní vítr 15 uzlů, tlak 1012 hPa. Vyplouváme z mariny."

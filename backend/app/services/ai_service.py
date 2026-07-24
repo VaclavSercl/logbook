@@ -7,7 +7,7 @@ async def call_llm(prompt: str) -> str:
     # 1. Try Google Gemini API directly
     if settings.GOOGLE_API_KEY:
         try:
-            url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key={settings.GOOGLE_API_KEY}"
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key={settings.GOOGLE_API_KEY}"
             payload = {
                 "contents": [
                     {
@@ -37,7 +37,7 @@ async def call_llm(prompt: str) -> str:
                 "X-Title": "Logbook",
             }
             payload = {
-                "model": "google/gemini-3.5-flash",
+                "model": "google/gemini-3.6-flash",
                 "messages": [
                     {
                         "role": "user",
@@ -198,7 +198,7 @@ async def transcribe_voice_note(audio_bytes: bytes, mime_type: str) -> str:
         "Odpověz přímo samotným textem zápisu, nepiš žádné úvody, komentáře ani uvozovky."
     )
     
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key={google_key}"
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key={google_key}"
     payload = {
         "contents": [
             {

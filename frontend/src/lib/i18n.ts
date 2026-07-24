@@ -39,7 +39,7 @@ export const translations: Record<Language, Record<string, Record<string, string
       card_map_title: 'Interaktivní námořní mapy',
       card_map_desc: 'Renderování trasy plavby pomocí MapLibre GL s kompletními mapovými vrstvami: OpenStreetMap, satelitní snímky a námořní podklady OpenSeaMap.',
       card_ai_title: 'Hybridní AI generátor',
-      card_ai_desc: 'Inteligentní cloud-first psaní námořních hlášení s využitím Gemini 2.5 API a okamžitým, deterministickým offline fallbackem při plavbě.',
+      card_ai_desc: 'Inteligentní cloud-first psaní námořních hlášení s využitím Gemini 3.6 API a okamžitým, deterministickým offline fallbackem při plavbě.',
     },
     settings: {
       title: '⚙️ Nastavení',
@@ -92,7 +92,7 @@ export const translations: Record<Language, Record<string, Record<string, string
       card_map_title: 'Interactive Nautical Charts',
       card_map_desc: 'Rendering of the voyage track using MapLibre GL with map layers: OpenStreetMap, satellite imagery, and OpenSeaMap nautical data.',
       card_ai_title: 'Hybrid AI Generator',
-      card_ai_desc: 'Intelligent cloud-first maritime reporting using Gemini 2.5 API with instant deterministic offline fallback when sailing without internet.',
+      card_ai_desc: 'Intelligent cloud-first maritime reporting using Gemini 3.6 API with instant deterministic offline fallback when sailing without internet.',
     },
     settings: {
       title: '⚙️ Settings',

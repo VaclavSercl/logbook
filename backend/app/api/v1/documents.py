@@ -80,13 +80,28 @@ async def upload_document(
         shutil.copyfileobj(file.file, buffer)
 
     file_size = os.path.getsize(file_path)
+    doc_type = "file"
+    final_path = file_path
+
+    # Auto-extract ZIP archives of voyage folders
+    if file.filename.lower().endswith('.zip'):
+        try:
+            import zipfile
+            extract_folder = os.path.join(target_dir, os.path.splitext(file.filename)[0])
+            os.makedirs(extract_folder, exist_ok=True)
+            with zipfile.ZipFile(file_path, 'r') as zip_ref:
+                zip_ref.extractall(extract_folder)
+            doc_type = "folder"
+            final_path = extract_folder
+        except Exception as zip_err:
+            print("Zip extract warning:", zip_err)
 
     doc = VoyageDocument(
         logbook_id=str(l_id) if l_id else None,
         vessel_id=str(v_id) if v_id else None,
-        doc_type="file",
+        doc_type=doc_type,
         title=file.filename,
-        file_path=file_path,
+        file_path=final_path,
         file_size=file_size,
         file_type=file.content_type,
         ai_status="pending"
@@ -98,6 +113,10 @@ async def upload_document(
     try:
         process_voyage_document_ai(db, doc.id)
         db.refresh(doc)
+    except Exception as err:
+        doc.ai_status = "error"
+        doc.ai_summary = f"Chyba při zpracování AI: {err}"
+        db.commit()
     except Exception as err:
         print("AI extraction background warning:", err)
 
@@ -122,15 +141,28 @@ async def add_path_document(
         if logbook:
             l_id = logbook.id
 
-    title = data.title or os.path.basename(data.file_path.rstrip("/\\")) or data.file_path
-    doc_type = "folder" if os.path.isdir(data.file_path) else "file"
+    req_path = data.file_path
+    if not os.path.exists(req_path):
+        folder_name = os.path.basename(req_path.replace('\\', '/').rstrip('/'))
+        candidate_paths = [
+            os.path.join(UPLOAD_DIR, folder_name),
+            os.path.join(os.getcwd(), "uploads", folder_name),
+            os.path.join("/home/wwwenda", folder_name)
+        ]
+        for cp in candidate_paths:
+            if os.path.exists(cp):
+                req_path = cp
+                break
+
+    title = data.title or os.path.basename(req_path.replace('\\', '/').rstrip('/')) or req_path
+    doc_type = "folder" if os.path.isdir(req_path) else "file"
 
     doc = VoyageDocument(
         logbook_id=str(l_id) if l_id else None,
         vessel_id=str(v_id) if v_id else None,
         doc_type=doc_type,
         title=title,
-        file_path=data.file_path,
+        file_path=req_path,
         ai_status="pending"
     )
     db.add(doc)

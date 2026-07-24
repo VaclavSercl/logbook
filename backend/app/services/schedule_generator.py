@@ -30,6 +30,12 @@ def auto_generate_schedules(
         raise ValueError("Logbook not found")
 
     vessel_id = logbook.vessel_id
+    if not vessel_id:
+        vessel = db.query(Vessel).first()
+        if vessel:
+            vessel_id = vessel.id
+            logbook.vessel_id = vessel.id
+            db.commit()
 
     # Ensure timezone naive datetimes for SQLite comparison
     if started_at and started_at.tzinfo is not None:
