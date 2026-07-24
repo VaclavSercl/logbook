@@ -61,11 +61,18 @@ export default function VoyageDocumentSection({ logbookId, vesselId, token, onDa
     try {
       setUploading(true);
       for (const file of fileList) {
-        const formData = new FormData();
-        formData.append('file', file);
-        if (logbookId) formData.append('logbook_id', logbookId);
-        if (vesselId) formData.append('vessel_id', vesselId);
-        await documentsApi.uploadFile(formData, activeToken);
+        if (file.name.startsWith('.') || file.name.toLowerCase() === 'thumbs.db' || file.name.toLowerCase() === 'desktop.ini') {
+          continue;
+        }
+        try {
+          const formData = new FormData();
+          formData.append('file', file);
+          if (logbookId) formData.append('logbook_id', logbookId);
+          if (vesselId) formData.append('vessel_id', vesselId);
+          await documentsApi.uploadFile(formData, activeToken);
+        } catch (singleErr: any) {
+          console.warn(`File upload warning for ${file.name}:`, singleErr);
+        }
       }
       await fetchDocs();
       if (onDataUpdated) onDataUpdated();

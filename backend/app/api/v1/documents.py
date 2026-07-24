@@ -72,10 +72,16 @@ async def upload_document(
         if logbook:
             l_id = logbook.id
 
-    target_dir = os.path.join(UPLOAD_DIR, str(l_id or v_id or "general"))
-    os.makedirs(target_dir, exist_ok=True)
+    # Skip OS metadata hidden files
+    if file.filename.startswith(".") or file.filename.lower() in ["thumbs.db", "desktop.ini"]:
+        raise HTTPException(status_code=400, detail="Systémový soubor přeskočen")
 
+    target_dir = os.path.join(UPLOAD_DIR, str(l_id or v_id or "general"))
     file_path = os.path.join(target_dir, file.filename)
+    
+    # Automatically create subdirectories for folder uploads
+    os.makedirs(os.path.dirname(file_path), exist_ok=True)
+
     with open(file_path, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
 
